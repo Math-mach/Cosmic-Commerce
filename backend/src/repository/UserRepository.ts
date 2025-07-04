@@ -18,7 +18,7 @@ const getUser = async (
     id: UUID
 ): Promise<Omit<IUser, "password"> | undefined> => {
     const user = await db("users")
-        .select("id", "name", "email", "created_at", "updated_at")
+        .select("id", "name", "email", "created_at", "winstreak")
         .where({ id })
         .first();
     return user;

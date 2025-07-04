@@ -68,4 +68,29 @@ const logout = (req: Request, res: Response) => {
     return res.status(200).json({ message: "Logout realizado com sucesso." });
 };
 
-module.exports = { register, login, logout };
+const getMe = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res
+                .status(401)
+                .json({ message: "Não foi possível identificar o usuário." });
+        }
+
+        const user = await UserService.getUser(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "Usuário não encontrado." });
+        }
+
+        return res.status(200).json({ user });
+    } catch (error: any) {
+        console.error("Erro ao buscar dados do usuário:", error);
+        return res
+            .status(500)
+            .json({ message: "Ocorreu um erro interno no servidor." });
+    }
+};
+
+module.exports = { register, login, logout, getMe };
