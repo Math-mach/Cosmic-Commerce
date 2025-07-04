@@ -1,6 +1,6 @@
 export interface IConfig {
     NODE_ENV: "development" | "production";
     PORT: number;
-    SECRET_KEY: string;
+    JWT_SECRET: string;
     DATABASE_URL: string;
 }
