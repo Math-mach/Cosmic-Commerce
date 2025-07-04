@@ -4,14 +4,34 @@
     "description": "",
     "main": "src/index.js",
     "scripts": {
-        "start": "node src/index.js",
-        "dev": "nodemon src/index.js"
+        "start": "node dist/index.js",
+        "build": "tsc",
+        "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "type": "commonjs",
     "dependencies": {
-        "express": "^5.1.0"
+        "bcrypt": "^6.0.0",
+        "cookie-parser": "^1.4.7",
+        "dotenv": "^17.0.1",
+        "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "knex": "^3.1.0",
+        "pg": "^8.16.3"
+    },
+    "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
+        "@types/cookie-parser": "^1.4.9",
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^5.0.3",
+        "@types/jsonwebtoken": "^9.0.10",
+        "@types/knex": "^0.15.2",
+        "@types/node": "^24.0.10",
+        "@types/pg": "^8.15.4",
+        "nodemon": "^3.1.10",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.8.3"
     }
 }
