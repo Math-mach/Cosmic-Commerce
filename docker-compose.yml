@@ -31,6 +31,8 @@ services:
             - "7000:7000"
         env_file:
             - ./backend/.env
+        environment:
+            - DATABASE_URL=postgres://cosmicRoot:cosmicRoot123@db:5432/cosmicDB
         volumes:
             - ./backend:/app
         depends_on:
