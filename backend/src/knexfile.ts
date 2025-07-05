@@ -1,17 +1,20 @@
 import { Knex } from "knex";
-import dotenv from "dotenv";
 
-dotenv.config();
+import config from "./config";
 
-const config: { [key: string]: Knex.Config } = {
+const DB_HOST = config.NODE_ENV !== "development" ? "db" : "localhost";
+
+const DATABASE_URL = `postgres://${config.DB_USER}:${config.DB_PASSWORD}@${DB_HOST}:${config.DB_PORT}/${config.DB_NAME}`;
+
+const configKnex: { [key: string]: Knex.Config } = {
     development: {
         client: "pg",
-        connection: process.env.DATABASE_URL,
+        connection: DATABASE_URL,
     },
     production: {
         client: "pg",
-        connection: process.env.DATABASE_URL,
+        connection: DATABASE_URL,
     },
 };
 
-export default config;
+export default configKnex;

@@ -13,7 +13,10 @@ const config: IConfig = {
     NODE_ENV: getEnvVar("NODE_ENV") as "development",
     PORT: Number(getEnvVar("PORT")),
     JWT_SECRET: getEnvVar("JWT_SECRET"),
-    DATABASE_URL: getEnvVar("DATABASE_URL"),
+    DB_USER: getEnvVar("DB_USER"),
+    DB_PASSWORD: getEnvVar("DB_PASSWORD"),
+    DB_PORT: Number(getEnvVar("DB_PORT")),
+    DB_NAME: getEnvVar("DB_NAME"),
 };
 
 export default config;

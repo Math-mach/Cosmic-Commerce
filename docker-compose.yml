@@ -32,7 +32,7 @@ services:
         env_file:
             - ./backend/.env
         environment:
-            - DATABASE_URL=postgres://cosmicRoot:cosmicRoot123@db:5432/cosmicDB
+            - NODE_ENV=production
         volumes:
             - ./backend:/app
         depends_on:
