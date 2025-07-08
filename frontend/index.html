@@ -64,6 +64,32 @@
                 <div id="auth-message"></div>
             </section>
 
+            <!-- LOBBY VIEW (NOVO) -->
+            <section id="lobby-view" style="display: none">
+                <h3>Bem-vindo, <span id="lobby-username"></span></h3>
+                <hr />
+                <div>
+                    <h4>Sala Privada</h4>
+                    <input
+                        type="text"
+                        id="private-room-code"
+                        placeholder="Insira o código da sala"
+                        style="width: 100%"
+                    />
+                    <button id="join-private-room-btn">Entrar na Sala</button>
+                </div>
+                <hr />
+                <div>
+                    <h3>Salas Públicas</h3>
+                    <div id="public-rooms-list">
+                        <!-- As salas públicas serão inseridas aqui pelo JavaScript -->
+                    </div>
+                </div>
+                <button id="lobby-logout-btn" style="margin-top: 20px">
+                    Logout
+                </button>
+            </section>
+
             <!-- CHAT VIEW -->
             <section id="ws-section" style="display: none">
                 <h2>Chat + WebSocket</h2>
