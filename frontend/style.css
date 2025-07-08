@@ -1,0 +1,42 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 480px;
+    margin: 20px auto;
+    padding: 0 10px;
+    background: #f9f9f9;
+    color: #333;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input,
+button {
+    padding: 8px;
+    margin: 5px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    cursor: pointer;
+    background-color: #0066cc;
+    border: none;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #004999;
+}
+
+#auth-message {
+    margin-top: 10px;
+    color: red;
+    min-height: 20px;
+}

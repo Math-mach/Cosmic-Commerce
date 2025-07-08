@@ -1,13 +1,97 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Teste WebSocket + Login</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <main>
+            <!-- LOGIN VIEW -->
+            <section id="login-view" style="display: none">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <input
+                        type="email"
+                        id="login-email"
+                        placeholder="Email"
+                        required
+                    />
+                    <input
+                        type="password"
+                        id="login-password"
+                        placeholder="Senha"
+                        required
+                    />
+                    <button type="submit">Entrar</button>
+                </form>
+                <p>
+                    Não tem conta?
+                    <a href="#" id="go-to-register">Registrar-se</a>
+                </p>
+                <div id="auth-message"></div>
+            </section>
+
+            <!-- REGISTRO VIEW -->
+            <section id="register-view" style="display: none">
+                <h2>Registro</h2>
+                <form id="register-form">
+                    <input
+                        type="text"
+                        id="register-name"
+                        placeholder="Nome"
+                        required
+                    />
+                    <input
+                        type="email"
+                        id="register-email"
+                        placeholder="Email"
+                        required
+                    />
+                    <input
+                        type="password"
+                        id="register-password"
+                        placeholder="Senha"
+                        required
+                    />
+                    <button type="submit">Registrar</button>
+                </form>
+                <p>
+                    Já tem conta?
+                    <a href="#" id="go-to-login">Fazer login</a>
+                </p>
+                <div id="auth-message"></div>
+            </section>
+
+            <!-- CHAT VIEW -->
+            <section id="ws-section" style="display: none">
+                <h2>Chat + WebSocket</h2>
+
+                <div
+                    id="messages"
+                    style="
+                        height: 300px;
+                        overflow-y: auto;
+                        border: 1px solid #ccc;
+                        padding: 5px;
+                        margin-bottom: 10px;
+                        background: #f9f9f9;
+                    "
+                ></div>
+
+                <input
+                    type="text"
+                    id="ws-input"
+                    placeholder="Digite sua mensagem"
+                />
+                <button id="send-chat">Enviar Chat</button>
+                <button id="send-game">Iniciar Jogo</button>
+
+                <button id="logout-btn" style="margin-top: 20px">Logout</button>
+            </section>
+        </main>
+
+        <script src="app.js"></script>
+    </body>
 </html>
