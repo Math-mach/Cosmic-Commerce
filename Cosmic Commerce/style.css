@@ -1,0 +1,223 @@
+body {
+  font-family: sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 250px;
+}
+
+.player-card {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.player-card.active-player {
+  border-color: #007bff;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+.player-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: #333;
+}
+.player-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+#phase-indicator {
+  border: 2px solid #5a6268;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+#phase-indicator h3 {
+  margin: 0 0 10px 0;
+  color: #343a40;
+  border-bottom: 1px solid #ced4da;
+  padding-bottom: 5px;
+}
+#phase-indicator ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9em;
+  color: #495057;
+}
+
+.board-wrapper {
+  position: relative; /* Essencial para o posicionamento dos peões */
+}
+
+h1 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  text-align: center;
+}
+
+#unified-grid-container {
+  display: grid;
+  grid-template-columns: repeat(40, 1fr) 35px;
+  grid-template-rows: repeat(40, 1fr) 25px;
+  width: 80vh;
+  height: 80vh;
+  max-width: 800px;
+  max-height: 800px;
+  border: 2px solid black;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.grid-cell {
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  box-sizing: border-box;
+  background-color: white;
+}
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-family: monospace;
+  color: #333;
+}
+.x-axis-label {
+  border-top: 2px solid black;
+}
+.y-axis-label {
+  border-left: 2px solid black;
+}
+
+/* CORREÇÃO: Posicionamento do contêiner dos peões */
+#peoes-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - 35px); /* Ocupa a largura da grade, menos a régua */
+  height: calc(100% - 25px); /* Ocupa a altura da grade, menos a régua */
+  pointer-events: none; /* Impede que ele bloqueie cliques na grade */
+}
+
+/* CORREÇÃO: Estilos dos peões */
+.peao {
+  position: absolute;
+  /* Tamanho fixo em vez de porcentagem */
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  transition: transform 0.4s ease-in-out; /* Animação suave */
+}
+
+#peao-p1 {
+  background-color: #e63946;
+}
+#peao-p2 {
+  background-color: #457b9d;
+}
+#peao-p3 {
+  background-color: #52b788;
+}
+
+#ui-actions-panel {
+  margin-top: 15px;
+  text-align: center;
+}
+#game-info {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+#action-button {
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+/* ================================================== */
+/* DESTAQUE PARA ESCOLHA EM BIFURCAÇÃO                */
+/* ================================================== */
+
+/* Estilo para as casas que são opções em uma bifurcação */
+.ponto-bifurcacao-opcao {
+  /* Borda amarela, grossa e tracejada para chamar a atenção */
+  border: 4px dashed #ffc107 !important;
+
+  /* Fundo amarelo claro para reforçar o destaque */
+  background-color: #fff3cd !important;
+
+  /* Garante que o cursor mude para a "mãozinha" de clique */
+  cursor: pointer !important;
+
+  /* Uma animação de pulso para deixar a escolha ainda mais óbvia */
+  animation: pulse 1.5s infinite;
+}
+
+/* Animação de pulso que expande uma sombra amarela */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
+
+.event-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #ffc107;
+  text-align: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.event-notification.visible {
+  opacity: 1;
+}
+
+.event-notification h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.5em;
+  color: #ffc107;
+}
+
+.event-notification p {
+  margin: 0;
+  font-size: 1em;
+}
