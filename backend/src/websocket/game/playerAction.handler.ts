@@ -9,40 +9,24 @@ interface PlayerActionPayload {
   [key: string]: any;
 }
 
+/**
+ * Ponto de entrada para todas as ações do jogador durante o jogo.
+ */
 export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPayload) {
   const { roomId, id: userId } = user;
+  const room = roomManager.findRoomById(roomId || '');
 
-  if (!roomId) {
-    user.ws.send(
-      JSON.stringify({
-        event: 'error',
-        message: 'Você não está em um jogo ativo.',
-      })
-    );
-    return;
-  }
-
-  const room = roomManager.findRoomById(roomId);
+  // Validações iniciais
   if (!room || room.state !== 'in_progress' || !room.gameState) {
-    user.ws.send(
-      JSON.stringify({
-        event: 'error',
-        message: 'O jogo na sua sala não está ativo.',
-      })
-    );
+    user.ws.send(JSON.stringify({ event: 'error', message: 'O jogo não está ativo.' }));
     return;
   }
-
   if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
-    user.ws.send(
-      JSON.stringify({
-        event: 'error',
-        message: 'Não é a sua vez de jogar.',
-      })
-    );
+    user.ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
     return;
   }
 
+  // Roteia a ação para o handler correto
   switch (payload.action) {
     case 'main_button_click':
       handleMainButtonClick(room);
@@ -51,166 +35,138 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
       handleChoosePath(room, user.id, payload.nodeId!);
       break;
     default:
-      user.ws.send(
-        JSON.stringify({
-          event: 'error',
-          message: 'Ação desconhecida.',
-        })
-      );
+      user.ws.send(JSON.stringify({ event: 'error', message: 'Ação desconhecida.' }));
       break;
   }
 }
 
+/**
+ * Lida com o clique no botão principal, geralmente para rolar o dado.
+ */
 function handleMainButtonClick(room: Room) {
-  const { turnInfo, players: playerStates } = room.gameState!;
-
+  const { turnInfo } = room.gameState!;
   if (turnInfo.fase_do_turno !== 'uso_item_pre_rolagem') {
     console.warn(`[Sala ${room.id}] Ação inválida na fase: ${turnInfo.fase_do_turno}`);
     return;
   }
 
   turnInfo.fase_do_turno = 'rolagem_dado';
-  roomManager.broadcastToRoom(
-    room.id,
-    JSON.stringify({
-      event: 'gameStateUpdate',
-      payload: { type: 'gameStateUpdate', payload: room.gameState! },
-    })
-  );
-
   const diceRoll = Math.floor(Math.random() * 6) + 1;
   console.log(`[Sala ${room.id}] Jogador ${turnInfo.id_jogador_da_vez} rolou ${diceRoll}`);
 
-  const currentPlayerState = playerStates.find(p => p.id === turnInfo.id_jogador_da_vez)!;
-  let currentNode = findNodeById(currentPlayerState.posicao_mapa_id);
-  const path: number[] = [];
+  // Inicia o motor de movimento com o resultado do dado
+  continueMovement(room, diceRoll, diceRoll);
+}
 
-  // Loop para calcular o caminho e verificar por bifurcações
-  for (let i = 0; i < diceRoll; i++) {
-    if (!currentNode || currentNode.conexoes.length === 0) {
-      break; // Para o loop se não houver mais caminho
-    }
+/**
+ * Lida com a escolha do jogador em uma bifurcação.
+ */
+function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
+  const { turnInfo, players } = room.gameState!;
+  if (turnInfo.fase_do_turno !== 'escolha_bifurcacao') return;
 
-    // Move para o próximo nó
-    const nextNodeId = currentNode.conexoes[0];
-    currentNode = findNodeById(nextNodeId)!;
-    path.push(currentNode.id);
+  const currentPlayerState = players.find(p => p.id === userId)!;
+  const bifurcationNode = findNodeById(currentPlayerState.posicao_mapa_id)!;
 
-    // Se o nó de destino for uma bifurcação (seja no meio ou no fim do caminho)
-    if (currentNode.tipo === 'bifurcacao') {
-      const stepsRemaining = diceRoll - (i + 1);
-      console.log(
-        `[Sala ${room.id}] Chegou na bifurcação ${currentNode.id} com ${stepsRemaining} passos restantes.`
-      );
+  if (!bifurcationNode.conexoes.includes(chosenNodeId)) {
+    console.warn(`[Sala ${room.id}] Jogador ${userId} fez uma escolha de caminho inválida.`);
+    return;
+  }
 
-      // Define o estado do jogo para forçar a escolha do jogador
-      turnInfo.fase_do_turno = 'escolha_bifurcacao';
+  const stepsRemainingAfterChoice = turnInfo.passosRestantes!;
+  turnInfo.opcoesBifurcacao = [];
+  turnInfo.passosRestantes = 0;
+  turnInfo.fase_do_turno = 'movimento';
+
+  // Move o jogador um passo para fora da bifurcação
+  currentPlayerState.posicao_mapa_id = chosenNodeId;
+
+  // Continua o movimento a partir da nova posição com os passos restantes
+  continueMovement(room, stepsRemainingAfterChoice);
+}
+
+/**
+ * O motor de movimento principal. Calcula o caminho e envia um único evento de animação.
+ * @param room - A sala de jogo.
+ * @param stepsToTake - O número de casas a andar.
+ * @param initialDiceRoll - [Opcional] O resultado original do dado para notificação.
+ */
+function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: number | null = null) {
+  const { turnInfo, players } = room.gameState!;
+  const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
+
+  // Se não há passos a dar, o movimento já terminou onde o jogador está.
+  if (stepsToTake <= 0) {
+    processEndOfMovement(room, currentPlayer.posicao_mapa_id);
+    return;
+  }
+
+  let currentNode = findNodeById(currentPlayer.posicao_mapa_id);
+  const path = [currentNode!.id];
+  let finalDestinationNode = currentNode!;
+  let movementStopsAtBifurcation = false;
+
+  // 1. CALCULAR O CAMINHO COMPLETO E O DESTINO FINAL
+  for (let i = 0; i < stepsToTake; i++) {
+    if (!finalDestinationNode || finalDestinationNode.conexoes.length === 0) break;
+
+    const nextNodeId = finalDestinationNode.conexoes[0];
+    finalDestinationNode = findNodeById(nextNodeId)!;
+    path.push(finalDestinationNode.id);
+
+    // Se encontrar uma bifurcação, o MOVIMENTO PARA AQUI.
+    if (finalDestinationNode.tipo === 'bifurcacao') {
+      movementStopsAtBifurcation = true;
+      const stepsRemaining = stepsToTake - (i + 1);
       turnInfo.passosRestantes = stepsRemaining;
-      turnInfo.opcoesBifurcacao = currentNode.conexoes;
+      turnInfo.opcoesBifurcacao = finalDestinationNode.conexoes;
+      console.log(
+        `[Sala ${room.id}] Movimento planejado para na bifurcação ${finalDestinationNode.id} com ${stepsRemaining} passos restantes.`
+      );
+      break; // Para o cálculo do caminho.
+    }
+  }
 
-      // Envia a animação do movimento ATÉ a bifurcação para os clientes
-      const pathToBifurcation = [currentPlayerState.posicao_mapa_id, ...path];
+  // 2. ENVIAR UM ÚNICO EVENTO DE ANIMAÇÃO PARA O FRONTEND
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: {
+        type: 'player_is_moving',
+        payload: { playerId: currentPlayer.id, path, diceResult: initialDiceRoll },
+      },
+    })
+  );
+
+  // 3. AGUARDAR A ANIMAÇÃO E PROCESSAR O RESULTADO
+  const finalNodeInPath = findNodeById(path[path.length - 1])!;
+  const animationDuration = path.length * 500 + 500;
+
+  setTimeout(() => {
+    // Atualiza a posição do jogador no estado do servidor para o final do caminho animado
+    currentPlayer.posicao_mapa_id = finalNodeInPath.id;
+
+    if (movementStopsAtBifurcation) {
+      // Se parou na bifurcação, apenas atualiza o estado para aguardar a escolha
+      turnInfo.fase_do_turno = 'escolha_bifurcacao';
       roomManager.broadcastToRoom(
         room.id,
         JSON.stringify({
-          event: 'game_event',
-          payload: {
-            type: 'player_is_moving',
-            payload: {
-              playerId: currentPlayerState.id,
-              path: pathToBifurcation,
-              diceResult: diceRoll,
-            },
-          },
+          event: 'gameStateUpdate',
+          payload: { type: 'gameStateUpdate', payload: room.gameState! },
         })
       );
-
-      // Após a animação, atualiza a posição final do jogador e o estado do jogo
-      const animationDuration = pathToBifurcation.length * 500 + 500;
-      setTimeout(() => {
-        currentPlayerState.posicao_mapa_id = currentNode!.id;
-        roomManager.broadcastToRoom(
-          room.id,
-          JSON.stringify({
-            event: 'gameStateUpdate',
-            payload: { type: 'gameStateUpdate', payload: room.gameState! },
-          })
-        );
-      }, animationDuration);
-
-      return; // Encerra a função aqui, pois a próxima ação depende da escolha do jogador.
+    } else {
+      // Se o movimento terminou, processa o efeito da casa
+      processEndOfMovement(room, finalNodeInPath.id);
     }
-  }
-
-  // Se o loop terminar e nenhuma bifurcação for encontrada, executa o movimento normal
-  const fullPath = [currentPlayerState.posicao_mapa_id, ...path];
-  turnInfo.fase_do_turno = 'movimento';
-
-  // Envia a animação do movimento completo para os clientes
-  roomManager.broadcastToRoom(
-    room.id,
-    JSON.stringify({
-      event: 'game_event',
-      payload: {
-        type: 'player_is_moving',
-        payload: { playerId: currentPlayerState.id, path: fullPath, diceResult: diceRoll },
-      },
-    })
-  );
-
-  // Após a animação, processa o efeito da casa final
-  const animationDuration = fullPath.length * 500 + 1000;
-  setTimeout(() => {
-    const finalNodeId =
-      path.length > 0 ? path[path.length - 1] : currentPlayerState.posicao_mapa_id;
-    processEndOfMovement(room, finalNodeId);
   }, animationDuration);
 }
 
-function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
-  const { turnInfo, players } = room.gameState!;
-
-  if (turnInfo.fase_do_turno !== 'escolha_bifurcacao' || turnInfo.id_jogador_da_vez !== userId)
-    return;
-
-  const currentPlayerState = players.find(p => p.id === userId)!;
-  const currentNode = findNodeById(currentPlayerState.posicao_mapa_id)!;
-
-  if (!currentNode.conexoes.includes(chosenNodeId)) return;
-
-  turnInfo.opcoesBifurcacao = [];
-  let stepsToMove = turnInfo.passosRestantes!;
-  let currentPathNode = findNodeById(chosenNodeId)!;
-  const path: number[] = [currentNode.id, currentPathNode.id];
-  stepsToMove--;
-
-  while (stepsToMove > 0 && currentPathNode) {
-    const nextNodeId = currentPathNode.conexoes[0];
-    const nextNode = findNodeById(nextNodeId);
-    if (!nextNode) break;
-    path.push(nextNode.id);
-    currentPathNode = nextNode;
-    stepsToMove--;
-  }
-
-  turnInfo.fase_do_turno = 'movimento';
-  roomManager.broadcastToRoom(
-    room.id,
-    JSON.stringify({
-      event: 'game_event',
-      payload: {
-        type: 'player_is_moving',
-        payload: { playerId: userId, path, diceResult: null },
-      },
-    })
-  );
-
-  const animationDuration = path.length * 500 + 500;
-  setTimeout(() => {
-    processEndOfMovement(room, path[path.length - 1]);
-  }, animationDuration);
-}
-
+/**
+ * Processa os efeitos da casa onde o jogador aterrissou.
+ */
 function processEndOfMovement(room: Room, finalNodeId: number) {
   const { turnInfo, players: playerStates } = room.gameState!;
   const currentPlayerState = playerStates.find(p => p.id === turnInfo.id_jogador_da_vez)!;
@@ -223,7 +179,8 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
   turnInfo.fase_do_turno = 'aterrissagem';
 
   const finalNode = findNodeById(currentPlayerState.posicao_mapa_id);
-  let notificationPayload = null; // Usaremos um objeto para a notificação
+  let notificationPayload = null;
+  let shouldPassTurn = true;
 
   if (finalNode && finalNode.tipoCasa) {
     const tipoCasa = finalNode.tipoCasa;
@@ -263,7 +220,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
           }
           break;
       }
-
       notificationPayload = {
         title: eventoSorteado.nome,
         message: eventoSorteado.efeito_detalhado,
@@ -272,6 +228,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     }
   }
 
+  // Atualiza o estado para todos os jogadores
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -280,38 +237,47 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     })
   );
 
+  // Mostra a notificação do efeito da casa, se houver
   if (notificationPayload) {
     roomManager.broadcastToRoom(
       room.id,
       JSON.stringify({
         event: 'game_event',
-        payload: {
-          type: 'show_notification',
-          payload: { ...notificationPayload, duration: 4000 },
-        },
+        payload: { type: 'show_notification', payload: { ...notificationPayload, duration: 4000 } },
       })
     );
   }
 
-  setTimeout(() => {
-    passTurn(room);
-  }, 4500);
+  // Passa o turno após a animação/notificação
+  if (shouldPassTurn) {
+    setTimeout(() => {
+      passTurn(room);
+    }, 4500);
+  }
 }
 
+/**
+ * Avança para o próximo jogador.
+ */
 function passTurn(room: Room) {
   const players = room.getPlayers();
-  const currentPlayerId = room.gameState!.turnInfo.id_jogador_da_vez;
+  const { turnInfo } = room.gameState!;
+  const currentPlayerId = turnInfo.id_jogador_da_vez;
   const currentPlayerIndex = players.findIndex(p => p.id === currentPlayerId);
+
   if (currentPlayerIndex === -1) return;
 
   const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
 
-  room.gameState!.turnInfo.id_jogador_da_vez = nextPlayer.id;
-  room.gameState!.turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
+  // Reseta o estado para o próximo turno
+  turnInfo.id_jogador_da_vez = nextPlayer.id;
+  turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
+  turnInfo.passosRestantes = 0;
+  turnInfo.opcoesBifurcacao = [];
 
   if (nextPlayerIndex === 0) {
-    room.gameState!.turnInfo.turno_atual++;
+    turnInfo.turno_atual++;
   }
 
   console.log(`[Sala ${room.id}] Turno passado para ${nextPlayer.name}.`);
