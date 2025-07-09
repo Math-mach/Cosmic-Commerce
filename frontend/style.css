@@ -110,3 +110,52 @@ hr {
     padding: 8px 16px;
     flex-shrink: 0; /* Impede que o botão encolha se o nome da sala for muito grande */
 }
+
+/* ... (todo o css anterior) ... */
+
+/* Estilo para o botão verde */
+#create-room-btn {
+    background-color: #28a745; /* Verde */
+    border-color: #28a745;
+}
+#create-room-btn:hover {
+    background-color: #218838; /* Verde mais escuro */
+}
+
+/* Estilos para a nova tela de Sala (ROOM VIEW) */
+#room-info-header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.chat-controls {
+    display: flex;
+    gap: 5px;
+}
+.chat-controls input {
+    flex-grow: 1; /* Faz o input ocupar o espaço restante */
+}
+.chat-controls button {
+    width: auto;
+}
+
+.room-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+.room-actions button {
+    flex-grow: 1; /* Faz os dois botões terem o mesmo tamanho */
+}
+
+#leave-room-btn {
+    background-color: #dc3545; /* Vermelho para ação de sair/perigo */
+}
+#leave-room-btn:hover {
+    background-color: #c82333;
+}

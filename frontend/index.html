@@ -58,13 +58,12 @@
                     <button type="submit">Registrar</button>
                 </form>
                 <p>
-                    Já tem conta?
-                    <a href="#" id="go-to-login">Fazer login</a>
+                    Já tem conta? <a href="#" id="go-to-login">Fazer login</a>
                 </p>
                 <div id="auth-message"></div>
             </section>
 
-            <!-- LOBBY VIEW (NOVO) -->
+            <!-- LOBBY VIEW -->
             <section id="lobby-view" style="display: none">
                 <h3>Bem-vindo, <span id="lobby-username"></span></h3>
                 <hr />
@@ -85,14 +84,24 @@
                         <!-- As salas públicas serão inseridas aqui pelo JavaScript -->
                     </div>
                 </div>
-                <button id="lobby-logout-btn" style="margin-top: 20px">
-                    Logout
+                <button id="create-room-btn" style="margin-top: 20px">
+                    Criar uma sala
                 </button>
+                <button id="lobby-logout-btn">Logout</button>
             </section>
 
-            <!-- CHAT VIEW -->
+            <!-- ROOM VIEW (ANTIGA CHAT VIEW) -->
             <section id="ws-section" style="display: none">
-                <h2>Chat + WebSocket</h2>
+                <h2 id="room-name-display">Nome da Sala</h2>
+
+                <div id="room-info-header">
+                    <span
+                        >ID da Sala: <strong id="room-id-display"></strong
+                    ></span>
+                    <span
+                        >Jogadores: <strong id="room-players-display"></strong
+                    ></span>
+                </div>
 
                 <div
                     id="messages"
@@ -106,15 +115,19 @@
                     "
                 ></div>
 
-                <input
-                    type="text"
-                    id="ws-input"
-                    placeholder="Digite sua mensagem"
-                />
-                <button id="send-chat">Enviar Chat</button>
-                <button id="send-game">Iniciar Jogo</button>
+                <div class="chat-controls">
+                    <input
+                        type="text"
+                        id="ws-input"
+                        placeholder="Digite sua mensagem"
+                    />
+                    <button id="send-chat">Enviar</button>
+                </div>
 
-                <button id="logout-btn" style="margin-top: 20px">Logout</button>
+                <div class="room-actions">
+                    <button id="send-game">Iniciar Jogo</button>
+                    <button id="leave-room-btn">Sair da Sala</button>
+                </div>
             </section>
         </main>
 
