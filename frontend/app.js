@@ -1,5 +1,3 @@
-// NOVO: No futuro, vamos importar o nosso controlador do jogo aqui.
-// Deixaremos comentado por enquanto, pois o arquivo ainda não existe.
 import * as gameModule from "./game/game.js";
 
 const API_BASE = "http://localhost:7000/api/user";
@@ -10,7 +8,7 @@ const loginView = document.getElementById("login-view");
 const registerView = document.getElementById("register-view");
 const lobbyView = document.getElementById("lobby-view");
 const chatView = document.getElementById("ws-section");
-const gameView = document.getElementById("game-view"); // NOVO: Referência para a seção do jogo.
+const gameView = document.getElementById("game-view");
 
 // Elementos de Autenticação
 const authMessage = document.getElementById("auth-message");
@@ -42,13 +40,13 @@ function showView(view) {
     registerView.style.display = "none";
     lobbyView.style.display = "none";
     chatView.style.display = "none";
-    gameView.style.display = "none"; // NOVO: Garante que a view do jogo também seja escondida.
+    gameView.style.display = "none";
 
     if (view === "login") loginView.style.display = "block";
     if (view === "register") registerView.style.display = "block";
     if (view === "lobby") lobbyView.style.display = "block";
     if (view === "chat") chatView.style.display = "block";
-    if (view === "game") gameView.style.display = "block"; // NOVO: Lógica para mostrar a view do jogo.
+    if (view === "game") gameView.style.display = "block";
 }
 
 // NAVIGATION & AUTH
@@ -115,7 +113,7 @@ function showLobby(user) {
 
 // RENDERIZA A LISTA DE SALAS PÚBLICAS
 function renderRoomList(rooms) {
-    publicRoomsList.innerHTML = ""; // Limpa a lista atual
+    publicRoomsList.innerHTML = "";
     if (rooms.length === 0) {
         publicRoomsList.innerHTML =
             "<p>Não há salas públicas disponíveis no momento.</p>";
@@ -178,14 +176,12 @@ function connectWebSocket() {
             const data = JSON.parse(event.data);
             console.log("Mensagem recebida do WS:", data);
 
-            // MODIFICADO: Adicionamos os eventos do jogo aqui
             switch (data.event) {
-                // EVENTOS DO LOBBY
                 case "room_list":
                     renderRoomList(data.rooms);
                     break;
                 case "join_success":
-                    showView("chat"); // O jogador entra na sala de espera/chat primeiro
+                    showView("chat");
                     appendMessage(`✅ Entrou na sala: ${data.roomName}`);
                     break;
                 case "join_error":
@@ -210,7 +206,6 @@ function connectWebSocket() {
                     break;
 
                 case "gameStateUpdate":
-                    // Este evento será usado para todas as atualizações durante o jogo.
                     if (gameView.style.display === "block") {
                         gameModule.handleServerUpdate(data.payload);
                     }
@@ -256,13 +251,11 @@ document.getElementById("send-chat").addEventListener("click", () => {
     wsInput.value = "";
 });
 
-// MODIFICADO: O botão "Iniciar Jogo" envia o tipo correto que planejamos.
 document.getElementById("send-game").addEventListener("click", () => {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
         appendMessage("⚠️ WebSocket não conectado");
         return;
     }
-    // O tipo da mensagem deve ser o que o servidor espera para iniciar o jogo.
     socket.send(JSON.stringify({ type: "start_game" }));
 });
 
