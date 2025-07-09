@@ -196,8 +196,11 @@ function updateRoomView(roomData) {
 
 // WebSocket
 function connectWebSocket() {
-    socket = new WebSocket("ws://localhost:8080/ws");
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/ws`;
 
+    socket = new WebSocket(wsUrl);
     socket.onopen = () => {
         console.log("WebSocket Conectado.");
         socket.send(JSON.stringify({ type: "get_rooms" }));
