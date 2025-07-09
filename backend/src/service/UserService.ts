@@ -31,7 +31,7 @@ const register = async (
     });
 
     const token = jwt.sign(
-        { id: newUser.id, email: newUser.email },
+        { id: newUser.id, name: newUser.name, email: newUser.email },
         config.JWT_SECRET as string,
         { expiresIn: "1d" }
     );
@@ -58,7 +58,7 @@ const login = async (email: string, pass: string): Promise<AuthResponse> => {
     }
 
     const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, name: user.name, email: user.email },
         config.JWT_SECRET as string,
         { expiresIn: "1d" }
     );

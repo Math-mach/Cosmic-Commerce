@@ -7,8 +7,11 @@ import {
 
 import { handleClientMessage } from "./message.handler";
 
+import { handleDisconnection } from "./handlers/disconnection.handler";
+
 export interface ConnectedUser extends AuthenticatedUserPayload {
     ws: WebSocket;
+    roomId: string | null;
 }
 
 export const activeConnections = new Set<ConnectedUser>();
@@ -19,7 +22,7 @@ export function initializeWebSocket(wss: WebSocketServer) {
 
         try {
             const authPayload = authenticateWebSocket(req);
-            currentUser = { ...authPayload, ws };
+            currentUser = { ...authPayload, ws, roomId: null };
 
             activeConnections.add(currentUser);
 
@@ -58,6 +61,10 @@ export function initializeWebSocket(wss: WebSocketServer) {
 
         ws.on("close", () => {
             if (currentUser) {
+                if (currentUser.roomId) {
+                    handleDisconnection(currentUser);
+                }
+
                 activeConnections.delete(currentUser);
                 console.log(
                     `❌ Usuário ${currentUser.email} desconectado. Total: ${activeConnections.size}`
