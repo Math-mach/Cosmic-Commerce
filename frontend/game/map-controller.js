@@ -35,7 +35,7 @@ const mapController = {
                 const cell = document.createElement("div");
                 if (row < 40 && col < 40) {
                     cell.classList.add("grid-cell");
-                    const xCoord = col + 1;
+                    const xCoord = 40 - col;
                     const yCoord = 40 - row;
                     cell.dataset.x = xCoord;
                     cell.dataset.y = yCoord;

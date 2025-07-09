@@ -40,6 +40,16 @@ services:
             - redis
         restart: always
 
+    frontend-nginx:
+        build:
+            context: ./frontend
+        container_name: meu-frontend-web
+        ports:
+            - "8080:80"
+        depends_on:
+            - backend
+        restart: always
+
 volumes:
     db_data:
         name: db_data

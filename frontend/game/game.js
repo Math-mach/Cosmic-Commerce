@@ -41,6 +41,83 @@ export function handleServerUpdate(updateData) {
             uiController.atualizarTudo();
             mapController.atualizarPosicaoPeoes();
             break;
+
+        case "player_is_moving":
+            console.log(
+                `Animando movimento para o jogador ${payload.playerId}`
+            );
+
+            uiController.mostrarMensagemTemporaria(
+                `Dado rolou: ${payload.diceResult}!`,
+                1500
+            );
+
+            const animateStep = (stepIndex) => {
+                if (stepIndex >= payload.path.length) return;
+
+                const nodeId = payload.path[stepIndex];
+                const playerState = gameState.jogadores.find(
+                    (p) => p.id === payload.playerId
+                );
+
+                if (playerState) {
+                    playerState.posicao_mapa_id = nodeId;
+
+                    mapController.atualizarPosicaoPeoes();
+                }
+
+                setTimeout(() => animateStep(stepIndex + 1), 500);
+            };
+
+            setTimeout(() => animateStep(0), 1500);
+            break;
+
+        case "show_notification":
+            console.log(`Exibindo notificação:`, payload);
+
+            // Verifica se a notificação é um evento especial
+            if (payload.isEvent && payload.title) {
+                // Se for, chama a função para a notificação grande
+                uiController.mostrarNotificacaoEvento(
+                    payload.title,
+                    payload.message,
+                    payload.duration
+                );
+            } else {
+                // Se não, usa a função para a mensagem simples na barra de info
+                uiController.mostrarMensagemTemporaria(
+                    payload.message,
+                    payload.duration
+                );
+            }
+            break;
+
+        case "gameStateUpdate":
+            const oldPhase = gameState.partida?.fase_do_turno;
+            const newPhase = payload.turnInfo.fase_do_turno;
+
+            gameState.jogadores = payload.players;
+            gameState.partida = payload.turnInfo;
+
+            uiController.atualizarTudo();
+            mapController.atualizarPosicaoPeoes();
+
+            if (
+                oldPhase === "escolha_bifurcacao" &&
+                newPhase !== "escolha_bifurcacao"
+            ) {
+                mapController.limparDestaquesBifurcacao();
+            }
+
+            if (
+                newPhase === "escolha_bifurcacao" &&
+                payload.turnInfo.opcoesBifurcacao
+            ) {
+                mapController.destacarOpcoesBifurcacao(
+                    payload.turnInfo.opcoesBifurcacao
+                );
+            }
+            break;
     }
 }
 
@@ -68,13 +145,32 @@ function addGameListeners() {
     actionButton.addEventListener("click", actionButtonListener);
 
     gridClickListener = (x, y) => {
-        const pontoClicado = gameData.mapa.find((p) => p.x === x && p.y === y);
-        if (pontoClicado) {
-            console.log(`Célula do grid clicada: ID ${pontoClicado.id}`);
-            sendActionToServer("player_action", {
-                action: "grid_click",
-                nodeId: pontoClicado.id,
-            });
+        if (gameState.partida?.fase_do_turno === "escolha_bifurcacao") {
+            const pontoClicado = gameData.mapa.find(
+                (p) => p.x === x && p.y === y
+            );
+
+            if (
+                pontoClicado &&
+                gameState.partida.opcoesBifurcacao?.includes(pontoClicado.id)
+            ) {
+                console.log(
+                    `Jogador escolheu o caminho: ID ${pontoClicado.id}`
+                );
+
+                mapController.limparDestaquesBifurcacao();
+
+                if (gameState.partida) {
+                    gameState.partida.fase_do_turno = "movimento";
+                }
+
+                uiController.atualizarFaseUI();
+
+                sendActionToServer("player_action", {
+                    action: "choose_path",
+                    nodeId: pontoClicado.id,
+                });
+            }
         }
     };
     mapController.addGridClickListener(gridClickListener);

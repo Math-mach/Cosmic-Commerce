@@ -8,6 +8,7 @@
     </head>
     <body>
         <main>
+            <!-- LOGIN VIEW -->
             <section id="login-view" style="display: none">
                 <h2>Login</h2>
                 <form id="login-form">
@@ -32,6 +33,7 @@
                 <div id="auth-message"></div>
             </section>
 
+            <!-- REGISTRO VIEW -->
             <section id="register-view" style="display: none">
                 <h2>Registro</h2>
                 <form id="register-form">
@@ -56,12 +58,12 @@
                     <button type="submit">Registrar</button>
                 </form>
                 <p>
-                    Já tem conta?
-                    <a href="#" id="go-to-login">Fazer login</a>
+                    Já tem conta? <a href="#" id="go-to-login">Fazer login</a>
                 </p>
                 <div id="auth-message"></div>
             </section>
 
+            <!-- LOBBY VIEW -->
             <section id="lobby-view" style="display: none">
                 <h3>Bem-vindo, <span id="lobby-username"></span></h3>
                 <hr />
@@ -78,15 +80,27 @@
                 <hr />
                 <div>
                     <h3>Salas Públicas</h3>
-                    <div id="public-rooms-list"></div>
+                    <div id="public-rooms-list">
+                        <!-- As salas públicas serão inseridas aqui pelo JavaScript -->
+                    </div>
                 </div>
-                <button id="lobby-logout-btn" style="margin-top: 20px">
-                    Logout
+                <button id="create-room-btn" style="margin-top: 20px">
+                    Criar uma sala
                 </button>
+                <button id="lobby-logout-btn">Logout</button>
             </section>
 
             <section id="ws-section" style="display: none">
-                <h2>Sala de Espera</h2>
+                <h2 id="room-name-display">Nome da Sala</h2>
+
+                <div id="room-info-header">
+                    <span
+                        >ID da Sala: <strong id="room-id-display"></strong
+                    ></span>
+                    <span
+                        >Jogadores: <strong id="room-players-display"></strong
+                    ></span>
+                </div>
 
                 <div
                     id="messages"
@@ -100,15 +114,19 @@
                     "
                 ></div>
 
-                <input
-                    type="text"
-                    id="ws-input"
-                    placeholder="Digite sua mensagem"
-                />
-                <button id="send-chat">Enviar Chat</button>
-                <button id="send-game">Iniciar Jogo</button>
+                <div class="chat-controls">
+                    <input
+                        type="text"
+                        id="ws-input"
+                        placeholder="Digite sua mensagem"
+                    />
+                    <button id="send-chat">Enviar</button>
+                </div>
 
-                <button id="logout-btn" style="margin-top: 20px">Logout</button>
+                <div class="room-actions">
+                    <button id="send-game">Iniciar Jogo</button>
+                    <button id="leave-room-btn">Sair da Sala</button>
+                </div>
             </section>
 
             <section id="game-view" style="display: none">
@@ -117,20 +135,17 @@
                         <div id="ui-players-panel"></div>
                         <div id="phase-indicator">
                             <h3 id="phase-title">Fase do Turno</h3>
-                            <ul id="phase-actions">
-                                <li>Carregando...</li>
-                            </ul>
+                            <ul id="phase-actions"></ul>
                         </div>
                     </div>
-
                     <div class="board-wrapper">
                         <h1>A Nebulosa Espiral</h1>
                         <div id="unified-grid-container">
                             <div id="peoes-container"></div>
                         </div>
                         <div id="ui-actions-panel">
-                            <div id="game-info">Carregando Jogo...</div>
-                            <button id="action-button">Aguarde</button>
+                            <div id="game-info"></div>
+                            <button id="action-button"></button>
                         </div>
                     </div>
                 </div>

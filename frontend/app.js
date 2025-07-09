@@ -1,6 +1,6 @@
 import * as gameModule from "./game/game.js";
 
-const API_BASE = "http://localhost:7000/api/user";
+const API_BASE = "/api/user";
 let socket = null;
 
 // Views
@@ -17,10 +17,15 @@ const authMessage = document.getElementById("auth-message");
 const publicRoomsList = document.getElementById("public-rooms-list");
 const privateRoomCodeInput = document.getElementById("private-room-code");
 const joinPrivateRoomBtn = document.getElementById("join-private-room-btn");
+const createRoomBtn = document.getElementById("create-room-btn");
 
 // Elementos do Chat
+const roomNameDisplay = document.getElementById("room-name-display");
+const roomIdDisplay = document.getElementById("room-id-display");
+const roomPlayersDisplay = document.getElementById("room-players-display");
 const messagesDiv = document.getElementById("messages");
 const wsInput = document.getElementById("ws-input");
+const leaveRoomBtn = document.getElementById("leave-room-btn");
 
 // Inicializa app
 window.addEventListener("DOMContentLoaded", async () => {
@@ -162,9 +167,36 @@ joinPrivateRoomBtn.addEventListener("click", () => {
     }
 });
 
+// --- NOVA LÓGICA DE CRIAÇÃO E SAÍDA DE SALA ---
+createRoomBtn.addEventListener("click", () => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        alert("Erro: WebSocket não está conectado.");
+        return;
+    }
+    socket.send(JSON.stringify({ type: "create_room" }));
+});
+
+leaveRoomBtn.addEventListener("click", () => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        alert("Erro: WebSocket não está conectado.");
+        return;
+    }
+    socket.send(JSON.stringify({ type: "leave_room" }));
+    showView("lobby"); // Volta para o lobby imediatamente
+    messagesDiv.innerHTML = "";
+
+    socket.send(JSON.stringify({ type: "get_rooms" })); // Pede a lista de salas atualizada
+});
+
+function updateRoomView(roomData) {
+    roomIdDisplay.textContent = roomData.id;
+    roomNameDisplay.textContent = roomData.name || "Sala de Jogo";
+    roomPlayersDisplay.textContent = `${roomData.current_users} / ${roomData.max_users}`;
+}
+
 // WebSocket
 function connectWebSocket() {
-    socket = new WebSocket("ws://localhost:7000");
+    socket = new WebSocket("ws://localhost:8080/ws");
 
     socket.onopen = () => {
         console.log("WebSocket Conectado.");
@@ -188,6 +220,14 @@ function connectWebSocket() {
                     alert(`Erro ao entrar na sala: ${data.message}`);
                     break;
 
+                case "room_info":
+                    if (lobbyView.style.display === "block") {
+                        showView("chat");
+                        appendMessage(`Bem-vindo à sala!`);
+                    }
+                    updateRoomView(data.room);
+                    break;
+
                 // EVENTOS DO CHAT
                 case "chat_echo":
                     appendMessage(`📝 Você: ${data.message}`);
@@ -206,11 +246,6 @@ function connectWebSocket() {
                     break;
 
                 case "gameStateUpdate":
-                    if (gameView.style.display === "block") {
-                        gameModule.handleServerUpdate(data.payload);
-                    }
-                    break;
-
                 case "game_event":
                     if (gameView.style.display === "block") {
                         gameModule.handleServerUpdate(data.payload);
@@ -262,7 +297,6 @@ document.getElementById("send-game").addEventListener("click", () => {
 // Logout
 const logout = async () => {
     if (socket) socket.close();
-
     gameModule.cleanupGame();
 
     try {
@@ -276,7 +310,7 @@ const logout = async () => {
     authMessage.style.color = "red";
     messagesDiv.innerHTML = "";
 };
-document.getElementById("logout-btn").addEventListener("click", logout);
+
 document.getElementById("lobby-logout-btn").addEventListener("click", logout);
 
 function appendMessage(msg) {

@@ -10,7 +10,7 @@ class RoomManager {
 
     createRoom(creatorName: string): Room {
         const roomId = uuidv4().substring(0, 8);
-        const roomName = `Sala de ${creatorName}`;
+        const roomName = `Sala de ${creatorName} - ${roomId}`;
         const newRoom = new Room(roomId, roomName);
         this.rooms.set(roomId, newRoom);
         console.log(`Sala ${roomName} (${roomId}) criada.`);
