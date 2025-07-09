@@ -11,10 +11,21 @@ import config from "./config";
 const PORT: number = Number(config.PORT) || 7000;
 const app: Express = express();
 
+const allowedOrigins = [
+    "https://equipe05.alphaedtech.org.br",
+    "https://www.equipe05.alphaedtech.org.br",
+];
+
 app.use(
     cors({
-        origin: "http://localhost:8080", // deve bater com o que roda o frontend
-        credentials: true, // necessário se você usar cookies
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
     })
 );
 
