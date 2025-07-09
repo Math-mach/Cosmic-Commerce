@@ -5,6 +5,7 @@ import config from "../config";
 
 export interface AuthenticatedUserPayload {
     id: string;
+    name: string;
     email: string;
 }
 
@@ -28,6 +29,7 @@ export function authenticateWebSocket(
 
     return {
         id: decoded.id,
+        name: decoded.name,
         email: decoded.email,
     };
 }
