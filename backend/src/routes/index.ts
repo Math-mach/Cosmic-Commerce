@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from 'express';
 
 const router = Router();
 
-const UserRoutes = require("./userRoutes");
-router.use("/user", UserRoutes);
+const UserRoutes = require('./UserRoutes');
+router.use('/user', UserRoutes);
 
 module.exports = router;
