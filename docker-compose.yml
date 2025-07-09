@@ -1,61 +1,59 @@
-name: Cosmic Commerce
 services:
-    db:
-        image: bitnami/postgresql:15
-        container_name: postgres_db
-        env_file:
-            - ./postgres/.env
-        ports:
-            - "5432:5432"
-        volumes:
-            - db_data:/bitnami/postgresql
-            - ./postgres:/docker-entrypoint-initdb.d
-        restart: always
+  db:
+    image: bitnami/postgresql:15
+    container_name: postgres_db
+    env_file:
+      - ./postgres/.env
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/bitnami/postgresql
+      - ./postgres:/docker-entrypoint-initdb.d
+    restart: always
 
-    redis:
-        image: bitnami/redis:7.2
-        container_name: redis_cache
-        environment:
-            - REDIS_PASSWORD=redispass123
-        ports:
-            - "6379:6379"
-        volumes:
-            - redis_data:/bitnami/redis/data
-        restart: always
+  redis:
+    image: bitnami/redis:7.2
+    container_name: redis_cache
+    environment:
+      - REDIS_PASSWORD=redispass123
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/bitnami/redis/data
+    restart: always
 
-    backend:
-        build:
-            context: ./backend
-        container_name: node_backend
-        ports:
-            - "7000:7000"
-        env_file:
-            - ./backend/.env
-        environment:
-            - NODE_ENV=development # Alterado para desenvolvimento
-        volumes:
-            - ./backend:/app
-            # Adicionado para preservar o node_modules da imagem
-            - /app/node_modules
-        # Adicionado para rodar o servidor de desenvolvimento
-        command: npm run dev
-        depends_on:
-            - db
-            - redis
-        restart: always
+  backend:
+    build:
+      context: ./backend
+    container_name: node_backend
+    ports:
+      - '7000:7000'
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
 
-    frontend-nginx:
-        build:
-            context: ./frontend
-        container_name: meu-frontend-web
-        ports:
-            - "8080:80"
-        depends_on:
-            - backend
-        restart: always
+    command: npm run dev
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  frontend-nginx:
+    build:
+      context: ./frontend
+    container_name: meu-frontend-web
+    ports:
+      - '8080:80'
+    depends_on:
+      - backend
+    restart: always
 
 volumes:
-    db_data:
-        name: db_data
-    redis_data:
-        name: redis_data
+  db_data:
+    name: db_data
+  redis_data:
+    name: redis_data
