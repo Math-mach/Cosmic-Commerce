@@ -53,8 +53,8 @@ services:
             - backend
         volumes:
             - ./frontend:/usr/share/nginx/html
-            - ~/certbot/www:/var/www/certbot
-            - ~/certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+            - ./certbot/conf:/etc/letsencrypt
         restart: always
 
 volumes:
