@@ -61,10 +61,10 @@ const mapController = {
         if (!peoesContainer) return;
         peoesContainer.innerHTML = "";
 
-        jogadores.forEach((player) => {
+        jogadores.forEach((player, index) => {
             const peao = document.createElement("div");
             peao.id = `peao-${player.id}`;
-            peao.className = "peao";
+            peao.className = `peao peao-p${index + 1}`;
             peoesContainer.appendChild(peao);
         });
     },

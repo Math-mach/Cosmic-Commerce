@@ -252,16 +252,20 @@ hr {
     transition: transform 0.4s ease-in-out;
 }
 
-#game-view #peao-p1 {
+#game-view .peao-p1 {
     background-color: #e63946;
 }
 
-#game-view #peao-p2 {
+#game-view .peao-p2 {
     background-color: #457b9d;
 }
 
-#game-view #peao-p3 {
+#game-view .peao-p3 {
     background-color: #52b788;
+}
+
+#game-view .peao-p4 {
+    background-color: #88ff00;
 }
 
 #game-view #ui-actions-panel {
