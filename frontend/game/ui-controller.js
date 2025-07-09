@@ -127,30 +127,23 @@ const uiController = {
     },
 
     mostrarNotificacaoEvento: function (titulo, descricao, duracaoMs) {
-        // Remove qualquer notificação antiga para evitar sobreposição
         const notificacaoAntiga = document.querySelector(
             "#game-view .event-notification"
         );
         if (notificacaoAntiga) notificacaoAntiga.remove();
 
-        // Cria o elemento da notificação
         const notificacao = document.createElement("div");
         notificacao.className = "event-notification";
         notificacao.innerHTML = `<h4>${titulo}</h4><p>${descricao}</p>`;
 
-        // Anexa ao 'game-view' para que o CSS funcione corretamente
         document.getElementById("game-view")?.appendChild(notificacao);
 
-        // Força o navegador a aplicar o estilo inicial (opacity: 0) antes de adicionar a classe 'visible'
         getComputedStyle(notificacao).opacity;
 
-        // Adiciona a classe que dispara a animação de fade-in
         notificacao.classList.add("visible");
 
-        // Agenda a remoção da notificação
         setTimeout(() => {
             notificacao.classList.remove("visible");
-            // Espera a animação de fade-out terminar antes de remover o elemento do DOM
             setTimeout(() => notificacao.remove(), 500);
         }, duracaoMs);
     },

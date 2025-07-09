@@ -51,5 +51,4 @@ class RoomManager {
     }
 }
 
-// Exportamos uma única instância (padrão Singleton)
 export const roomManager = new RoomManager();

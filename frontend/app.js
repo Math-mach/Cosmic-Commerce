@@ -185,7 +185,7 @@ leaveRoomBtn.addEventListener("click", () => {
     showView("lobby"); // Volta para o lobby imediatamente
     messagesDiv.innerHTML = "";
 
-    socket.send(JSON.stringify({ type: "get_rooms" })); // Pede a lista de salas atualizada
+    socket.send(JSON.stringify({ type: "get_rooms" }));
 });
 
 function updateRoomView(roomData) {

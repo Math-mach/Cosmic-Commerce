@@ -75,16 +75,13 @@ export function handleServerUpdate(updateData) {
         case "show_notification":
             console.log(`Exibindo notificação:`, payload);
 
-            // Verifica se a notificação é um evento especial
             if (payload.isEvent && payload.title) {
-                // Se for, chama a função para a notificação grande
                 uiController.mostrarNotificacaoEvento(
                     payload.title,
                     payload.message,
                     payload.duration
                 );
             } else {
-                // Se não, usa a função para a mensagem simples na barra de info
                 uiController.mostrarMensagemTemporaria(
                     payload.message,
                     payload.duration

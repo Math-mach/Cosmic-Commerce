@@ -95,9 +95,6 @@ function handleMainButtonClick(room: Room) {
     const path: number[] = [];
     let stoppedAtBifurcation = false;
 
-    // =======================================================
-    // ========= A CORREÇÃO ESTÁ NA CONDIÇÃO DO 'IF' =========
-    // =======================================================
     for (let i = 0; i < diceRoll; i++) {
         if (!currentNode || currentNode.conexoes.length === 0) {
             break;
@@ -107,9 +104,6 @@ function handleMainButtonClick(room: Room) {
         currentNode = findNodeById(nextNodeId)!;
         path.push(currentNode.id);
 
-        // A CONDIÇÃO CORRIGIDA:
-        // Agora ela para se o nó for uma bifurcação, PONTO.
-        // A checagem de passos restantes é feita DEPOIS.
         if (currentNode.tipo === "bifurcacao") {
             const stepsRemaining = diceRoll - (i + 1);
 
@@ -139,7 +133,6 @@ function handleMainButtonClick(room: Room) {
     }
 
     if (!stoppedAtBifurcation) {
-        // O resto da função permanece o mesmo
         const fullPath = [currentPlayerState.posicao_mapa_id, ...path];
 
         turnInfo.fase_do_turno = "movimento";
@@ -254,13 +247,8 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
                     message: `Você perdeu ${moedasPerdidas} moedas!`,
                 };
             }
-
-            // =========================================================
-            // ========= NOVA LÓGICA PARA CASA VERDE ===================
-            // =========================================================
         } else if (tipoCasa === "verde") {
             const eventos = gameDefinitions.eventos_casa_interrogacao;
-            // Sorteia um evento aleatório da lista
             const eventoSorteado =
                 eventos[Math.floor(Math.random() * eventos.length)];
 
@@ -268,7 +256,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
                 `[Sala ${room.id}] Evento sorteado: ${eventoSorteado.nome}`
             );
 
-            // Aplica o efeito do evento sorteado
             switch (eventoSorteado.id) {
                 case "chuva_de_moedas":
                     playerStates.forEach((p) => (p.moedas += 5));
@@ -285,16 +272,14 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
                     break;
             }
 
-            // Prepara a notificação especial para o evento
             notificationPayload = {
                 title: eventoSorteado.nome,
                 message: eventoSorteado.efeito_detalhado,
-                isEvent: true, // Um marcador para o frontend saber que é uma notificação grande
+                isEvent: true,
             };
         }
     }
 
-    // Envia a atualização de estado com as moedas modificadas
     roomManager.broadcastToRoom(
         room.id,
         JSON.stringify({
@@ -303,7 +288,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
         })
     );
 
-    // Se houver uma notificação, envia para o cliente
     if (notificationPayload) {
         roomManager.broadcastToRoom(
             room.id,
@@ -317,10 +301,9 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
         );
     }
 
-    // Agenda a passagem de turno
     setTimeout(() => {
         passTurn(room);
-    }, 4500); // Aumentamos o tempo para dar ao jogador chance de ler o evento
+    }, 4500);
 }
 
 function passTurn(room: Room) {
