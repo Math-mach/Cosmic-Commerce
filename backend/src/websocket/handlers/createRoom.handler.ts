@@ -1,6 +1,9 @@
 import { ConnectedUser, activeConnections } from "../index";
 
-import { roomManager } from "../managers/roomManager";
+import {
+    roomManager,
+    broadcastRoomListUpdateToLobby,
+} from "../managers/roomManager";
 
 export function handleCreateRoom(user: ConnectedUser) {
     if (user.roomId) {
@@ -44,20 +47,5 @@ export function handleCreateRoom(user: ConnectedUser) {
         `Usuário ${user.id} criou e entrou na sala ${newRoom.name} (${newRoom.id})`
     );
 
-    broadcastRoomListUpdate();
-}
-
-function broadcastRoomListUpdate() {
-    const publicRooms = roomManager.getPublicRooms();
-
-    const roomListPayload = {
-        event: "room_list",
-        rooms: publicRooms,
-    };
-
-    for (const connection of activeConnections) {
-        if (connection.roomId === null) {
-            connection.ws.send(JSON.stringify(roomListPayload));
-        }
-    }
+    broadcastRoomListUpdateToLobby(activeConnections);
 }
