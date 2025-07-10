@@ -20,8 +20,8 @@ export class Room {
     maxPlayers: number;
     isPublic: boolean;
 
+    public hostId: string | null = null;
     public state: "waiting" | "in_progress" | "finished" = "waiting";
-
     public gameState: GameState | null = null;
 
     constructor(
@@ -37,9 +37,24 @@ export class Room {
         this.isPublic = isPublic;
     }
 
+    public promoteNextHost(): void {
+        if (this.players.size > 0) {
+            const nextHost = this.getPlayers()[0];
+            this.hostId = nextHost.id;
+            console.log(
+                `[Sala ${this.id}] Host migrado para ${nextHost.name} (${nextHost.id}).`
+            );
+        } else {
+            this.hostId = null;
+        }
+    }
+
     addPlayer(user: ConnectedUser) {
         if (this.players.size >= this.maxPlayers) {
             throw new Error("A sala está cheia.");
+        }
+        if (this.players.size === 0) {
+            this.hostId = user.id;
         }
         this.players.set(user.id, user);
         user.roomId = this.id;

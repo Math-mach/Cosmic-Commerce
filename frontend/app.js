@@ -24,6 +24,7 @@ const createRoomBtn = document.getElementById("create-room-btn");
 const roomNameDisplay = document.getElementById("room-name-display");
 const roomIdDisplay = document.getElementById("room-id-display");
 const roomPlayersDisplay = document.getElementById("room-players-display");
+const roomHostDisplay = document.getElementById("room-host-display");
 const messagesDiv = document.getElementById("messages");
 const wsInput = document.getElementById("ws-input");
 const leaveRoomBtn = document.getElementById("leave-room-btn");
@@ -114,6 +115,7 @@ document
 
 // LOBBY
 function showLobby(user) {
+    currentUser = user;
     showView("lobby");
     document.getElementById("lobby-username").textContent = user.name;
     connectWebSocket();
@@ -185,8 +187,9 @@ leaveRoomBtn.addEventListener("click", () => {
         return;
     }
     socket.send(JSON.stringify({ type: "leave_room" }));
-    showView("lobby"); // Volta para o lobby imediatamente
+    showView("lobby");
     messagesDiv.innerHTML = "";
+    // document.getElementById("send-game").style.display = "none";
 
     socket.send(JSON.stringify({ type: "get_rooms" }));
 });
@@ -195,6 +198,16 @@ function updateRoomView(roomData) {
     roomIdDisplay.textContent = roomData.id;
     roomNameDisplay.textContent = roomData.name || "Sala de Jogo";
     roomPlayersDisplay.textContent = `${roomData.current_users} / ${roomData.max_users}`;
+    roomHostDisplay.textContent = roomData.hostName || "N/D";
+
+    const startGameBtn = document.getElementById("send-game");
+    if (currentUser && startGameBtn) {
+        if (currentUser.name === roomData.hostName) {
+            startGameBtn.style.display = "block"; // Mostra o botão se o usuário for o dono
+        } else {
+            startGameBtn.style.display = "none"; // Esconde o botão se não for o dono
+        }
+    }
 }
 
 // WebSocket
@@ -206,6 +219,7 @@ function connectWebSocket() {
     socket = new WebSocket(wsUrl);
     socket.onopen = () => {
         console.log("WebSocket Conectado.");
+        document.getElementById("send-game").style.display = "none";
         socket.send(JSON.stringify({ type: "get_rooms" }));
     };
 

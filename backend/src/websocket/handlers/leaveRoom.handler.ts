@@ -3,7 +3,7 @@ import { ConnectedUser, activeConnections } from "../index";
 import { roomManager } from "../managers/roomManager";
 
 export function handleLeaveRoom(user: ConnectedUser) {
-    const { roomId } = user;
+    const { roomId, id: userId } = user;
 
     if (!roomId) {
         return;
@@ -18,6 +18,8 @@ export function handleLeaveRoom(user: ConnectedUser) {
         return;
     }
 
+    const wasHost = room.hostId === userId;
+
     room.removePlayer(user.id);
 
     console.log(`Usuário ${user.id} saiu da sala ${room.name} (${room.id})`);
@@ -25,11 +27,17 @@ export function handleLeaveRoom(user: ConnectedUser) {
     const remainingPlayers = room.getPlayers();
 
     if (remainingPlayers.length > 0) {
+        if (wasHost) {
+            room.promoteNextHost();
+        }
+
+        const host = room.players.get(room.hostId!);
         const roomInfoPayload = {
             event: "room_info",
             room: {
                 id: room.id,
                 name: room.name,
+                hostName: host?.name || "N/D",
                 current_users: remainingPlayers.length,
                 max_users: room.maxPlayers,
             },
