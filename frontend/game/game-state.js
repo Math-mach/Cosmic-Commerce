@@ -1,8 +1,9 @@
 let gameState = {
-    meuId: null,
-    partida: {},
-    jogadores: [],
-    mapa: {},
+  meuId: null,
+  partida: {},
+  jogadores: [],
+  mapa: {},
+  lojas: [],
 };
 
 export default gameState;

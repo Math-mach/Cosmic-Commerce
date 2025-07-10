@@ -1,361 +1,441 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px auto;
-    padding: 0 10px;
-    background: #f9f9f9;
-    color: #333;
+  font-family: Arial, sans-serif;
+  margin: 20px auto;
+  padding: 0 10px;
+  background: #f9f9f9;
+  color: #333;
 }
 
 main {
-    max-width: 480px;
-    margin: 0 auto;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-main:has(#game-view:not([style*="display: none"])) {
-    max-width: none;
+main:has(#game-view:not([style*='display: none'])) {
+  max-width: none;
 }
 
 h2,
 h3,
 h4 {
-    margin-top: 0;
-    color: #333;
+  margin-top: 0;
+  color: #333;
 }
 
 form {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 input,
 button {
-    padding: 8px;
-    margin: 5px 0;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+  padding: 8px;
+  margin: 5px 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 input {
-    background-color: #fff;
+  background-color: #fff;
 }
 
 button {
-    cursor: pointer;
-    background-color: #0066cc;
-    border: none;
-    color: white;
-    font-weight: bold;
+  cursor: pointer;
+  background-color: #0066cc;
+  border: none;
+  color: white;
+  font-weight: bold;
 }
 
 button:hover {
-    background-color: #004999;
+  background-color: #004999;
 }
 
 #auth-message {
-    margin-top: 10px;
-    color: red;
-    min-height: 20px;
+  margin-top: 10px;
+  color: red;
+  min-height: 20px;
 }
 
 hr {
-    border: 0;
-    border-top: 1px solid #eee;
-    margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
 }
 
 #lobby-view h3 {
-    text-align: center;
-    margin-bottom: 15px;
+  text-align: center;
+  margin-bottom: 15px;
 }
 
 #lobby-username {
-    font-weight: bold;
-    color: #0066cc;
+  font-weight: bold;
+  color: #0066cc;
 }
 
 #public-rooms-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-    min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  min-height: 300px;
 }
 
 .room-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
 .room-details {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .room-name {
-    font-weight: bold;
-    font-size: 1.1em;
-    margin-bottom: 4px;
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 4px;
 }
 
 .room-players {
-    font-size: 0.9em;
-    color: #666;
+  font-size: 0.9em;
+  color: #666;
 }
 
 #room-info-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    font-size: 0.9em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-size: 0.9em;
 }
 
 .join-room-btn {
-    width: auto;
-    padding: 8px 16px;
-    flex-shrink: 0;
+  width: auto;
+  padding: 8px 16px;
+  flex-shrink: 0;
 }
 
 #game-view {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
 }
 
 #game-view .game-container {
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    max-width: 1200px;
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 #game-view .left-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 15px;
-    width: 250px;
-    padding: 0 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+  width: 250px;
+  padding: 0 15px;
 }
 
 #game-view .player-card {
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: #fff;
-    transition: all 0.3s ease;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #fff;
+  transition: all 0.3s ease;
 }
 
 #game-view .player-card:first-child {
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 }
 
 #game-view .player-card.active-player {
-    border-color: #007bff;
-    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  border-color: #007bff;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
 }
 
 #game-view .player-card h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.2em;
-    color: #333;
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: #333;
 }
 
 #game-view .player-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
 }
 
 #game-view #phase-indicator {
-    border: 2px solid #5a6268;
-    background-color: #e9ecef;
-    border-radius: 8px;
-    padding: 10px;
-    text-align: center;
+  border: 2px solid #5a6268;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
 }
 
 #game-view #phase-indicator h3 {
-    margin: 0 0 10px 0;
-    color: #343a40;
-    border-bottom: 1px solid #ced4da;
-    padding-bottom: 5px;
+  margin: 0 0 10px 0;
+  color: #343a40;
+  border-bottom: 1px solid #ced4da;
+  padding-bottom: 5px;
 }
 
 #game-view #phase-indicator ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 0.9em;
-    color: #495057;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9em;
+  color: #495057;
 }
 
 #game-view .board-wrapper {
-    position: relative;
+  position: relative;
 }
 
 #game-view h1 {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
-    text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  text-align: center;
 }
 
 #game-view #unified-grid-container {
-    display: grid;
-    grid-template-columns: repeat(40, 1fr) 35px;
-    grid-template-rows: repeat(40, 1fr) 25px;
-    width: 80vh;
-    height: 80vh;
-    max-width: 800px;
-    max-height: 800px;
-    border: 2px solid black;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  display: grid;
+  grid-template-columns: repeat(40, 1fr) 35px;
+  grid-template-rows: repeat(40, 1fr) 25px;
+  width: 80vh;
+  height: 80vh;
+  max-width: 800px;
+  max-height: 800px;
+  border: 2px solid black;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 #game-view .grid-cell {
-    border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    box-sizing: border-box;
-    background-color: white;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  box-sizing: border-box;
+  background-color: white;
 }
 
 #game-view .label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-family: monospace;
-    color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-family: monospace;
+  color: #333;
 }
 
 #game-view .x-axis-label {
-    border-top: 2px solid black;
+  border-top: 2px solid black;
 }
 
 #game-view .y-axis-label {
-    border-left: 2px solid black;
+  border-left: 2px solid black;
 }
 
 #game-view #peoes-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: calc(100% - 35px);
-    height: calc(100% - 25px);
-    pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - 35px);
+  height: calc(100% - 25px);
+  pointer-events: none;
 }
 
 #game-view .peao {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    z-index: 10;
-    transition: transform 0.4s ease-in-out;
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  transition: transform 0.4s ease-in-out;
 }
 
 #game-view .peao-p1 {
-    background-color: #e63946;
+  background-color: #e63946;
 }
 
 #game-view .peao-p2 {
-    background-color: #457b9d;
+  background-color: #457b9d;
 }
 
 #game-view .peao-p3 {
-    background-color: #52b788;
+  background-color: #52b788;
 }
 
 #game-view .peao-p4 {
-    background-color: #88ff00;
+  background-color: #88ff00;
 }
 
 #game-view #ui-actions-panel {
-    margin-top: 15px;
-    text-align: center;
+  margin-top: 15px;
+  text-align: center;
 }
 
 #game-view #game-info {
-    margin-bottom: 12px;
-    font-weight: bold;
-    text-align: center;
+  margin-bottom: 12px;
+  font-weight: bold;
+  text-align: center;
 }
 
 #game-view #action-button {
-    padding: 10px 20px;
-    font-size: 1em;
-    cursor: pointer;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
 }
 
 #game-view .ponto-bifurcacao-opcao {
-    border: 4px dashed #ffc107 !important;
-    background-color: #fff3cd !important;
-    cursor: pointer !important;
-    animation: pulse 1.5s infinite;
+  border: 4px dashed #ffc107 !important;
+  background-color: #fff3cd !important;
+  cursor: pointer !important;
+  animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
-    }
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
 }
 
 #game-view .event-notification {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 350px;
-    background-color: rgba(0, 0, 0, 0.85);
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    border: 2px solid #ffc107;
-    text-align: center;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.5s ease;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #ffc107;
+  text-align: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 #game-view .event-notification.visible {
-    opacity: 1;
+  opacity: 1;
 }
 
 #game-view .event-notification h4 {
-    margin: 0 0 10px 0;
-    font-size: 1.5em;
-    color: #ffc107;
+  margin: 0 0 10px 0;
+  font-size: 1.5em;
+  color: #ffc107;
 }
 
 #game-view .event-notification p {
-    margin: 0;
-    font-size: 1em;
+  margin: 0;
+  font-size: 1em;
 }
 
 #game-view #action-button.disabled_button {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    color: #ccc;
+  background-color: #6c757d;
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+/* --- ESTILOS DO MODAL DA LOJA --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+#shop-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.shop-item-info {
+  flex-grow: 1;
+}
+
+.shop-item-info strong {
+  font-size: 1.1em;
+}
+
+.shop-item-info p {
+  font-size: 0.9em;
+  color: #666;
+  margin: 4px 0 0 0;
+}
+
+.buy-item-btn {
+  width: auto;
+  padding: 8px 15px;
+  margin-left: 15px;
+  flex-shrink: 0;
+}
+
+#close-shop-btn {
+  background-color: #6c757d;
+}
+
+#close-shop-btn:hover {
+  background-color: #5a6268;
 }

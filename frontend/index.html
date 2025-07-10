@@ -1,162 +1,131 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Cosmic Commerce</title>
-        <link rel="stylesheet" href="style.css" />
-    </head>
-    <body>
-        <main>
-            <!-- LOGIN VIEW -->
-            <section id="login-view" style="display: none">
-                <h2>Login</h2>
-                <form id="login-form">
-                    <input
-                        type="email"
-                        id="login-email"
-                        placeholder="Email"
-                        required
-                    />
-                    <input
-                        type="password"
-                        id="login-password"
-                        placeholder="Senha"
-                        required
-                    />
-                    <button type="submit">Entrar</button>
-                </form>
-                <p>
-                    Não tem conta?
-                    <a href="#" id="go-to-register">Registrar-se</a>
-                </p>
-                <div id="auth-message"></div>
-            </section>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cosmic Commerce</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <!-- LOGIN VIEW -->
+      <section id="login-view" style="display: none">
+        <h2>Login</h2>
+        <form id="login-form">
+          <input type="email" id="login-email" placeholder="Email" required />
+          <input type="password" id="login-password" placeholder="Senha" required />
+          <button type="submit">Entrar</button>
+        </form>
+        <p>
+          Não tem conta?
+          <a href="#" id="go-to-register">Registrar-se</a>
+        </p>
+        <div id="auth-message"></div>
+      </section>
 
-            <!-- REGISTRO VIEW -->
-            <section id="register-view" style="display: none">
-                <h2>Registro</h2>
-                <form id="register-form">
-                    <input
-                        type="text"
-                        id="register-name"
-                        placeholder="Nome"
-                        required
-                    />
-                    <input
-                        type="email"
-                        id="register-email"
-                        placeholder="Email"
-                        required
-                    />
-                    <input
-                        type="password"
-                        id="register-password"
-                        placeholder="Senha"
-                        required
-                    />
-                    <button type="submit">Registrar</button>
-                </form>
-                <p>
-                    Já tem conta? <a href="#" id="go-to-login">Fazer login</a>
-                </p>
-                <div id="auth-message"></div>
-            </section>
+      <!-- REGISTRO VIEW -->
+      <section id="register-view" style="display: none">
+        <h2>Registro</h2>
+        <form id="register-form">
+          <input type="text" id="register-name" placeholder="Nome" required />
+          <input type="email" id="register-email" placeholder="Email" required />
+          <input type="password" id="register-password" placeholder="Senha" required />
+          <button type="submit">Registrar</button>
+        </form>
+        <p>Já tem conta? <a href="#" id="go-to-login">Fazer login</a></p>
+        <div id="auth-message"></div>
+      </section>
 
-            <!-- LOBBY VIEW -->
-            <section id="lobby-view" style="display: none">
-                <h3>Bem-vindo, <span id="lobby-username"></span></h3>
-                <hr />
-                <div>
-                    <h4>Sala Privada</h4>
-                    <input
-                        type="text"
-                        id="private-room-code"
-                        placeholder="Insira o código da sala"
-                        style="width: 100%"
-                    />
-                    <button id="join-private-room-btn">Entrar na Sala</button>
-                </div>
-                <hr />
-                <div>
-                    <h3>Salas Públicas</h3>
-                    <div id="public-rooms-list"></div>
-                </div>
-                <button id="create-room-btn" style="margin-top: 20px">
-                    Criar uma sala
-                </button>
-                <button id="lobby-logout-btn">Logout</button>
-            </section>
+      <!-- LOBBY VIEW -->
+      <section id="lobby-view" style="display: none">
+        <h3>Bem-vindo, <span id="lobby-username"></span></h3>
+        <hr />
+        <div>
+          <h4>Sala Privada</h4>
+          <input
+            type="text"
+            id="private-room-code"
+            placeholder="Insira o código da sala"
+            style="width: 100%"
+          />
+          <button id="join-private-room-btn">Entrar na Sala</button>
+        </div>
+        <hr />
+        <div>
+          <h3>Salas Públicas</h3>
+          <div id="public-rooms-list"></div>
+        </div>
+        <button id="create-room-btn" style="margin-top: 20px">Criar uma sala</button>
+        <button id="lobby-logout-btn">Logout</button>
+      </section>
 
-            <section id="ws-section" style="display: none">
-                <h2 id="room-name-display">Nome da Sala</h2>
+      <section id="ws-section" style="display: none">
+        <h2 id="room-name-display">Nome da Sala</h2>
 
-                <div id="room-info-header">
-                    <span
-                        >ID da Sala: <strong id="room-id-display"></strong
-                    ></span>
-                    <span
-                        >Jogadores: <strong id="room-players-display"></strong
-                    ></span>
-                    <span
-                        >Dono:
-                        <strong id="room-host-display"
-                            >Aguardando...</strong
-                        ></span
-                    >
-                </div>
+        <div id="room-info-header">
+          <span>ID da Sala: <strong id="room-id-display"></strong></span>
+          <span>Jogadores: <strong id="room-players-display"></strong></span>
+          <span>Dono: <strong id="room-host-display">Aguardando...</strong></span>
+        </div>
 
-                <div
-                    id="messages"
-                    style="
-                        height: 300px;
-                        overflow-y: auto;
-                        border: 1px solid #ccc;
-                        padding: 5px;
-                        margin-bottom: 10px;
-                        background: #f9f9f9;
-                    "
-                ></div>
+        <div
+          id="messages"
+          style="
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+          "
+        ></div>
 
-                <div class="chat-controls">
-                    <input
-                        type="text"
-                        id="ws-input"
-                        placeholder="Digite sua mensagem"
-                    />
-                    <button id="send-chat">Enviar</button>
-                </div>
+        <div class="chat-controls">
+          <input type="text" id="ws-input" placeholder="Digite sua mensagem" />
+          <button id="send-chat">Enviar</button>
+        </div>
 
-                <div class="room-actions">
-                    <button id="send-game">Iniciar Jogo</button>
-                    <button id="leave-room-btn">Sair da Sala</button>
-                </div>
-            </section>
+        <div class="room-actions">
+          <button id="send-game">Iniciar Jogo</button>
+          <button id="leave-room-btn">Sair da Sala</button>
+        </div>
+      </section>
 
-            <section id="game-view" style="display: none">
-                <div class="game-container">
-                    <div class="left-panel">
-                        <h1>A Nebulosa Espiral</h1>
+      <section id="game-view" style="display: none">
+        <div class="game-container">
+          <div class="left-panel">
+            <h1>A Nebulosa Espiral</h1>
 
-                        <div id="ui-players-panel"></div>
-                        <div id="phase-indicator">
-                            <h3 id="phase-title">Fase do Turno</h3>
-                            <ul id="phase-actions"></ul>
-                        </div>
-                        <div id="game-info"></div>
-                    </div>
-                    <div class="board-wrapper">
-                        <div id="unified-grid-container">
-                            <div id="peoes-container"></div>
-                        </div>
-                        <div id="ui-actions-panel">
-                            <button id="action-button"></button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
+            <div id="ui-players-panel"></div>
+            <div id="phase-indicator">
+              <h3 id="phase-title">Fase do Turno</h3>
+              <ul id="phase-actions"></ul>
+            </div>
+            <div id="game-info"></div>
+          </div>
+          <div class="board-wrapper">
+            <div id="unified-grid-container">
+              <div id="peoes-container"></div>
+            </div>
+            <div id="ui-actions-panel">
+              <button id="action-button"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
 
-        <script type="module" src="app.js"></script>
-    </body>
+    <!-- MODAL DA LOJA -->
+    <div id="shop-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h3 id="shop-title">Loja Cósmica</h3>
+        <div id="shop-items-container">
+          <!-- Itens serão inseridos aqui pelo JS -->
+        </div>
+        <button id="close-shop-btn">Sair da Loja</button>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
 </html>

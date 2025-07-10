@@ -4,8 +4,9 @@ import { Room } from '../managers/Room';
 import { findNodeById, gameDefinitions } from './gameData';
 
 interface PlayerActionPayload {
-  action: 'main_button_click' | 'choose_path';
+  action: 'main_button_click' | 'choose_path' | 'buy_item' | 'close_shop';
   nodeId?: number;
+  itemId?: string;
   [key: string]: any;
 }
 
@@ -21,9 +22,13 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     user.ws.send(JSON.stringify({ event: 'error', message: 'O jogo não está ativo.' }));
     return;
   }
-  if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
-    user.ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
-    return;
+
+  // Apenas o jogador da vez pode fazer a maioria das ações
+  if (payload.action !== 'close_shop' && payload.action !== 'buy_item') {
+    if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
+      user.ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
+      return;
+    }
   }
 
   // Roteia a ação para o handler correto
@@ -33,6 +38,12 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
       break;
     case 'choose_path':
       handleChoosePath(room, user.id, payload.nodeId!);
+      break;
+    case 'buy_item':
+      handleBuyItem(room, user, payload.itemId!);
+      break;
+    case 'close_shop':
+      handleCloseShop(room, user);
       break;
     default:
       user.ws.send(JSON.stringify({ event: 'error', message: 'Ação desconhecida.' }));
@@ -54,7 +65,6 @@ function handleMainButtonClick(room: Room) {
   const diceRoll = Math.floor(Math.random() * 6) + 1;
   console.log(`[Sala ${room.id}] Jogador ${turnInfo.id_jogador_da_vez} rolou ${diceRoll}`);
 
-  // Inicia o motor de movimento com o resultado do dado
   continueMovement(room, diceRoll, diceRoll);
 }
 
@@ -78,15 +88,13 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   turnInfo.passosRestantes = 0;
   turnInfo.fase_do_turno = 'movimento';
 
-  // Move o jogador um passo para fora da bifurcação
   currentPlayerState.posicao_mapa_id = chosenNodeId;
 
-  // Continua o movimento a partir da nova posição com os passos restantes
   continueMovement(room, stepsRemainingAfterChoice);
 }
 
 /**
- * O motor de movimento principal. Calcula o caminho e envia um único evento de animação.
+ * O motor de movimento principal. Agora inspeciona cada passo.
  * @param room - A sala de jogo.
  * @param stepsToTake - O número de casas a andar.
  * @param initialDiceRoll - [Opcional] O resultado original do dado para notificação.
@@ -95,7 +103,6 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
   const { turnInfo, players } = room.gameState!;
   const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
 
-  // Se não há passos a dar, o movimento já terminou onde o jogador está.
   if (stepsToTake <= 0) {
     processEndOfMovement(room, currentPlayer.posicao_mapa_id);
     return;
@@ -103,31 +110,36 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
 
   let currentNode = findNodeById(currentPlayer.posicao_mapa_id);
   const path = [currentNode!.id];
-  let finalDestinationNode = currentNode!;
   let movementStopsAtBifurcation = false;
+  let movementStopsAtShop = false; // <<< NOVA VARIÁVEL DE CONTROLE
 
-  // 1. CALCULAR O CAMINHO COMPLETO E O DESTINO FINAL
+  // <<< MUDANÇA PRINCIPAL: O loop agora verifica cada passo em busca de lojas.
   for (let i = 0; i < stepsToTake; i++) {
-    if (!finalDestinationNode || finalDestinationNode.conexoes.length === 0) break;
+    if (!currentNode || currentNode.conexoes.length === 0) break;
 
-    const nextNodeId = finalDestinationNode.conexoes[0];
-    finalDestinationNode = findNodeById(nextNodeId)!;
-    path.push(finalDestinationNode.id);
+    const nextNodeId = currentNode.conexoes[0];
+    const nextNode = findNodeById(nextNodeId)!;
 
-    // Se encontrar uma bifurcação, o MOVIMENTO PARA AQUI.
-    if (finalDestinationNode.tipo === 'bifurcacao') {
+    path.push(nextNode.id);
+    currentNode = nextNode; // Atualiza o nó atual para o próximo passo
+
+    // Verifica se a casa que acabamos de adicionar ao caminho é uma loja
+    if (nextNode.tipoCasa === 'amarela') {
+      movementStopsAtShop = true;
+      console.log(`[Sala ${room.id}] Movimento interrompido na loja ${nextNode.id}.`);
+      break; // Interrompe o loop, o movimento termina aqui.
+    }
+
+    if (nextNode.tipo === 'bifurcacao') {
       movementStopsAtBifurcation = true;
       const stepsRemaining = stepsToTake - (i + 1);
       turnInfo.passosRestantes = stepsRemaining;
-      turnInfo.opcoesBifurcacao = finalDestinationNode.conexoes;
-      console.log(
-        `[Sala ${room.id}] Movimento planejado para na bifurcação ${finalDestinationNode.id} com ${stepsRemaining} passos restantes.`
-      );
-      break; // Para o cálculo do caminho.
+      turnInfo.opcoesBifurcacao = nextNode.conexoes;
+      break;
     }
   }
 
-  // 2. ENVIAR UM ÚNICO EVENTO DE ANIMAÇÃO PARA O FRONTEND
+  // Envia o caminho (que pode ter sido encurtado pela loja) para o frontend animar
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -139,16 +151,18 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
     })
   );
 
-  // 3. AGUARDAR A ANIMAÇÃO E PROCESSAR O RESULTADO
   const finalNodeInPath = findNodeById(path[path.length - 1])!;
-  const animationDuration = path.length * 500 + 500;
+  const animationDuration = path.length * 500 + (initialDiceRoll ? 500 : 0);
 
+  // Após a animação, o backend atualiza o estado e decide o que fazer
   setTimeout(() => {
-    // Atualiza a posição do jogador no estado do servidor para o final do caminho animado
     currentPlayer.posicao_mapa_id = finalNodeInPath.id;
 
-    if (movementStopsAtBifurcation) {
-      // Se parou na bifurcação, apenas atualiza o estado para aguardar a escolha
+    if (movementStopsAtShop) {
+      // Se parou na loja, aciona o evento da loja
+      triggerShopInteraction(room, finalNodeInPath.id);
+    } else if (movementStopsAtBifurcation) {
+      // Se parou na bifurcação, espera a escolha do jogador
       turnInfo.fase_do_turno = 'escolha_bifurcacao';
       roomManager.broadcastToRoom(
         room.id,
@@ -158,14 +172,53 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
         })
       );
     } else {
-      // Se o movimento terminou, processa o efeito da casa
+      // Se o movimento terminou normalmente, processa o efeito da casa final
       processEndOfMovement(room, finalNodeInPath.id);
     }
   }, animationDuration);
 }
 
 /**
+ * <<< NOVA FUNÇÃO >>>
+ * Isola a lógica de abrir a interface da loja.
+ */
+function triggerShopInteraction(room: Room, shopNodeId: number) {
+  const { turnInfo, lojas } = room.gameState!;
+  const currentPlayerId = turnInfo.id_jogador_da_vez;
+
+  turnInfo.fase_do_turno = 'em_loja';
+  const shopState = lojas.find(s => s.nodeId === shopNodeId);
+
+  console.log(`[Sala ${room.id}] Jogador ${currentPlayerId} entrou na loja ${shopNodeId}`);
+
+  // Envia o estado atualizado (com a fase 'em_loja')
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
+
+  // Envia o comando para o frontend mostrar o modal
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: {
+        type: 'show_shop_modal',
+        payload: {
+          nodeId: shopNodeId,
+          items: shopState ? shopState.items : [],
+        },
+      },
+    })
+  );
+}
+
+/**
  * Processa os efeitos da casa onde o jogador aterrissou.
+ * Esta função agora só é chamada se o movimento não for interrompido por uma loja.
  */
 function processEndOfMovement(room: Room, finalNodeId: number) {
   const { turnInfo, players: playerStates } = room.gameState!;
@@ -180,7 +233,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
 
   const finalNode = findNodeById(currentPlayerState.posicao_mapa_id);
   let notificationPayload = null;
-  let shouldPassTurn = true;
 
   if (finalNode && finalNode.tipoCasa) {
     const tipoCasa = finalNode.tipoCasa;
@@ -204,9 +256,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     } else if (tipoCasa === 'verde') {
       const eventos = gameDefinitions.eventos_casa_interrogacao;
       const eventoSorteado = eventos[Math.floor(Math.random() * eventos.length)];
-
       console.log(`[Sala ${room.id}] Evento sorteado: ${eventoSorteado.nome}`);
-
       switch (eventoSorteado.id) {
         case 'chuva_de_moedas':
           playerStates.forEach(p => (p.moedas += 5));
@@ -249,11 +299,103 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
   }
 
   // Passa o turno após a animação/notificação
-  if (shouldPassTurn) {
-    setTimeout(() => {
-      passTurn(room);
-    }, 4500);
+  setTimeout(() => {
+    passTurn(room);
+  }, 4500);
+}
+
+/**
+ * Lida com a tentativa de compra de um item.
+ */
+function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
+  const { gameState } = room;
+  if (!gameState || gameState.turnInfo.fase_do_turno !== 'em_loja') return;
+  if (gameState.turnInfo.id_jogador_da_vez !== user.id) return;
+
+  const playerState = gameState.players.find(p => p.id === user.id);
+  const itemDefinition = (gameDefinitions.itens as any)[itemId];
+
+  if (!playerState || !itemDefinition) {
+    user.ws.send(JSON.stringify({ event: 'error', message: 'Item ou jogador inválido.' }));
+    return;
   }
+
+  if (playerState.moedas < itemDefinition.preco) {
+    roomManager.sendToUser(user.id, {
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Saldo Insuficiente',
+          message: 'Você não tem moedas para comprar este item.',
+          duration: 3000,
+        },
+      },
+    });
+    return;
+  }
+
+  if (playerState.itens.length >= 4) {
+    roomManager.sendToUser(user.id, {
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Inventário Cheio',
+          message: 'Você não tem espaço para mais itens.',
+          duration: 3000,
+        },
+      },
+    });
+    return;
+  }
+
+  playerState.moedas -= itemDefinition.preco;
+  playerState.itens.push(itemId);
+  console.log(`[Sala ${room.id}] Jogador ${user.name} comprou ${itemDefinition.nome}`);
+
+  roomManager.sendToUser(user.id, {
+    event: 'game_event',
+    payload: {
+      type: 'show_notification',
+      payload: {
+        title: 'Compra Efetuada!',
+        message: `Você adquiriu: ${itemDefinition.nome}!`,
+        duration: 3000,
+      },
+    },
+  });
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
+}
+
+/**
+ * Lida com o fechamento da loja, passando o turno.
+ */
+function handleCloseShop(room: Room, user: ConnectedUser) {
+  const { gameState } = room;
+  if (!gameState || gameState.turnInfo.fase_do_turno !== 'em_loja') return;
+  if (gameState.turnInfo.id_jogador_da_vez !== user.id) return;
+
+  console.log(`[Sala ${room.id}] Jogador ${user.name} saiu da loja. Passando o turno.`);
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: { type: 'hide_shop_modal' },
+    })
+  );
+
+  setTimeout(() => {
+    passTurn(room);
+  }, 500);
 }
 
 /**
@@ -270,7 +412,6 @@ function passTurn(room: Room) {
   const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
 
-  // Reseta o estado para o próximo turno
   turnInfo.id_jogador_da_vez = nextPlayer.id;
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
   turnInfo.passosRestantes = 0;
