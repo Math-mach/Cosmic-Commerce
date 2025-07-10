@@ -23,7 +23,7 @@ const FASES_UI = {
   },
   em_loja: {
     titulo: 'Loja Cósmica',
-    acoes: ['Compre itens ou clique em sair para continuar.'],
+    acoes: ['Compre um item ou clique em sair para continuar.'],
   },
 };
 
@@ -63,20 +63,28 @@ const uiController = {
         card.classList.add('active-player');
       }
 
-      const itemsList =
-        player.itens
-          .map(itemId => {
-            const itemDef = gameData.gameDefinitions.itens[itemId];
-            return itemDef ? `• ${itemDef.nome}` : '• Item Desconhecido';
-          })
-          .join('\n') || 'Nenhum item';
+      // <<< MUDANÇA PRINCIPAL: GERAR LISTA DE ITENS EM HTML >>>
+      let itemsHtml = '<ul class="player-item-list">';
+      if (player.itens.length > 0) {
+        player.itens.forEach(itemId => {
+          const itemDef = gameData.gameDefinitions.itens[itemId];
+          const itemName = itemDef ? itemDef.nome : 'Item Desconhecido';
+          itemsHtml += `<li>${itemName}</li>`;
+        });
+      } else {
+        itemsHtml += `<li class="no-items">Nenhum item</li>`;
+      }
+      itemsHtml += '</ul>';
 
       card.innerHTML = `
                 <h3>${player.nome}</h3>
                 <div class="player-stats">
                     <span>Moedas:</span><span>${player.moedas}</span>
                     <span>Fragmentos:</span><span>${player.fragmentos}</span>
-                    <span>Itens:</span><span title="${itemsList}">${player.itens.length}/4</span>
+                </div>
+                <div class="player-inventory">
+                    <h4>Itens (${player.itens.length}/4)</h4>
+                    ${itemsHtml}
                 </div>
             `;
       playersPanel.appendChild(card);
