@@ -23,7 +23,7 @@ const FASES_UI = {
   },
   em_loja: {
     titulo: 'Loja Cósmica',
-    acoes: ['Escolha seus itens ou saia da loja.'],
+    acoes: ['Compre itens ou clique em sair para continuar.'],
   },
 };
 
@@ -40,7 +40,6 @@ const uiController = {
     const closeShopBtn = document.getElementById('close-shop-btn');
     if (closeShopBtn) {
       closeShopBtn.addEventListener('click', () => {
-        this.closeShopModal();
         if (this._sendActionCallback) {
           this._sendActionCallback('player_action', { action: 'close_shop' });
         }
@@ -68,9 +67,9 @@ const uiController = {
         player.itens
           .map(itemId => {
             const itemDef = gameData.gameDefinitions.itens[itemId];
-            return itemDef ? itemDef.nome : 'Item Desconhecido';
+            return itemDef ? `• ${itemDef.nome}` : '• Item Desconhecido';
           })
-          .join(', ') || 'Nenhum';
+          .join('\n') || 'Nenhum item';
 
       card.innerHTML = `
                 <h3>${player.nome}</h3>

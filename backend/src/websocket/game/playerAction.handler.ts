@@ -10,20 +10,15 @@ interface PlayerActionPayload {
   [key: string]: any;
 }
 
-/**
- * Ponto de entrada para todas as ações do jogador durante o jogo.
- */
 export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPayload) {
   const { roomId, id: userId } = user;
   const room = roomManager.findRoomById(roomId || '');
 
-  // Validações iniciais
   if (!room || room.state !== 'in_progress' || !room.gameState) {
     user.ws.send(JSON.stringify({ event: 'error', message: 'O jogo não está ativo.' }));
     return;
   }
 
-  // Apenas o jogador da vez pode fazer a maioria das ações
   if (payload.action !== 'close_shop' && payload.action !== 'buy_item') {
     if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
       user.ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
@@ -31,7 +26,6 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     }
   }
 
-  // Roteia a ação para o handler correto
   switch (payload.action) {
     case 'main_button_click':
       handleMainButtonClick(room);
@@ -51,15 +45,9 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
   }
 }
 
-/**
- * Lida com o clique no botão principal, geralmente para rolar o dado.
- */
 function handleMainButtonClick(room: Room) {
   const { turnInfo } = room.gameState!;
-  if (turnInfo.fase_do_turno !== 'uso_item_pre_rolagem') {
-    console.warn(`[Sala ${room.id}] Ação inválida na fase: ${turnInfo.fase_do_turno}`);
-    return;
-  }
+  if (turnInfo.fase_do_turno !== 'uso_item_pre_rolagem') return;
 
   turnInfo.fase_do_turno = 'rolagem_dado';
   const diceRoll = Math.floor(Math.random() * 6) + 1;
@@ -68,9 +56,6 @@ function handleMainButtonClick(room: Room) {
   continueMovement(room, diceRoll, diceRoll);
 }
 
-/**
- * Lida com a escolha do jogador em uma bifurcação.
- */
 function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   const { turnInfo, players } = room.gameState!;
   if (turnInfo.fase_do_turno !== 'escolha_bifurcacao') return;
@@ -78,10 +63,7 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   const currentPlayerState = players.find(p => p.id === userId)!;
   const bifurcationNode = findNodeById(currentPlayerState.posicao_mapa_id)!;
 
-  if (!bifurcationNode.conexoes.includes(chosenNodeId)) {
-    console.warn(`[Sala ${room.id}] Jogador ${userId} fez uma escolha de caminho inválida.`);
-    return;
-  }
+  if (!bifurcationNode.conexoes.includes(chosenNodeId)) return;
 
   const stepsRemainingAfterChoice = turnInfo.passosRestantes!;
   turnInfo.opcoesBifurcacao = [];
@@ -89,16 +71,9 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   turnInfo.fase_do_turno = 'movimento';
 
   currentPlayerState.posicao_mapa_id = chosenNodeId;
-
   continueMovement(room, stepsRemainingAfterChoice);
 }
 
-/**
- * O motor de movimento principal. Agora inspeciona cada passo.
- * @param room - A sala de jogo.
- * @param stepsToTake - O número de casas a andar.
- * @param initialDiceRoll - [Opcional] O resultado original do dado para notificação.
- */
 function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: number | null = null) {
   const { turnInfo, players } = room.gameState!;
   const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
@@ -109,11 +84,10 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
   }
 
   let currentNode = findNodeById(currentPlayer.posicao_mapa_id);
-  const path = [currentNode!.id];
+  const path: number[] = [currentNode!.id];
   let movementStopsAtBifurcation = false;
-  let movementStopsAtShop = false; // <<< NOVA VARIÁVEL DE CONTROLE
+  let movementStopsAtShop = false;
 
-  // <<< MUDANÇA PRINCIPAL: O loop agora verifica cada passo em busca de lojas.
   for (let i = 0; i < stepsToTake; i++) {
     if (!currentNode || currentNode.conexoes.length === 0) break;
 
@@ -121,13 +95,16 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
     const nextNode = findNodeById(nextNodeId)!;
 
     path.push(nextNode.id);
-    currentNode = nextNode; // Atualiza o nó atual para o próximo passo
+    currentNode = nextNode;
 
-    // Verifica se a casa que acabamos de adicionar ao caminho é uma loja
     if (nextNode.tipoCasa === 'amarela') {
       movementStopsAtShop = true;
-      console.log(`[Sala ${room.id}] Movimento interrompido na loja ${nextNode.id}.`);
-      break; // Interrompe o loop, o movimento termina aqui.
+      const stepsRemaining = stepsToTake - (i + 1);
+      turnInfo.passosRestantesAposLoja = stepsRemaining;
+      console.log(
+        `[Sala ${room.id}] Movimento interrompido na loja ${nextNode.id} com ${stepsRemaining} passos restantes.`
+      );
+      break;
     }
 
     if (nextNode.tipo === 'bifurcacao') {
@@ -139,7 +116,6 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
     }
   }
 
-  // Envia o caminho (que pode ter sido encurtado pela loja) para o frontend animar
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -154,15 +130,12 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
   const finalNodeInPath = findNodeById(path[path.length - 1])!;
   const animationDuration = path.length * 500 + (initialDiceRoll ? 500 : 0);
 
-  // Após a animação, o backend atualiza o estado e decide o que fazer
   setTimeout(() => {
     currentPlayer.posicao_mapa_id = finalNodeInPath.id;
 
     if (movementStopsAtShop) {
-      // Se parou na loja, aciona o evento da loja
       triggerShopInteraction(room, finalNodeInPath.id);
     } else if (movementStopsAtBifurcation) {
-      // Se parou na bifurcação, espera a escolha do jogador
       turnInfo.fase_do_turno = 'escolha_bifurcacao';
       roomManager.broadcastToRoom(
         room.id,
@@ -172,26 +145,21 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
         })
       );
     } else {
-      // Se o movimento terminou normalmente, processa o efeito da casa final
       processEndOfMovement(room, finalNodeInPath.id);
     }
   }, animationDuration);
 }
 
-/**
- * <<< NOVA FUNÇÃO >>>
- * Isola a lógica de abrir a interface da loja.
- */
 function triggerShopInteraction(room: Room, shopNodeId: number) {
   const { turnInfo, lojas } = room.gameState!;
-  const currentPlayerId = turnInfo.id_jogador_da_vez;
 
   turnInfo.fase_do_turno = 'em_loja';
   const shopState = lojas.find(s => s.nodeId === shopNodeId);
 
-  console.log(`[Sala ${room.id}] Jogador ${currentPlayerId} entrou na loja ${shopNodeId}`);
+  console.log(
+    `[Sala ${room.id}] Jogador ${turnInfo.id_jogador_da_vez} entrou na loja ${shopNodeId}`
+  );
 
-  // Envia o estado atualizado (com a fase 'em_loja')
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -200,7 +168,6 @@ function triggerShopInteraction(room: Room, shopNodeId: number) {
     })
   );
 
-  // Envia o comando para o frontend mostrar o modal
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -216,10 +183,6 @@ function triggerShopInteraction(room: Room, shopNodeId: number) {
   );
 }
 
-/**
- * Processa os efeitos da casa onde o jogador aterrissou.
- * Esta função agora só é chamada se o movimento não for interrompido por uma loja.
- */
 function processEndOfMovement(room: Room, finalNodeId: number) {
   const { turnInfo, players: playerStates } = room.gameState!;
   const currentPlayerState = playerStates.find(p => p.id === turnInfo.id_jogador_da_vez)!;
@@ -278,7 +241,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     }
   }
 
-  // Atualiza o estado para todos os jogadores
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -287,7 +249,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     })
   );
 
-  // Mostra a notificação do efeito da casa, se houver
   if (notificationPayload) {
     roomManager.broadcastToRoom(
       room.id,
@@ -298,27 +259,25 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     );
   }
 
-  // Passa o turno após a animação/notificação
   setTimeout(() => {
     passTurn(room);
   }, 4500);
 }
 
-/**
- * Lida com a tentativa de compra de um item.
- */
+// <<< MUDANÇA PRINCIPAL AQUI >>>
 function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
   const { gameState } = room;
-  if (!gameState || gameState.turnInfo.fase_do_turno !== 'em_loja') return;
-  if (gameState.turnInfo.id_jogador_da_vez !== user.id) return;
+  if (
+    !gameState ||
+    gameState.turnInfo.fase_do_turno !== 'em_loja' ||
+    gameState.turnInfo.id_jogador_da_vez !== user.id
+  )
+    return;
 
-  const playerState = gameState.players.find(p => p.id === user.id);
+  const playerState = gameState.players.find(p => p.id === user.id)!;
   const itemDefinition = (gameDefinitions.itens as any)[itemId];
 
-  if (!playerState || !itemDefinition) {
-    user.ws.send(JSON.stringify({ event: 'error', message: 'Item ou jogador inválido.' }));
-    return;
-  }
+  if (!itemDefinition) return;
 
   if (playerState.moedas < itemDefinition.preco) {
     roomManager.sendToUser(user.id, {
@@ -334,7 +293,6 @@ function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
     });
     return;
   }
-
   if (playerState.itens.length >= 4) {
     roomManager.sendToUser(user.id, {
       event: 'game_event',
@@ -354,36 +312,36 @@ function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
   playerState.itens.push(itemId);
   console.log(`[Sala ${room.id}] Jogador ${user.name} comprou ${itemDefinition.nome}`);
 
-  roomManager.sendToUser(user.id, {
-    event: 'game_event',
-    payload: {
-      type: 'show_notification',
-      payload: {
-        title: 'Compra Efetuada!',
-        message: `Você adquiriu: ${itemDefinition.nome}!`,
-        duration: 3000,
-      },
-    },
-  });
-
+  // Notifica todos da compra
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
-      event: 'gameStateUpdate',
-      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Nova Aquisição!',
+          message: `${playerState.nome} comprou um(a) ${itemDefinition.nome}!`,
+          duration: 3500,
+          isEvent: true,
+        },
+      },
     })
   );
+
+  // <<< CORREÇÃO: CHAMA A FUNÇÃO DE FECHAR A LOJA IMEDIATAMENTE APÓS A COMPRA >>>
+  // Isso garante que a loja feche e o movimento continue (ou o turno passe).
+  handleCloseShop(room, user);
 }
 
-/**
- * Lida com o fechamento da loja, passando o turno.
- */
 function handleCloseShop(room: Room, user: ConnectedUser) {
   const { gameState } = room;
-  if (!gameState || gameState.turnInfo.fase_do_turno !== 'em_loja') return;
-  if (gameState.turnInfo.id_jogador_da_vez !== user.id) return;
+  if (!gameState || gameState.turnInfo.id_jogador_da_vez !== user.id) return;
 
-  console.log(`[Sala ${room.id}] Jogador ${user.name} saiu da loja. Passando o turno.`);
+  // Garante que a lógica só rode uma vez, mesmo se chamada de `handleBuyItem`
+  if (gameState.turnInfo.fase_do_turno !== 'em_loja') return;
+
+  console.log(`[Sala ${room.id}] Jogador ${user.name} saiu da loja.`);
 
   roomManager.broadcastToRoom(
     room.id,
@@ -393,14 +351,21 @@ function handleCloseShop(room: Room, user: ConnectedUser) {
     })
   );
 
-  setTimeout(() => {
-    passTurn(room);
-  }, 500);
+  const stepsRemaining = gameState.turnInfo.passosRestantesAposLoja || 0;
+  gameState.turnInfo.passosRestantesAposLoja = 0;
+
+  if (stepsRemaining > 0) {
+    console.log(`Continuando movimento com ${stepsRemaining} passos.`);
+    setTimeout(() => {
+      continueMovement(room, stepsRemaining);
+    }, 500);
+  } else {
+    setTimeout(() => {
+      passTurn(room);
+    }, 500);
+  }
 }
 
-/**
- * Avança para o próximo jogador.
- */
 function passTurn(room: Room) {
   const players = room.getPlayers();
   const { turnInfo } = room.gameState!;
@@ -409,6 +374,11 @@ function passTurn(room: Room) {
 
   if (currentPlayerIndex === -1) return;
 
+  // Prevenção contra múltiplas chamadas
+  if (turnInfo.fase_do_turno === 'uso_item_pre_rolagem') {
+    return;
+  }
+
   const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
 
@@ -416,6 +386,7 @@ function passTurn(room: Room) {
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
   turnInfo.passosRestantes = 0;
   turnInfo.opcoesBifurcacao = [];
+  turnInfo.passosRestantesAposLoja = 0;
 
   if (nextPlayerIndex === 0) {
     turnInfo.turno_atual++;
@@ -423,9 +394,11 @@ function passTurn(room: Room) {
 
   console.log(`[Sala ${room.id}] Turno passado para ${nextPlayer.name}.`);
 
-  const updatePayload = {
-    event: 'gameStateUpdate',
-    payload: { type: 'gameStateUpdate', payload: room.gameState! },
-  };
-  roomManager.broadcastToRoom(room.id, JSON.stringify(updatePayload));
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
 }

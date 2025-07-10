@@ -6,6 +6,7 @@ interface TurnInfo {
   turno_atual: number;
   id_jogador_da_vez: string;
   passosRestantes?: number;
+  passosRestantesAposLoja?: number;
   opcoesBifurcacao?: number[];
 }
 
@@ -116,6 +117,7 @@ export class Room {
         turno_atual: 1,
         id_jogador_da_vez: players[0].id,
         passosRestantes: 0,
+        passosRestantesAposLoja: 0,
         opcoesBifurcacao: [],
       },
       lojas: this.initializeShops(),
