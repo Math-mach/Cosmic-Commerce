@@ -493,3 +493,45 @@ hr {
 #face-catastrophe-btn:hover {
   background-color: #c82333;
 }
+
+.player-item-list button {
+  width: auto;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  margin-left: 10px;
+  float: right;
+  background-color: #28a745;
+}
+
+.player-item-list button:hover {
+  background-color: #218838;
+}
+
+.player-item-list button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+#target-players-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#target-players-container button {
+  background-color: #17a2b8;
+  text-align: center;
+}
+
+#target-players-container button:hover {
+  background-color: #138496;
+}
+
+#cancel-target-btn {
+  background-color: #6c757d;
+}
+
+#cancel-target-btn:hover {
+  background-color: #5a6268;
+}

@@ -41,30 +41,24 @@ const uiController = {
   inicializarUI: function () {
     this.atualizarPainelJogadores();
 
-    const closeShopBtn = document.getElementById('close-shop-btn');
-    if (closeShopBtn) {
-      closeShopBtn.addEventListener('click', () => {
-        if (this._sendActionCallback) {
-          this._sendActionCallback('player_action', { action: 'close_shop' });
-        }
-      });
-    }
+    document.getElementById('close-shop-btn')?.addEventListener('click', () => {
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'close_shop' });
+    });
 
-    const payBtn = document.getElementById('pay-to-avoid-btn');
-    const faceBtn = document.getElementById('face-catastrophe-btn');
+    document.getElementById('pay-to-avoid-btn')?.addEventListener('click', () => {
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'pay_to_avoid_catastrophe' });
+    });
 
-    if (payBtn) {
-      payBtn.addEventListener('click', () => {
-        if (this._sendActionCallback)
-          this._sendActionCallback('player_action', { action: 'pay_to_avoid_catastrophe' });
-      });
-    }
-    if (faceBtn) {
-      faceBtn.addEventListener('click', () => {
-        if (this._sendActionCallback)
-          this._sendActionCallback('player_action', { action: 'face_the_catastrophe' });
-      });
-    }
+    document.getElementById('face-catastrophe-btn')?.addEventListener('click', () => {
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'face_the_catastrophe' });
+    });
+
+    document.getElementById('cancel-target-btn')?.addEventListener('click', () => {
+      this.closeTargetSelectionModal();
+    });
   },
 
   atualizarPainelJogadores: function () {
@@ -72,35 +66,96 @@ const uiController = {
     if (!playersPanel) return;
     playersPanel.innerHTML = '';
 
-    const jogadorAtualId = gameState.partida?.id_jogador_da_vez;
-    const jogadores = gameState.jogadores || [];
+    const eMinhaVez = gameState.meuId === gameState.partida?.id_jogador_da_vez;
+    const faseDeUso = gameState.partida?.fase_do_turno === 'uso_item_pre_rolagem';
+    const itemJaUsado = gameState.partida?.itemUsedThisTurn;
 
-    jogadores.forEach(player => {
+    gameState.jogadores.forEach(player => {
       const card = document.createElement('div');
       card.className = 'player-card';
-      card.id = `player-card-${player.id}`;
-      if (player.id === jogadorAtualId) {
+      if (player.id === gameState.partida?.id_jogador_da_vez) {
         card.classList.add('active-player');
       }
 
-      const itemsList =
-        player.itens
-          .map(itemId => {
-            const itemDef = gameData.gameDefinitions.itens[itemId];
-            return itemDef ? `• ${itemDef.nome}` : '• Item Desconhecido';
-          })
-          .join('\n') || 'Nenhum item';
+      let itemsHtml = '<ul class="player-item-list">';
+      if (player.itens.length > 0) {
+        player.itens.forEach(itemId => {
+          const itemDef = gameData.gameDefinitions.itens[itemId];
+          const itemName = itemDef ? itemDef.nome : 'Item Desconhecido';
+
+          const podeUsar = player.id === gameState.meuId && eMinhaVez && faseDeUso && !itemJaUsado;
+          const useButtonHtml = podeUsar
+            ? `<button class="use-item-btn" data-item-id="${itemId}">Usar</button>`
+            : '';
+
+          itemsHtml += `<li>${itemName} ${useButtonHtml}</li>`;
+        });
+      } else {
+        itemsHtml += `<li class="no-items">Nenhum item</li>`;
+      }
+      itemsHtml += '</ul>';
 
       card.innerHTML = `
                 <h3>${player.nome}</h3>
                 <div class="player-stats">
                     <span>Moedas:</span><span>${player.moedas}</span>
                     <span>Fragmentos:</span><span>${player.fragmentos}</span>
-                    <span>Itens:</span><span title="${itemsList}">${player.itens.length}/4</span>
+                </div>
+                <div class="player-inventory">
+                    <h4>Itens (${player.itens.length}/4)</h4>
+                    ${itemsHtml}
                 </div>
             `;
       playersPanel.appendChild(card);
     });
+
+    document.querySelectorAll('.use-item-btn').forEach(button => {
+      button.addEventListener('click', e => {
+        const itemId = e.target.dataset.itemId;
+        this.handleItemUseClick(itemId);
+      });
+    });
+  },
+
+  handleItemUseClick: function (itemId) {
+    const targetedItems = ['cogumelo_venenoso', 'ladrao_de_moedas', 'item_de_teleporte'];
+    if (targetedItems.includes(itemId)) {
+      this.openTargetSelectionModal(itemId);
+    } else {
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'use_item', itemId: itemId });
+    }
+  },
+
+  openTargetSelectionModal: function (itemId) {
+    const modal = document.getElementById('target-selection-modal');
+    const container = document.getElementById('target-players-container');
+    if (!modal || !container) return;
+
+    container.innerHTML = '';
+    gameState.jogadores.forEach(player => {
+      if (player.id === gameState.meuId) return;
+
+      const playerBtn = document.createElement('button');
+      playerBtn.textContent = player.nome;
+      playerBtn.addEventListener('click', () => {
+        if (this._sendActionCallback)
+          this._sendActionCallback('player_action', {
+            action: 'use_item',
+            itemId: itemId,
+            targetPlayerId: player.id,
+          });
+        this.closeTargetSelectionModal();
+      });
+      container.appendChild(playerBtn);
+    });
+
+    modal.style.display = 'flex';
+  },
+
+  closeTargetSelectionModal: function () {
+    const modal = document.getElementById('target-selection-modal');
+    if (modal) modal.style.display = 'none';
   },
 
   atualizarInformacoesGerais: function () {

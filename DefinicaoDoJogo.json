@@ -138,11 +138,6 @@
             "preco": 10,
             "efeito_detalhado": "Quando usado, o jogador rola 2 dados de 6 lados (2D6) em vez de 1D6 em sua Fase de Rolagem."
           },
-          "chave_mestra": {
-            "nome": "Chave-Mestra",
-            "preco": 5,
-            "efeito_detalhado": "O jogador escolhe um portão trancado no mapa. O status 'trancado' desse portão no `gameState.mapa.portoes` é permanentemente alterado para `false`."
-          },
           "cogumelo_venenoso": {
             "nome": "Cogumelo Venenoso",
             "preco": 10,

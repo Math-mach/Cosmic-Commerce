@@ -5,9 +5,15 @@ interface TurnInfo {
   fase_do_turno: string;
   turno_atual: number;
   id_jogador_da_vez: string;
+  itemUsedThisTurn?: boolean;
   passosRestantes?: number;
   passosRestantesAposLoja?: number;
   opcoesBifurcacao?: number[];
+}
+
+interface PlayerEffect {
+  id: string;
+  turnos_restantes: number;
 }
 
 interface PlayerState {
@@ -17,6 +23,7 @@ interface PlayerState {
   moedas: number;
   fragmentos: number;
   itens: string[];
+  efeitos_ativos: PlayerEffect[];
 }
 
 interface ShopState {
@@ -82,42 +89,34 @@ export class Room {
     return Array.from(this.players.values());
   }
 
-  // <<< LÓGICA ATUALIZADA AQUI >>>
   private initializeShops(): ShopState[] {
-    // Encontra as casas de loja no mapa, ordenando pelo ID para garantir consistência.
     const shopNodes = mapa.filter(node => node.tipoCasa === 'amarela').sort((a, b) => a.id - b.id);
 
     const shops: ShopState[] = [];
 
-    // Definição dos inventários fixos
     const inventarioLoja1 = [
-      'chave_mestra',
       'dado_adicional',
       'cogumelo_venenoso',
       'item_de_teleporte',
+      'ladrao_de_moedas',
     ];
 
     const inventarioLoja2 = [
       'dado_adicional',
-      'chave_mestra',
       'cogumelo_venenoso',
+      'item_de_teleporte',
       'ladrao_de_moedas',
     ];
 
-    // Atribui o primeiro inventário à primeira loja encontrada
     if (shopNodes[0]) {
       shops.push({ nodeId: shopNodes[0].id, items: inventarioLoja1 });
     }
 
-    // Atribui o segundo inventário à segunda loja encontrada
     if (shopNodes[1]) {
       shops.push({ nodeId: shopNodes[1].id, items: inventarioLoja2 });
     }
 
-    // Se houver mais lojas no futuro, elas não terão itens por enquanto.
-    // Isso evita erros e permite expansão futura.
-
-    console.log(`[Sala ${this.id}] Lojas inicializadas com inventário fixo:`, shops);
+    // <<< LOG REMOVIDO DAQUI >>>
     return shops;
   }
 
@@ -136,12 +135,14 @@ export class Room {
         posicao_mapa_id: 0,
         moedas: 20,
         fragmentos: 0,
-        itens: [],
+        itens: ['dado_adicional', 'cogumelo_venenoso', 'item_de_teleporte', 'ladrao_de_moedas'],
+        efeitos_ativos: [],
       })),
       turnInfo: {
         fase_do_turno: 'uso_item_pre_rolagem',
         turno_atual: 1,
         id_jogador_da_vez: players[0].id,
+        itemUsedThisTurn: false,
         passosRestantes: 0,
         passosRestantesAposLoja: 0,
         opcoesBifurcacao: [],

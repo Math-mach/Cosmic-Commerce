@@ -10,9 +10,11 @@ interface PlayerActionPayload {
     | 'buy_item'
     | 'close_shop'
     | 'pay_to_avoid_catastrophe'
-    | 'face_the_catastrophe';
+    | 'face_the_catastrophe'
+    | 'use_item';
   nodeId?: number;
   itemId?: string;
+  targetPlayerId?: string;
   [key: string]: any;
 }
 
@@ -30,6 +32,7 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     'buy_item',
     'pay_to_avoid_catastrophe',
     'face_the_catastrophe',
+    'use_item',
   ];
   if (!nonTurnActions.includes(payload.action)) {
     if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
@@ -57,23 +60,163 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     case 'face_the_catastrophe':
       handleFaceTheCatastrophe(room, user);
       break;
+    case 'use_item':
+      handleUseItem(room, user, payload.itemId!, payload.targetPlayerId);
+      break;
     default:
-      user.ws.send(JSON.stringify({ event: 'error', message: 'Ação desconhecida.' }));
+      user.ws.send(
+        JSON.stringify({ event: 'error', message: `Ação desconhecida: ${payload.action}` })
+      );
       break;
   }
 }
 
 function handleMainButtonClick(room: Room) {
-  const { turnInfo } = room.gameState!;
+  const { turnInfo, players } = room.gameState!;
+  const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
+
   if (turnInfo.fase_do_turno !== 'uso_item_pre_rolagem') return;
 
   turnInfo.fase_do_turno = 'rolagem_dado';
-  const diceRoll = Math.floor(Math.random() * 6) + 1;
-  console.log(`[Sala ${room.id}] Jogador ${turnInfo.id_jogador_da_vez} rolou ${diceRoll}`);
+
+  const dadoAdicionalEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'dado_adicional');
+  const cogumeloEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'cogumelo_venenoso');
+
+  let dadoComum = 0;
+  let dadoExtra = 0;
+
+  // <<< LÓGICA DE ROLAGEM E LOGS CORRIGIDA >>>
+
+  // Rola o dado comum (1d6) ou o dado afetado pelo cogumelo (1d3)
+  if (cogumeloEffect) {
+    dadoComum = Math.floor(Math.random() * 3) + 1;
+    console.log(
+      `[Sala ${room.id}] Jogador ${currentPlayer.nome} foi afetado por Cogumelo Venenoso! Dado comum: ${dadoComum}`
+    );
+    currentPlayer.efeitos_ativos = currentPlayer.efeitos_ativos.filter(
+      e => e.id !== 'cogumelo_venenoso'
+    );
+  } else {
+    dadoComum = Math.floor(Math.random() * 6) + 1;
+  }
+
+  // Se tiver o efeito do Dado Adicional, rola o segundo dado (sempre 1d6)
+  if (dadoAdicionalEffect) {
+    dadoExtra = Math.floor(Math.random() * 6) + 1;
+    console.log(
+      `[Sala ${room.id}] Jogador ${currentPlayer.nome} usou Dado Adicional! Dado extra: ${dadoExtra}`
+    );
+    currentPlayer.efeitos_ativos = currentPlayer.efeitos_ativos.filter(
+      e => e.id !== 'dado_adicional'
+    );
+  }
+
+  const diceRoll = dadoComum + dadoExtra;
+
+  if (dadoExtra > 0) {
+    console.log(
+      `[Sala ${room.id}] Rolagem total de ${currentPlayer.nome}: ${dadoComum} + ${dadoExtra} = ${diceRoll}`
+    );
+  } else {
+    console.log(`[Sala ${room.id}] Rolagem total de ${currentPlayer.nome}: ${diceRoll}`);
+  }
 
   continueMovement(room, diceRoll, diceRoll);
 }
 
+function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPlayerId?: string) {
+  const { gameState } = room;
+  if (
+    !gameState ||
+    gameState.turnInfo.id_jogador_da_vez !== user.id ||
+    gameState.turnInfo.fase_do_turno !== 'uso_item_pre_rolagem'
+  )
+    return;
+
+  if (gameState.turnInfo.itemUsedThisTurn) {
+    user.ws.send(JSON.stringify({ event: 'error', message: 'Você já usou um item neste turno.' }));
+    return;
+  }
+
+  const playerState = gameState.players.find(p => p.id === user.id)!;
+  const itemIndex = playerState.itens.indexOf(itemId);
+
+  if (itemIndex === -1) {
+    user.ws.send(JSON.stringify({ event: 'error', message: 'Você não possui este item.' }));
+    return;
+  }
+
+  let notificationMessage = '';
+  const itemDefinition = (gameDefinitions.itens as any)[itemId];
+
+  // Adiciona log de uso de item
+  console.log(`[Sala ${room.id}] Jogador ${playerState.nome} usou o item: ${itemDefinition.nome}`);
+
+  switch (itemId) {
+    case 'dado_adicional':
+      playerState.efeitos_ativos.push({ id: 'dado_adicional', turnos_restantes: 1 });
+      notificationMessage = `${playerState.nome} se preparou para rolar um dado extra!`;
+      break;
+
+    case 'cogumelo_venenoso':
+    case 'ladrao_de_moedas':
+    case 'item_de_teleporte':
+      const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
+      if (!targetPlayer || targetPlayer.id === user.id) {
+        user.ws.send(JSON.stringify({ event: 'error', message: 'Alvo inválido.' }));
+        return;
+      }
+
+      // Log de alvo
+      console.log(`[Sala ${room.id}] O alvo do item é: ${targetPlayer.nome}`);
+
+      if (itemId === 'cogumelo_venenoso') {
+        targetPlayer.efeitos_ativos.push({ id: 'cogumelo_venenoso', turnos_restantes: 1 });
+        notificationMessage = `${playerState.nome} usou um Cogumelo Venenoso em ${targetPlayer.nome}!`;
+      } else if (itemId === 'ladrao_de_moedas') {
+        const moedasRoubadas = Math.min(targetPlayer.moedas, 10);
+        targetPlayer.moedas -= moedasRoubadas;
+        notificationMessage = `${playerState.nome} usou um Ladrão de Moedas em ${targetPlayer.nome} e roubou ${moedasRoubadas} moedas!`;
+      } else if (itemId === 'item_de_teleporte') {
+        const pos1 = playerState.posicao_mapa_id;
+        const pos2 = targetPlayer.posicao_mapa_id;
+        playerState.posicao_mapa_id = pos2;
+        targetPlayer.posicao_mapa_id = pos1;
+        notificationMessage = `${playerState.nome} usou um Teleporte e trocou de lugar com ${targetPlayer.nome}!`;
+      }
+      break;
+  }
+
+  playerState.itens.splice(itemIndex, 1);
+
+  gameState.turnInfo.itemUsedThisTurn = true;
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: itemDefinition.nome,
+          message: notificationMessage,
+          duration: 4000,
+          isEvent: true,
+        },
+      },
+    })
+  );
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
+}
+
+// ... (O resto do arquivo permanece o mesmo da versão anterior)
 function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   const { turnInfo, players } = room.gameState!;
   if (turnInfo.fase_do_turno !== 'escolha_bifurcacao') return;
@@ -526,6 +669,7 @@ function passTurn(room: Room) {
 
   turnInfo.id_jogador_da_vez = nextPlayer.id;
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
+  turnInfo.itemUsedThisTurn = false;
   turnInfo.passosRestantes = 0;
   turnInfo.opcoesBifurcacao = [];
   turnInfo.passosRestantesAposLoja = 0;

@@ -33,12 +33,6 @@ const gameDefinitions = {
       efeito_detalhado:
         'Quando usado, o jogador rola 2 dados de 6 lados (2D6) em vez de 1D6 em sua Fase de Rolagem.',
     },
-    chave_mestra: {
-      id: 'chave_mestra',
-      nome: 'Chave-Mestra',
-      preco: 5,
-      efeito_detalhado: 'Permite abrir um portão trancado no mapa.',
-    },
     cogumelo_venenoso: {
       id: 'cogumelo_venenoso',
       nome: 'Cogumelo Venenoso',
@@ -214,15 +208,15 @@ const mapaBase = [
 ];
 
 const pontosParaPintar = [
-  { x: 1, y: 5, cor: 'purple' }, // blue
-  { x: 3, y: 5, cor: 'purple' }, // blue
-  { x: 5, y: 3, cor: 'purple' }, // blue
+  { x: 1, y: 5, cor: 'blue' },
+  { x: 3, y: 5, cor: 'blue' },
+  { x: 5, y: 3, cor: 'blue' },
   { x: 7, y: 3, cor: 'green' },
-  { x: 9, y: 3, cor: 'purple' }, // blue
-  { x: 11, y: 3, cor: 'purple' }, // blue
-  { x: 13, y: 3, cor: 'purple' }, // blue
+  { x: 9, y: 3, cor: 'blue' },
+  { x: 11, y: 3, cor: 'blue' },
+  { x: 13, y: 3, cor: 'blue' },
   { x: 15, y: 3, cor: 'grey' },
-  { x: 17, y: 3, cor: 'purple' }, // blue
+  { x: 17, y: 3, cor: 'blue' },
   { x: 19, y: 3, cor: 'blue' },
   { x: 21, y: 1, cor: 'blue' },
   { x: 23, y: 1, cor: 'blue' },
@@ -231,7 +225,6 @@ const pontosParaPintar = [
   { x: 29, y: 5, cor: 'red' },
   { x: 29, y: 7, cor: 'blue' },
   { x: 29, y: 9, cor: 'blue' },
-  { x: 30, y: 9, cor: 'black' },
   { x: 29, y: 11, cor: 'grey' },
   { x: 27, y: 11, cor: 'purple' },
   { x: 25, y: 11, cor: 'blue' },
@@ -304,7 +297,6 @@ const pontosParaPintar = [
   { x: 14, y: 36, cor: 'green' },
   { x: 12, y: 36, cor: 'grey' },
   { x: 10, y: 37, cor: 'blue' },
-  { x: 9, y: 37, cor: 'black' },
   { x: 8, y: 39, cor: 'blue' },
   { x: 6, y: 40, cor: 'green' },
   { x: 4, y: 39, cor: 'purple' },
