@@ -11,7 +11,9 @@ interface PlayerActionPayload {
     | 'close_shop'
     | 'pay_to_avoid_catastrophe'
     | 'face_the_catastrophe'
-    | 'use_item';
+    | 'use_item'
+    | 'buy_star_fragment'
+    | 'ignore_star_fragment';
   nodeId?: number;
   itemId?: string;
   targetPlayerId?: string;
@@ -33,6 +35,8 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     'pay_to_avoid_catastrophe',
     'face_the_catastrophe',
     'use_item',
+    'buy_star_fragment',
+    'ignore_star_fragment',
   ];
   if (!nonTurnActions.includes(payload.action)) {
     if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
@@ -63,6 +67,12 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     case 'use_item':
       handleUseItem(room, user, payload.itemId!, payload.targetPlayerId);
       break;
+    case 'buy_star_fragment':
+      handleBuyStarFragment(room, user);
+      break;
+    case 'ignore_star_fragment':
+      handleIgnoreStarFragment(room, user);
+      break;
     default:
       user.ws.send(
         JSON.stringify({ event: 'error', message: `Ação desconhecida: ${payload.action}` })
@@ -85,9 +95,6 @@ function handleMainButtonClick(room: Room) {
   let dadoComum = 0;
   let dadoExtra = 0;
 
-  // <<< LÓGICA DE ROLAGEM E LOGS CORRIGIDA >>>
-
-  // Rola o dado comum (1d6) ou o dado afetado pelo cogumelo (1d3)
   if (cogumeloEffect) {
     dadoComum = Math.floor(Math.random() * 3) + 1;
     console.log(
@@ -100,7 +107,6 @@ function handleMainButtonClick(room: Room) {
     dadoComum = Math.floor(Math.random() * 6) + 1;
   }
 
-  // Se tiver o efeito do Dado Adicional, rola o segundo dado (sempre 1d6)
   if (dadoAdicionalEffect) {
     dadoExtra = Math.floor(Math.random() * 6) + 1;
     console.log(
@@ -149,7 +155,6 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
   let notificationMessage = '';
   const itemDefinition = (gameDefinitions.itens as any)[itemId];
 
-  // Adiciona log de uso de item
   console.log(`[Sala ${room.id}] Jogador ${playerState.nome} usou o item: ${itemDefinition.nome}`);
 
   switch (itemId) {
@@ -167,7 +172,6 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
         return;
       }
 
-      // Log de alvo
       console.log(`[Sala ${room.id}] O alvo do item é: ${targetPlayer.nome}`);
 
       if (itemId === 'cogumelo_venenoso') {
@@ -216,7 +220,6 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
   );
 }
 
-// ... (O resto do arquivo permanece o mesmo da versão anterior)
 function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   const { turnInfo, players } = room.gameState!;
   if (turnInfo.fase_do_turno !== 'escolha_bifurcacao') return;
@@ -236,7 +239,7 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
 }
 
 function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: number | null = null) {
-  const { turnInfo, players } = room.gameState!;
+  const { turnInfo, players, posicaoFragmentoEstrelaId } = room.gameState!;
   const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
 
   if (stepsToTake <= 0) {
@@ -248,6 +251,7 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
   const path: number[] = [currentNode!.id];
   let movementStopsAtBifurcation = false;
   let movementStopsAtShop = false;
+  let movementStopsAtStar = false;
 
   for (let i = 0; i < stepsToTake; i++) {
     if (!currentNode || currentNode.conexoes.length === 0) break;
@@ -257,6 +261,16 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
 
     path.push(nextNode.id);
     currentNode = nextNode;
+
+    if (nextNode.id === posicaoFragmentoEstrelaId) {
+      movementStopsAtStar = true;
+      const stepsRemaining = stepsToTake - (i + 1);
+      turnInfo.passosRestantesAposLoja = stepsRemaining;
+      console.log(
+        `[Sala ${room.id}] Movimento interrompido no Fragmento de Estrela ${nextNode.id} com ${stepsRemaining} passos restantes.`
+      );
+      break;
+    }
 
     if (nextNode.tipoCasa === 'amarela') {
       movementStopsAtShop = true;
@@ -294,7 +308,9 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
   setTimeout(() => {
     currentPlayer.posicao_mapa_id = finalNodeInPath.id;
 
-    if (movementStopsAtShop) {
+    if (movementStopsAtStar) {
+      triggerStarFragmentInteraction(room);
+    } else if (movementStopsAtShop) {
       triggerShopInteraction(room, finalNodeInPath.id);
     } else if (movementStopsAtBifurcation) {
       turnInfo.fase_do_turno = 'escolha_bifurcacao';
@@ -309,6 +325,115 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
       processEndOfMovement(room, finalNodeInPath.id);
     }
   }, animationDuration);
+}
+
+function triggerStarFragmentInteraction(room: Room) {
+  const { turnInfo } = room.gameState!;
+  turnInfo.fase_do_turno = 'decisao_fragmento';
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: { type: 'show_star_fragment_modal' },
+    })
+  );
+}
+
+function handleBuyStarFragment(room: Room, user: ConnectedUser) {
+  const { gameState } = room;
+  if (
+    !gameState ||
+    gameState.turnInfo.fase_do_turno !== 'decisao_fragmento' ||
+    gameState.turnInfo.id_jogador_da_vez !== user.id
+  )
+    return;
+
+  const playerState = gameState.players.find(p => p.id === user.id)!;
+  const cost = 20;
+
+  if (playerState.moedas < cost) {
+    roomManager.sendToUser(user.id, {
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Saldo Insuficiente',
+          message: `Você precisa de ${cost} moedas para comprar o fragmento.`,
+          duration: 3000,
+        },
+      },
+    });
+    handleIgnoreStarFragment(room, user);
+    return;
+  }
+
+  playerState.moedas -= cost;
+  playerState.fragmentos += 1;
+  console.log(`[Sala ${room.id}] Jogador ${user.name} comprou um Fragmento de Estrela!`);
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Fragmento Adquirido!',
+          message: `${playerState.nome} conseguiu um Fragmento de Estrela!`,
+          duration: 4000,
+          isEvent: true,
+        },
+      },
+    })
+  );
+
+  room.realocateStarFragment();
+  continueAfterFragmentDecision(room);
+}
+
+function handleIgnoreStarFragment(room: Room, user: ConnectedUser) {
+  const { gameState } = room;
+  if (
+    !gameState ||
+    gameState.turnInfo.fase_do_turno !== 'decisao_fragmento' ||
+    gameState.turnInfo.id_jogador_da_vez !== user.id
+  )
+    return;
+
+  console.log(`[Sala ${room.id}] Jogador ${user.name} ignorou o Fragmento de Estrela.`);
+  continueAfterFragmentDecision(room);
+}
+
+function continueAfterFragmentDecision(room: Room) {
+  const { gameState } = room;
+  if (!gameState) return;
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: { type: 'hide_star_fragment_modal' },
+    })
+  );
+
+  const stepsRemaining = gameState.turnInfo.passosRestantesAposLoja || 0;
+  gameState.turnInfo.passosRestantesAposLoja = 0;
+
+  if (stepsRemaining > 0) {
+    console.log(`Continuando movimento com ${stepsRemaining} passos após decisão do fragmento.`);
+    setTimeout(() => continueMovement(room, stepsRemaining), 500);
+  } else {
+    setTimeout(() => passTurn(room), 500);
+  }
 }
 
 function triggerShopInteraction(room: Room, shopNodeId: number) {

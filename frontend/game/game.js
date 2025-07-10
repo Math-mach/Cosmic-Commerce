@@ -14,14 +14,17 @@ export function initGame(initialState, socketInstance, meuId) {
   socket = socketInstance;
   gameState.meuId = meuId;
 
+  // <<< CORREÇÃO NA MONTAGEM DO ESTADO >>>
   gameState.jogadores = initialState.players;
   gameState.partida = initialState.turnInfo;
   gameState.lojas = initialState.lojas;
+  gameState.posicaoFragmentoEstrelaId = initialState.posicaoFragmentoEstrelaId;
 
   mapController.construirTabuleiro();
   mapController.pintarVariosPontos(gameData.pontosParaPintar);
   mapController.criarPeoes(gameState.jogadores);
   mapController.atualizarPosicaoPeoes();
+  mapController.atualizarDestaqueFragmento();
   uiController.registerSendActionCallback(sendActionToServer);
   uiController.inicializarUI();
   uiController.atualizarTudo();
@@ -39,12 +42,17 @@ export function handleServerUpdate(updateData) {
       const oldPhase = gameState.partida?.fase_do_turno;
       const newPhase = payload.turnInfo.fase_do_turno;
 
+      // <<< CORREÇÃO NA ATUALIZAÇÃO DO ESTADO >>>
       gameState.jogadores = payload.players;
       gameState.partida = payload.turnInfo;
       if (payload.lojas) gameState.lojas = payload.lojas;
+      if (payload.posicaoFragmentoEstrelaId !== undefined) {
+        gameState.posicaoFragmentoEstrelaId = payload.posicaoFragmentoEstrelaId;
+      }
 
       uiController.atualizarTudo();
       mapController.atualizarPosicaoPeoes();
+      mapController.atualizarDestaqueFragmento();
 
       if (oldPhase === 'escolha_bifurcacao' && newPhase !== 'escolha_bifurcacao') {
         mapController.limparDestaquesBifurcacao();
@@ -119,6 +127,16 @@ export function handleServerUpdate(updateData) {
     case 'hide_catastrophe_modal':
       console.log('Servidor mandou fechar o modal de catástrofe.');
       uiController.closeCatastropheModal();
+      break;
+
+    case 'show_star_fragment_modal':
+      const eMeuTurnoFragmento = gameState.meuId === gameState.partida.id_jogador_da_vez;
+      if (eMeuTurnoFragmento) {
+        uiController.openStarFragmentModal();
+      }
+      break;
+    case 'hide_star_fragment_modal':
+      uiController.closeStarFragmentModal();
       break;
   }
 }

@@ -29,6 +29,10 @@ const FASES_UI = {
     titulo: 'Decisão Perigosa',
     acoes: ['Pagar para evitar ou encarar o destino?'],
   },
+  decisao_fragmento: {
+    titulo: 'Fragmento à Vista!',
+    acoes: ['Decida se quer comprar o fragmento.'],
+  },
 };
 
 const uiController = {
@@ -58,6 +62,15 @@ const uiController = {
 
     document.getElementById('cancel-target-btn')?.addEventListener('click', () => {
       this.closeTargetSelectionModal();
+    });
+
+    document.getElementById('buy-star-btn')?.addEventListener('click', () => {
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'buy_star_fragment' });
+    });
+    document.getElementById('ignore-star-btn')?.addEventListener('click', () => {
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'ignore_star_fragment' });
     });
   },
 
@@ -315,6 +328,16 @@ const uiController = {
     if (modal) {
       modal.style.display = 'none';
     }
+  },
+
+  openStarFragmentModal: function () {
+    const modal = document.getElementById('star-fragment-modal');
+    if (modal) modal.style.display = 'flex';
+  },
+
+  closeStarFragmentModal: function () {
+    const modal = document.getElementById('star-fragment-modal');
+    if (modal) modal.style.display = 'none';
   },
 
   atualizarTudo: function () {

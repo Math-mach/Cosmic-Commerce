@@ -35,6 +35,7 @@ interface GameState {
   players: PlayerState[];
   turnInfo: TurnInfo;
   lojas: ShopState[];
+  posicaoFragmentoEstrelaId: number;
 }
 
 export class Room {
@@ -94,19 +95,9 @@ export class Room {
 
     const shops: ShopState[] = [];
 
-    const inventarioLoja1 = [
-      'dado_adicional',
-      'cogumelo_venenoso',
-      'item_de_teleporte',
-      'ladrao_de_moedas',
-    ];
+    const inventarioLoja1 = ['dado_adicional', 'cogumelo_venenoso', 'item_de_teleporte'];
 
-    const inventarioLoja2 = [
-      'dado_adicional',
-      'cogumelo_venenoso',
-      'item_de_teleporte',
-      'ladrao_de_moedas',
-    ];
+    const inventarioLoja2 = ['dado_adicional', 'cogumelo_venenoso', 'ladrao_de_moedas'];
 
     if (shopNodes[0]) {
       shops.push({ nodeId: shopNodes[0].id, items: inventarioLoja1 });
@@ -116,8 +107,18 @@ export class Room {
       shops.push({ nodeId: shopNodes[1].id, items: inventarioLoja2 });
     }
 
-    // <<< LOG REMOVIDO DAQUI >>>
     return shops;
+  }
+
+  public realocateStarFragment() {
+    if (!this.gameState) return;
+
+    const possibleNodes = mapa.filter(node => node.id >= 15).map(node => node.id);
+    const randomIndex = Math.floor(Math.random() * possibleNodes.length);
+    const newStarNodeId = possibleNodes[randomIndex];
+
+    this.gameState.posicaoFragmentoEstrelaId = newStarNodeId;
+    console.log(`[Sala ${this.id}] Fragmento de Estrela realocado para o nó ${newStarNodeId}.`);
   }
 
   startGame() {
@@ -135,7 +136,7 @@ export class Room {
         posicao_mapa_id: 0,
         moedas: 20,
         fragmentos: 0,
-        itens: ['dado_adicional', 'cogumelo_venenoso', 'item_de_teleporte', 'ladrao_de_moedas'],
+        itens: [],
         efeitos_ativos: [],
       })),
       turnInfo: {
@@ -148,6 +149,9 @@ export class Room {
         opcoesBifurcacao: [],
       },
       lojas: this.initializeShops(),
+      posicaoFragmentoEstrelaId: 0,
     };
+
+    this.realocateStarFragment();
   }
 }

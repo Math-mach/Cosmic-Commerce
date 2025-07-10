@@ -262,6 +262,11 @@ hr {
   border-left: 1px solid #ccc;
   box-sizing: border-box;
   background-color: white;
+  /* Adicionado para centralizar o emoji */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px; /* Tamanho do emoji da estrela */
 }
 
 #game-view .label {
@@ -476,7 +481,7 @@ hr {
   color: #444;
 }
 
-#catastrophe-modal .modal-actions {
+.modal-actions {
   display: flex;
   gap: 15px;
   justify-content: center;
@@ -534,4 +539,19 @@ hr {
 
 #cancel-target-btn:hover {
   background-color: #5a6268;
+}
+
+/* <<< ESTILO ANTIGO REMOVIDO E NENHUM NOVO NECESSÁRIO >>> */
+/* O emoji será controlado pelo JS, não precisa de classe CSS dedicada */
+
+#star-fragment-modal #buy-star-btn {
+  background-color: #ffc107;
+  color: #212529;
+  font-weight: bold;
+}
+#star-fragment-modal #buy-star-btn:hover {
+  background-color: #e0a800;
+}
+#star-fragment-modal #ignore-star-btn {
+  background-color: #6c757d;
 }

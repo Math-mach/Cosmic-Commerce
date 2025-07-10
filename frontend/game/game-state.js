@@ -4,6 +4,7 @@ let gameState = {
   jogadores: [],
   mapa: {},
   lojas: [],
+  posicaoFragmentoEstrelaId: null,
 };
 
 export default gameState;
