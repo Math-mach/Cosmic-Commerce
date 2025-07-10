@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Teste WebSocket + Login</title>
+        <title>Cosmic Commerce</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -80,9 +80,7 @@
                 <hr />
                 <div>
                     <h3>Salas Públicas</h3>
-                    <div id="public-rooms-list">
-                        <!-- As salas públicas serão inseridas aqui pelo JavaScript -->
-                    </div>
+                    <div id="public-rooms-list"></div>
                 </div>
                 <button id="create-room-btn" style="margin-top: 20px">
                     Criar uma sala
@@ -90,7 +88,6 @@
                 <button id="lobby-logout-btn">Logout</button>
             </section>
 
-            <!-- ROOM VIEW (ANTIGA CHAT VIEW) -->
             <section id="ws-section" style="display: none">
                 <h2 id="room-name-display">Nome da Sala</h2>
 
@@ -129,8 +126,30 @@
                     <button id="leave-room-btn">Sair da Sala</button>
                 </div>
             </section>
+
+            <section id="game-view" style="display: none">
+                <div class="game-container">
+                    <div class="left-panel">
+                        <div id="ui-players-panel"></div>
+                        <div id="phase-indicator">
+                            <h3 id="phase-title">Fase do Turno</h3>
+                            <ul id="phase-actions"></ul>
+                        </div>
+                    </div>
+                    <div class="board-wrapper">
+                        <h1>A Nebulosa Espiral</h1>
+                        <div id="unified-grid-container">
+                            <div id="peoes-container"></div>
+                        </div>
+                        <div id="ui-actions-panel">
+                            <div id="game-info"></div>
+                            <button id="action-button"></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
 
-        <script src="app.js"></script>
+        <script type="module" src="app.js"></script>
     </body>
 </html>

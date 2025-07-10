@@ -1,5 +1,18 @@
 import { ConnectedUser } from "../index";
 
+interface TurnInfo {
+    fase_do_turno: string;
+    turno_atual: number;
+    id_jogador_da_vez: string;
+    passosRestantes?: number;
+    opcoesBifurcacao?: number[];
+}
+
+interface GameState {
+    players: any[];
+    turnInfo: any;
+}
+
 export class Room {
     id: string;
     name: string;
@@ -8,6 +21,8 @@ export class Room {
     isPublic: boolean;
 
     public state: "waiting" | "in_progress" | "finished" = "waiting";
+
+    public gameState: GameState | null = null;
 
     constructor(
         id: string,
@@ -43,10 +58,28 @@ export class Room {
     }
 
     startGame() {
-        if (this.players.size < 3) {
-            throw new Error("São necessários pelo menos 3 jogadores.");
+        if (this.players.size < 2) {
+            throw new Error("São necessários pelo menos 2 jogadores.");
         }
         this.state = "in_progress";
         this.isPublic = false;
+
+        const players = this.getPlayers();
+        this.gameState = {
+            players: players.map((p) => ({
+                id: p.id,
+                nome: p.name,
+                posicao_mapa_id: 0,
+                moedas: 10,
+                fragmentos: 0,
+            })),
+            turnInfo: {
+                fase_do_turno: "uso_item_pre_rolagem",
+                turno_atual: 1,
+                id_jogador_da_vez: players[0].id,
+                passosRestantes: 0,
+                opcoesBifurcacao: [],
+            },
+        };
     }
 }

@@ -1,4 +1,3 @@
-name: Cosmic Commerce
 services:
     db:
         image: bitnami/postgresql:15
@@ -32,12 +31,30 @@ services:
         env_file:
             - ./backend/.env
         environment:
-            - NODE_ENV=production
+            - NODE_ENV=development
         volumes:
             - ./backend:/app
+            - /app/node_modules
+
+        command: npm run dev
         depends_on:
             - db
             - redis
+        restart: always
+
+    frontend-nginx:
+        build:
+            context: ./frontend
+        container_name: meu-frontend-web
+        ports:
+            - "80:80"
+            - "443:443"
+        depends_on:
+            - backend
+        volumes:
+            - ./frontend:/usr/share/nginx/html
+            - ./certbot/www:/var/www/certbot
+            - ./certbot/conf:/etc/letsencrypt
         restart: always
 
 volumes:

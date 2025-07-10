@@ -1,12 +1,15 @@
 import { ConnectedUser } from "./index";
 import {
     handleChatMessage,
-    handleGameStart,
     handleGetRooms,
     handleCreateRoom,
     handleJoinRoom,
     handleLeaveRoom,
 } from "./handlers";
+
+import { roomManager } from "./managers/roomManager";
+
+import { handlePlayerAction } from "./game";
 
 export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
     try {
@@ -33,8 +36,40 @@ export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
                 handleChatMessage(user, data.payload);
                 break;
 
-            case "game_start":
-                handleGameStart(user);
+            case "start_game":
+                const room = roomManager.findRoomById(user.roomId!);
+                if (!room) {
+                    user.ws.send(
+                        JSON.stringify({
+                            event: "error",
+                            message: "Sala não encontrada.",
+                        })
+                    );
+                    return;
+                }
+
+                try {
+                    room.startGame();
+
+                    roomManager.broadcastToRoom(
+                        user.roomId!,
+                        JSON.stringify({
+                            event: "game_started",
+                            payload: room.gameState,
+                        })
+                    );
+                } catch (error: any) {
+                    user.ws.send(
+                        JSON.stringify({
+                            event: "error",
+                            message: error.message,
+                        })
+                    );
+                }
+                break;
+
+            case "player_action":
+                handlePlayerAction(user, data.payload);
                 break;
 
             default:
