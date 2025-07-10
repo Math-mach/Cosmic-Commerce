@@ -1,4 +1,5 @@
 let gameState = {
+    meuId: null,
     partida: {},
     jogadores: [],
     mapa: {},
