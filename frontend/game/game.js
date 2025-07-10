@@ -107,6 +107,19 @@ export function handleServerUpdate(updateData) {
       console.log('Servidor mandou fechar a loja.');
       uiController.closeShopModal();
       break;
+
+    case 'show_catastrophe_modal':
+      const eMeuTurnoNaCatastrofe = gameState.meuId === gameState.partida.id_jogador_da_vez;
+      if (eMeuTurnoNaCatastrofe) {
+        console.log('Abrindo modal de catástrofe:', payload);
+        uiController.openCatastropheModal(payload.cost);
+      }
+      break;
+
+    case 'hide_catastrophe_modal':
+      console.log('Servidor mandou fechar o modal de catástrofe.');
+      uiController.closeCatastropheModal();
+      break;
   }
 }
 

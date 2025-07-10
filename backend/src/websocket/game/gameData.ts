@@ -1,5 +1,3 @@
-// backend/src/websocket/game/gameData.ts
-
 interface MapNode {
   id: number;
   x: number;
@@ -24,6 +22,10 @@ export const gameDefinitions = {
       nome: 'Loja Cósmica',
       efeito: { tipo: 'loja' },
     },
+    roxa: {
+      nome: 'Casa da Catástrofe',
+      efeito: { tipo: 'catastrofe', custo_para_evitar: 15 },
+    },
   },
   eventos_casa_interrogacao: [
     {
@@ -42,7 +44,6 @@ export const gameDefinitions = {
       efeito_detalhado: 'Você tem 50% de chance de ganhar 10 moedas.',
     },
   ],
-  // <<< CORREÇÃO PRINCIPAL AQUI >>>
   itens: {
     dado_adicional: {
       id: 'dado_adicional',
@@ -76,6 +77,20 @@ export const gameDefinitions = {
       efeito_detalhado: 'Troca de lugar com um jogador aleatório no tabuleiro.',
     },
   },
+  catastrofes: [
+    {
+      id: 'perder_metade_moedas',
+      descricao: 'Um buraco negro engoliu metade das suas moedas!',
+    },
+    {
+      id: 'perder_item',
+      descricao: 'Um cometa destruiu um dos seus itens!',
+    },
+    {
+      id: 'voltar_ao_inicio',
+      descricao: 'Você foi puxado por um portal de volta para o início!',
+    },
+  ],
 };
 
 export const mapaBase: MapNode[] = [
@@ -231,15 +246,15 @@ export const mapaBase: MapNode[] = [
 ];
 
 const pontosParaPintar = [
-  { x: 1, y: 5, cor: 'blue' },
-  { x: 3, y: 5, cor: 'blue' },
-  { x: 5, y: 3, cor: 'blue' },
+  { x: 1, y: 5, cor: 'purple' }, // blue
+  { x: 3, y: 5, cor: 'purple' }, // blue
+  { x: 5, y: 3, cor: 'purple' }, // blue
   { x: 7, y: 3, cor: 'green' },
-  { x: 9, y: 3, cor: 'blue' },
-  { x: 11, y: 3, cor: 'blue' },
-  { x: 13, y: 3, cor: 'blue' },
+  { x: 9, y: 3, cor: 'purple' }, // blue
+  { x: 11, y: 3, cor: 'purple' }, // blue
+  { x: 13, y: 3, cor: 'purple' }, // blue
   { x: 15, y: 3, cor: 'grey' },
-  { x: 17, y: 3, cor: 'blue' },
+  { x: 17, y: 3, cor: 'purple' }, // blue
   { x: 19, y: 3, cor: 'blue' },
   { x: 21, y: 1, cor: 'blue' },
   { x: 23, y: 1, cor: 'blue' },

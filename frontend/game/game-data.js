@@ -214,15 +214,15 @@ const mapaBase = [
 ];
 
 const pontosParaPintar = [
-  { x: 1, y: 5, cor: 'blue' },
-  { x: 3, y: 5, cor: 'blue' },
-  { x: 5, y: 3, cor: 'blue' },
+  { x: 1, y: 5, cor: 'purple' }, // blue
+  { x: 3, y: 5, cor: 'purple' }, // blue
+  { x: 5, y: 3, cor: 'purple' }, // blue
   { x: 7, y: 3, cor: 'green' },
-  { x: 9, y: 3, cor: 'blue' },
-  { x: 11, y: 3, cor: 'blue' },
-  { x: 13, y: 3, cor: 'blue' },
+  { x: 9, y: 3, cor: 'purple' }, // blue
+  { x: 11, y: 3, cor: 'purple' }, // blue
+  { x: 13, y: 3, cor: 'purple' }, // blue
   { x: 15, y: 3, cor: 'grey' },
-  { x: 17, y: 3, cor: 'blue' },
+  { x: 17, y: 3, cor: 'purple' }, // blue
   { x: 19, y: 3, cor: 'blue' },
   { x: 21, y: 1, cor: 'blue' },
   { x: 23, y: 1, cor: 'blue' },

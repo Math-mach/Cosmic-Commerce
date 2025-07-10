@@ -181,6 +181,37 @@ hr {
   gap: 5px;
 }
 
+#game-view .player-inventory {
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+#game-view .player-inventory h4 {
+  margin: 0 0 5px 0;
+  font-size: 1em;
+  color: #555;
+}
+
+#game-view .player-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9em;
+}
+
+#game-view .player-item-list li {
+  padding: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#game-view .player-item-list li.no-items {
+  color: #888;
+  font-style: italic;
+}
+
 #game-view #phase-indicator {
   border: 2px solid #5a6268;
   background-color: #e9ecef;
@@ -360,7 +391,6 @@ hr {
   color: #ccc;
 }
 
-/* --- ESTILOS DO MODAL DA LOJA --- */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -440,33 +470,26 @@ hr {
   background-color: #5a6268;
 }
 
-#game-view .player-inventory {
-  margin-top: 12px;
-  border-top: 1px solid #eee;
-  padding-top: 10px;
+#catastrophe-modal .modal-content p {
+  margin: 10px 0 25px 0;
+  font-size: 1.1em;
+  color: #444;
 }
 
-#game-view .player-inventory h4 {
-  margin: 0 0 5px 0;
-  font-size: 1em;
-  color: #555;
+#catastrophe-modal .modal-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
 }
 
-#game-view .player-item-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.9em;
+#catastrophe-modal .modal-actions button {
+  width: 50%;
 }
 
-#game-view .player-item-list li {
-  padding: 2px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#face-catastrophe-btn {
+  background-color: #dc3545;
 }
 
-#game-view .player-item-list li.no-items {
-  color: #888;
-  font-style: italic;
+#face-catastrophe-btn:hover {
+  background-color: #c82333;
 }

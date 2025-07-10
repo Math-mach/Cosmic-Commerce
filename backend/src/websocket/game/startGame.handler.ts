@@ -60,7 +60,7 @@ export function handleStartGame(user: ConnectedUser) {
         id: p.id,
         nome: p.name,
         posicao_mapa_id: 0,
-        moedas: 10,
+        moedas: 0,
         fragmentos: 0,
     }));
 

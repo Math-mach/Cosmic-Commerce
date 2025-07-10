@@ -25,6 +25,10 @@ const FASES_UI = {
     titulo: 'Loja Cósmica',
     acoes: ['Compre um item ou clique em sair para continuar.'],
   },
+  escolha_catastrofe: {
+    titulo: 'Decisão Perigosa',
+    acoes: ['Pagar para evitar ou encarar o destino?'],
+  },
 };
 
 const uiController = {
@@ -45,6 +49,22 @@ const uiController = {
         }
       });
     }
+
+    const payBtn = document.getElementById('pay-to-avoid-btn');
+    const faceBtn = document.getElementById('face-catastrophe-btn');
+
+    if (payBtn) {
+      payBtn.addEventListener('click', () => {
+        if (this._sendActionCallback)
+          this._sendActionCallback('player_action', { action: 'pay_to_avoid_catastrophe' });
+      });
+    }
+    if (faceBtn) {
+      faceBtn.addEventListener('click', () => {
+        if (this._sendActionCallback)
+          this._sendActionCallback('player_action', { action: 'face_the_catastrophe' });
+      });
+    }
   },
 
   atualizarPainelJogadores: function () {
@@ -63,28 +83,20 @@ const uiController = {
         card.classList.add('active-player');
       }
 
-      // <<< MUDANÇA PRINCIPAL: GERAR LISTA DE ITENS EM HTML >>>
-      let itemsHtml = '<ul class="player-item-list">';
-      if (player.itens.length > 0) {
-        player.itens.forEach(itemId => {
-          const itemDef = gameData.gameDefinitions.itens[itemId];
-          const itemName = itemDef ? itemDef.nome : 'Item Desconhecido';
-          itemsHtml += `<li>${itemName}</li>`;
-        });
-      } else {
-        itemsHtml += `<li class="no-items">Nenhum item</li>`;
-      }
-      itemsHtml += '</ul>';
+      const itemsList =
+        player.itens
+          .map(itemId => {
+            const itemDef = gameData.gameDefinitions.itens[itemId];
+            return itemDef ? `• ${itemDef.nome}` : '• Item Desconhecido';
+          })
+          .join('\n') || 'Nenhum item';
 
       card.innerHTML = `
                 <h3>${player.nome}</h3>
                 <div class="player-stats">
                     <span>Moedas:</span><span>${player.moedas}</span>
                     <span>Fragmentos:</span><span>${player.fragmentos}</span>
-                </div>
-                <div class="player-inventory">
-                    <h4>Itens (${player.itens.length}/4)</h4>
-                    ${itemsHtml}
+                    <span>Itens:</span><span title="${itemsList}">${player.itens.length}/4</span>
                 </div>
             `;
       playersPanel.appendChild(card);
@@ -227,6 +239,24 @@ const uiController = {
 
   closeShopModal: function () {
     const modal = document.getElementById('shop-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  },
+
+  openCatastropheModal: function (cost) {
+    const modal = document.getElementById('catastrophe-modal');
+    const payBtn = document.getElementById('pay-to-avoid-btn');
+    if (modal) {
+      if (payBtn) {
+        payBtn.textContent = `Pagar ${cost} 🪙 para evitar`;
+      }
+      modal.style.display = 'flex';
+    }
+  },
+
+  closeCatastropheModal: function () {
+    const modal = document.getElementById('catastrophe-modal');
     if (modal) {
       modal.style.display = 'none';
     }

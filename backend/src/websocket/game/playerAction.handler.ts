@@ -4,7 +4,13 @@ import { Room } from '../managers/Room';
 import { findNodeById, gameDefinitions } from './gameData';
 
 interface PlayerActionPayload {
-  action: 'main_button_click' | 'choose_path' | 'buy_item' | 'close_shop';
+  action:
+    | 'main_button_click'
+    | 'choose_path'
+    | 'buy_item'
+    | 'close_shop'
+    | 'pay_to_avoid_catastrophe'
+    | 'face_the_catastrophe';
   nodeId?: number;
   itemId?: string;
   [key: string]: any;
@@ -19,7 +25,13 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     return;
   }
 
-  if (payload.action !== 'close_shop' && payload.action !== 'buy_item') {
+  const nonTurnActions = [
+    'close_shop',
+    'buy_item',
+    'pay_to_avoid_catastrophe',
+    'face_the_catastrophe',
+  ];
+  if (!nonTurnActions.includes(payload.action)) {
     if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
       user.ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
       return;
@@ -38,6 +50,12 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
       break;
     case 'close_shop':
       handleCloseShop(room, user);
+      break;
+    case 'pay_to_avoid_catastrophe':
+      handlePayToAvoidCatastrophe(room, user);
+      break;
+    case 'face_the_catastrophe':
+      handleFaceTheCatastrophe(room, user);
       break;
     default:
       user.ws.send(JSON.stringify({ event: 'error', message: 'Ação desconhecida.' }));
@@ -238,6 +256,29 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
         message: eventoSorteado.efeito_detalhado,
         isEvent: true,
       };
+    } else if (tipoCasa === 'roxa') {
+      turnInfo.fase_do_turno = 'escolha_catastrofe';
+
+      roomManager.broadcastToRoom(
+        room.id,
+        JSON.stringify({
+          event: 'gameStateUpdate',
+          payload: { type: 'gameStateUpdate', payload: room.gameState! },
+        })
+      );
+
+      roomManager.broadcastToRoom(
+        room.id,
+        JSON.stringify({
+          event: 'game_event',
+          payload: {
+            type: 'show_catastrophe_modal',
+            payload: { cost: gameDefinitions.casas.roxa.efeito.custo_para_evitar },
+          },
+        })
+      );
+
+      return;
     }
   }
 
@@ -264,7 +305,117 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
   }, 4500);
 }
 
-// <<< MUDANÇA PRINCIPAL AQUI >>>
+function handlePayToAvoidCatastrophe(room: Room, user: ConnectedUser) {
+  const { gameState } = room;
+  if (
+    !gameState ||
+    gameState.turnInfo.fase_do_turno !== 'escolha_catastrofe' ||
+    gameState.turnInfo.id_jogador_da_vez !== user.id
+  )
+    return;
+
+  const playerState = gameState.players.find(p => p.id === user.id)!;
+  const cost = gameDefinitions.casas.roxa.efeito.custo_para_evitar;
+
+  if (playerState.moedas < cost) {
+    handleFaceTheCatastrophe(room, user);
+    return;
+  }
+
+  playerState.moedas -= cost;
+  console.log(`[Sala ${room.id}] Jogador ${user.name} pagou ${cost} para evitar a catástrofe.`);
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Ufa!',
+          message: `${playerState.nome} pagou ${cost} moedas e escapou do perigo!`,
+          duration: 4000,
+          isEvent: true,
+        },
+      },
+    })
+  );
+
+  closeCatastropheAndPassTurn(room);
+}
+
+function handleFaceTheCatastrophe(room: Room, user: ConnectedUser) {
+  const { gameState } = room;
+  if (
+    !gameState ||
+    gameState.turnInfo.fase_do_turno !== 'escolha_catastrofe' ||
+    gameState.turnInfo.id_jogador_da_vez !== user.id
+  )
+    return;
+
+  const playerState = gameState.players.find(p => p.id === user.id)!;
+  const catastrofes = gameDefinitions.catastrofes;
+  const sorteada = catastrofes[Math.floor(Math.random() * catastrofes.length)];
+
+  console.log(`[Sala ${room.id}] Jogador ${user.name} enfrenta a catástrofe: ${sorteada.id}`);
+
+  let message = sorteada.descricao;
+
+  switch (sorteada.id) {
+    case 'perder_metade_moedas':
+      const moedasPerdidas = Math.floor(playerState.moedas / 2);
+      playerState.moedas -= moedasPerdidas;
+      message = `Um buraco negro engoliu ${moedasPerdidas} das suas moedas!`;
+      break;
+    case 'perder_item':
+      if (playerState.itens.length > 0) {
+        const itemPerdidoIndex = Math.floor(Math.random() * playerState.itens.length);
+        const itemPerdidoId = playerState.itens.splice(itemPerdidoIndex, 1)[0];
+        const itemDef = (gameDefinitions.itens as any)[itemPerdidoId];
+        message = `Um cometa destruiu seu item: ${itemDef.nome}!`;
+      } else {
+        message = 'Um cometa passou de raspão, mas você não tinha itens para perder!';
+      }
+      break;
+    case 'voltar_ao_inicio':
+      playerState.posicao_mapa_id = 0;
+      message = 'Você foi puxado por um portal de volta para o início!';
+      break;
+  }
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: 'Catástrofe!',
+          message: `${playerState.nome}: ${message}`,
+          duration: 5000,
+          isEvent: true,
+        },
+      },
+    })
+  );
+
+  closeCatastropheAndPassTurn(room);
+}
+
+function closeCatastropheAndPassTurn(room: Room) {
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'game_event',
+      payload: { type: 'hide_catastrophe_modal' },
+    })
+  );
+
+  setTimeout(() => {
+    passTurn(room);
+  }, 5500);
+}
+
 function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
   const { gameState } = room;
   if (
@@ -312,7 +463,6 @@ function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
   playerState.itens.push(itemId);
   console.log(`[Sala ${room.id}] Jogador ${user.name} comprou ${itemDefinition.nome}`);
 
-  // Notifica todos da compra
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -329,16 +479,12 @@ function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
     })
   );
 
-  // <<< CORREÇÃO: CHAMA A FUNÇÃO DE FECHAR A LOJA IMEDIATAMENTE APÓS A COMPRA >>>
-  // Isso garante que a loja feche e o movimento continue (ou o turno passe).
   handleCloseShop(room, user);
 }
 
 function handleCloseShop(room: Room, user: ConnectedUser) {
   const { gameState } = room;
   if (!gameState || gameState.turnInfo.id_jogador_da_vez !== user.id) return;
-
-  // Garante que a lógica só rode uma vez, mesmo se chamada de `handleBuyItem`
   if (gameState.turnInfo.fase_do_turno !== 'em_loja') return;
 
   console.log(`[Sala ${room.id}] Jogador ${user.name} saiu da loja.`);
@@ -373,11 +519,7 @@ function passTurn(room: Room) {
   const currentPlayerIndex = players.findIndex(p => p.id === currentPlayerId);
 
   if (currentPlayerIndex === -1) return;
-
-  // Prevenção contra múltiplas chamadas
-  if (turnInfo.fase_do_turno === 'uso_item_pre_rolagem') {
-    return;
-  }
+  if (turnInfo.fase_do_turno === 'uso_item_pre_rolagem') return;
 
   const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
