@@ -3,6 +3,7 @@ import * as gameModule from "./game/game.js";
 const API_BASE = "/api/user";
 let socket = null;
 let currentUser = null;
+let pingInterval = null;
 
 // Views
 const loginView = document.getElementById("login-view");
@@ -220,6 +221,7 @@ function connectWebSocket() {
         console.log("WebSocket Conectado.");
         document.getElementById("send-game").style.display = "none";
         socket.send(JSON.stringify({ type: "get_rooms" }));
+        timePing("init", socket);
     };
 
     socket.onmessage = (event) => {
@@ -299,6 +301,7 @@ function connectWebSocket() {
     };
     socket.onclose = () => {
         console.log("🔌 WebSocket desconectado");
+        timePing("stop");
         showView("login");
     };
 }
@@ -326,6 +329,7 @@ document.getElementById("send-game").addEventListener("click", () => {
 // Logout
 const logout = async () => {
     if (socket) socket.close();
+    timePing("stop");
     gameModule.cleanupGame();
 
     try {
@@ -347,4 +351,23 @@ function appendMessage(msg) {
     p.textContent = msg;
     messagesDiv.appendChild(p);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function timePing(phase, wss) {
+    switch (phase) {
+        case "init":
+            pingInterval = setInterval(() => {
+                if (wss.readyState === WebSocket.OPEN) {
+                    wss.send(JSON.stringify({ type: "ping" }));
+                    console.log("Ping enviado!");
+                }
+            }, 20000);
+            break;
+
+            break;
+        case "stop":
+            clearInterval(pingInterval);
+            pingInterval = null;
+            break;
+    }
 }
