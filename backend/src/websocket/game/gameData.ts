@@ -1,3 +1,5 @@
+// backend/src/websocket/game/gameData.ts
+
 interface MapNode {
   id: number;
   x: number;
@@ -40,6 +42,7 @@ export const gameDefinitions = {
       efeito_detalhado: 'Você tem 50% de chance de ganhar 10 moedas.',
     },
   ],
+  // <<< CORREÇÃO PRINCIPAL AQUI >>>
   itens: {
     dado_adicional: {
       id: 'dado_adicional',
@@ -48,19 +51,29 @@ export const gameDefinitions = {
       efeito_detalhado:
         'Quando usado, o jogador rola 2 dados de 6 lados (2D6) em vez de 1D6 em sua Fase de Rolagem.',
     },
+    chave_mestra: {
+      id: 'chave_mestra',
+      nome: 'Chave-Mestra',
+      preco: 5,
+      efeito_detalhado: 'Permite abrir um portão trancado no mapa.',
+    },
+    cogumelo_venenoso: {
+      id: 'cogumelo_venenoso',
+      nome: 'Cogumelo Venenoso',
+      preco: 10,
+      efeito_detalhado: 'Limita a próxima rolagem de um oponente a um valor entre 1 e 3.',
+    },
     ladrao_de_moedas: {
       id: 'ladrao_de_moedas',
       nome: 'Ladrão de Moedas',
       preco: 8,
-      efeito_detalhado:
-        'O jogador escolhe um jogador alvo. O servidor subtrai 10 moedas do alvo (garantindo que o valor não fique negativo). O dinheiro não é transferido.',
+      efeito_detalhado: 'Rouba 10 moedas de um jogador alvo. O dinheiro não é transferido.',
     },
     item_de_teleporte: {
       id: 'item_de_teleporte',
       nome: 'Item de Teleporte',
       preco: 15,
-      efeito_detalhado:
-        'O servidor seleciona aleatoriamente UM OUTRO jogador. As posições do usuário e do alvo são trocadas no `gameState`.',
+      efeito_detalhado: 'Troca de lugar com um jogador aleatório no tabuleiro.',
     },
   },
 };

@@ -82,16 +82,42 @@ export class Room {
     return Array.from(this.players.values());
   }
 
+  // <<< LÓGICA ATUALIZADA AQUI >>>
   private initializeShops(): ShopState[] {
-    const shopNodes = mapa.filter(node => node.tipoCasa === 'amarela');
-    const allItemIds = Object.keys(gameDefinitions.itens);
+    // Encontra as casas de loja no mapa, ordenando pelo ID para garantir consistência.
+    const shopNodes = mapa.filter(node => node.tipoCasa === 'amarela').sort((a, b) => a.id - b.id);
+
     const shops: ShopState[] = [];
 
-    for (const shopNode of shopNodes) {
-      const shopItems = [...allItemIds].sort(() => 0.5 - Math.random()).slice(0, 3);
-      shops.push({ nodeId: shopNode.id, items: shopItems });
+    // Definição dos inventários fixos
+    const inventarioLoja1 = [
+      'chave_mestra',
+      'dado_adicional',
+      'cogumelo_venenoso',
+      'item_de_teleporte',
+    ];
+
+    const inventarioLoja2 = [
+      'dado_adicional',
+      'chave_mestra',
+      'cogumelo_venenoso',
+      'ladrao_de_moedas',
+    ];
+
+    // Atribui o primeiro inventário à primeira loja encontrada
+    if (shopNodes[0]) {
+      shops.push({ nodeId: shopNodes[0].id, items: inventarioLoja1 });
     }
-    console.log(`[Sala ${this.id}] Lojas inicializadas:`, shops);
+
+    // Atribui o segundo inventário à segunda loja encontrada
+    if (shopNodes[1]) {
+      shops.push({ nodeId: shopNodes[1].id, items: inventarioLoja2 });
+    }
+
+    // Se houver mais lojas no futuro, elas não terão itens por enquanto.
+    // Isso evita erros e permite expansão futura.
+
+    console.log(`[Sala ${this.id}] Lojas inicializadas com inventário fixo:`, shops);
     return shops;
   }
 
