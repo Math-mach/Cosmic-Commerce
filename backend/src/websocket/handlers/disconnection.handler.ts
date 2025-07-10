@@ -115,6 +115,23 @@ export function handleDisconnection(user: ConnectedUser) {
                         },
                     })
                 );
+                const host = room.players.get(room.hostId!);
+                const remainingPlayers = room.getPlayers();
+
+                const roomInfoPayload = {
+                    event: "room_info",
+                    room: {
+                        id: room.id,
+                        name: room.name,
+                        hostName: host?.name || "N/D",
+                        current_users: remainingPlayers.length,
+                        max_users: room.maxPlayers,
+                    },
+                };
+                roomManager.broadcastToRoom(
+                    room.id,
+                    JSON.stringify(roomInfoPayload)
+                );
                 broadcastRoomListUpdateToLobby(activeConnections);
 
                 if (room.getPlayers().length === 0) {

@@ -189,7 +189,6 @@ leaveRoomBtn.addEventListener("click", () => {
     socket.send(JSON.stringify({ type: "leave_room" }));
     showView("lobby");
     messagesDiv.innerHTML = "";
-    // document.getElementById("send-game").style.display = "none";
 
     socket.send(JSON.stringify({ type: "get_rooms" }));
 });
@@ -203,9 +202,9 @@ function updateRoomView(roomData) {
     const startGameBtn = document.getElementById("send-game");
     if (currentUser && startGameBtn) {
         if (currentUser.name === roomData.hostName) {
-            startGameBtn.style.display = "block"; // Mostra o botão se o usuário for o dono
+            startGameBtn.style.display = "block";
         } else {
-            startGameBtn.style.display = "none"; // Esconde o botão se não for o dono
+            startGameBtn.style.display = "none";
         }
     }
 }
@@ -270,6 +269,16 @@ function connectWebSocket() {
                     if (gameView.style.display === "block") {
                         gameModule.handleServerUpdate(data.payload);
                     }
+                    break;
+
+                case "game_ended_by_disconnection":
+                    setTimeout(() => {
+                        showView("chat");
+                        messagesDiv.innerHTML = "";
+                        appendMessage(
+                            "O jogo foi encerrado por falta de pessoas e a sala voltou para o modo de espera."
+                        );
+                    }, 6000);
                     break;
 
                 // EVENTOS GERAIS

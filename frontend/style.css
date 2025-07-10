@@ -359,3 +359,64 @@ hr {
     cursor: not-allowed;
     color: #ccc;
 }
+
+#disconnection-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+}
+
+#disconnection-modal .modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+#disconnection-modal h2 {
+    color: #d9534f;
+    margin-top: 0;
+}
+
+#disconnection-modal .timer {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #333;
+    margin: 15px 0;
+}
+
+#disconnection-modal .vote-status {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+#disconnection-modal #vote-to-expel-btn {
+    background-color: #f0ad4e;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+#disconnection-modal #vote-to-expel-btn:hover {
+    background-color: #ec971f;
+}
+
+#disconnection-modal #vote-to-expel-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

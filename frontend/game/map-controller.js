@@ -69,6 +69,13 @@ const mapController = {
         });
     },
 
+    removerPeao: function (playerId) {
+        const peao = document.getElementById(`peao-${playerId}`);
+        if (peao) {
+            peao.remove();
+        }
+    },
+
     atualizarPosicaoPeoes: function () {
         gameState.jogadores.forEach((player) => {
             const pontoDoMapa = gameData.mapa.find(

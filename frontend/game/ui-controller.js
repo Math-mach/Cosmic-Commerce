@@ -22,6 +22,8 @@ const FASES_UI = {
     },
 };
 
+let disconnectionCountdownInterval = null;
+
 const uiController = {
     inicializarUI: function () {
         this.atualizarPainelJogadores();
@@ -134,10 +136,8 @@ const uiController = {
             });
         }
 
-        // Lógica do botão de ação
         const actionButton = document.getElementById("action-button");
         if (actionButton) {
-            // O botão só fica ativo se for minha vez E a fase permitir
             if (eMinhaVez && faseAtual === "uso_item_pre_rolagem") {
                 actionButton.textContent = "Rolar o Dado";
                 actionButton.disabled = false;
@@ -170,6 +170,66 @@ const uiController = {
             notificacao.classList.remove("visible");
             setTimeout(() => notificacao.remove(), 500);
         }, duracaoMs);
+    },
+
+    showDisconnectionModal: function ({ playerName, playerId }) {
+        const modal = document.getElementById("disconnection-modal");
+        const message = document.getElementById("disconnection-message");
+        const timerDisplay = document.getElementById("disconnection-timer");
+        const voteButton = document.getElementById("vote-to-expel-btn");
+        const voteStatus = document.getElementById("disconnection-vote-status");
+
+        message.textContent = `${playerName} desconectou-se. Aguardando retorno por 1 minuto...`;
+        voteButton.dataset.playerId = playerId;
+        voteButton.disabled = false;
+
+        const connectedPlayersCount = gameState.jogadores.filter(
+            (p) => p.id !== playerId
+        ).length;
+        const majority = Math.floor(connectedPlayersCount / 2) + 1;
+
+        voteStatus.textContent = `Votos para expulsar: 0 / ${majority}`;
+
+        let timeLeft = 60;
+        const updateTimer = () => {
+            const minutes = Math.floor(timeLeft / 60)
+                .toString()
+                .padStart(2, "0");
+            const seconds = (timeLeft % 60).toString().padStart(2, "0");
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+            timeLeft--;
+            if (timeLeft < 0) {
+                clearInterval(disconnectionCountdownInterval);
+            }
+        };
+
+        updateTimer();
+        disconnectionCountdownInterval = setInterval(updateTimer, 1000);
+
+        modal.style.display = "flex";
+    },
+
+    hideDisconnectionModal: function () {
+        const modal = document.getElementById("disconnection-modal");
+        if (modal) {
+            modal.style.display = "none";
+        }
+        if (disconnectionCountdownInterval) {
+            clearInterval(disconnectionCountdownInterval);
+            disconnectionCountdownInterval = null;
+        }
+    },
+
+    updateVoteCount: function (votes, playerId) {
+        const voteStatus = document.getElementById("disconnection-vote-status");
+        const connectedPlayersCount = gameState.jogadores.filter(
+            (p) => p.id !== playerId
+        ).length;
+        const majority = Math.floor(connectedPlayersCount / 2) + 1;
+
+        if (voteStatus) {
+            voteStatus.textContent = `Votos para expulsar: ${votes} / ${majority}`;
+        }
     },
 
     atualizarTudo: function () {
