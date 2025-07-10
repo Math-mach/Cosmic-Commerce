@@ -47,10 +47,12 @@ export function handleServerUpdate(updateData) {
                 `Animando movimento para o jogador ${payload.playerId}`
             );
 
-            uiController.mostrarMensagemTemporaria(
-                `Dado rolou: ${payload.diceResult}!`,
-                1500
-            );
+            if (payload.diceResult) {
+                uiController.mostrarMensagemTemporaria(
+                    `Dado rolou: ${payload.diceResult}!`,
+                    1500
+                );
+            }
 
             const animateStep = (stepIndex) => {
                 if (stepIndex >= payload.path.length) return;
@@ -69,7 +71,8 @@ export function handleServerUpdate(updateData) {
                 setTimeout(() => animateStep(stepIndex + 1), 500);
             };
 
-            setTimeout(() => animateStep(0), 1500);
+            const delay = payload.diceResult ? 1500 : 0;
+            setTimeout(() => animateStep(0), delay);
             break;
 
         case "show_notification":
