@@ -14,6 +14,7 @@ const app: Express = express();
 const allowedOrigins = [
     "https://equipe05.alphaedtech.org.br",
     "https://www.equipe05.alphaedtech.org.br",
+    "http://localhost:8080",
 ];
 
 app.use(
