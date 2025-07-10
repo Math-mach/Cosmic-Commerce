@@ -134,8 +134,10 @@ hr {
 #game-view .left-panel {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 15px;
     width: 250px;
+    padding: 0 15px;
 }
 
 #game-view .player-card {
@@ -144,6 +146,10 @@ hr {
     padding: 10px;
     background-color: #fff;
     transition: all 0.3s ease;
+}
+
+#game-view .player-card:first-child {
+    margin-bottom: 5px;
 }
 
 #game-view .player-card.active-player {
@@ -274,8 +280,9 @@ hr {
 }
 
 #game-view #game-info {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-weight: bold;
+    text-align: center;
 }
 
 #game-view #action-button {
