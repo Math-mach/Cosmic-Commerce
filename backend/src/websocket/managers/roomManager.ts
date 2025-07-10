@@ -22,6 +22,10 @@ class RoomManager {
     return this.rooms.get(roomId);
   }
 
+  getAllRooms(): Map<string, Room> {
+    return this.rooms;
+  }
+
   removeRoom(roomId: string) {
     this.rooms.delete(roomId);
     console.log(`Sala ${roomId} removida.`);
@@ -73,6 +77,31 @@ export function broadcastRoomListUpdateToLobby(activeConnections: Set<ConnectedU
     if (connection.roomId === null) {
       connection.ws.send(message);
     }
+  }
+}
+
+export function sendGameNotification(
+  roomId: string,
+  title: string,
+  message: string,
+  duration: number = 4000
+) {
+  const room = roomManager.findRoomById(roomId);
+  if (room && room.state === 'in_progress') {
+    const payload = {
+      event: 'game_event',
+      payload: {
+        type: 'show_notification',
+        payload: {
+          title: title,
+          message: message,
+          duration: duration,
+          isEvent: true,
+        },
+      },
+    };
+    roomManager.broadcastToRoom(roomId, JSON.stringify(payload));
+    console.log(`[Game-Notify -> Sala ${roomId}]: ${title} - ${message}`);
   }
 }
 

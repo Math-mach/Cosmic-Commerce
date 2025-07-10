@@ -38,6 +38,7 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     'buy_star_fragment',
     'ignore_star_fragment',
   ];
+
   if (!nonTurnActions.includes(payload.action)) {
     if (room.gameState.turnInfo.id_jogador_da_vez !== userId) {
       user.ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
@@ -162,7 +163,6 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
       playerState.efeitos_ativos.push({ id: 'dado_adicional', turnos_restantes: 1 });
       notificationMessage = `${playerState.nome} se preparou para rolar um dado extra!`;
       break;
-
     case 'cogumelo_venenoso':
     case 'ladrao_de_moedas':
     case 'item_de_teleporte':
@@ -171,9 +171,7 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
         user.ws.send(JSON.stringify({ event: 'error', message: 'Alvo inválido.' }));
         return;
       }
-
       console.log(`[Sala ${room.id}] O alvo do item é: ${targetPlayer.nome}`);
-
       if (itemId === 'cogumelo_venenoso') {
         targetPlayer.efeitos_ativos.push({ id: 'cogumelo_venenoso', turnos_restantes: 1 });
         notificationMessage = `${playerState.nome} usou um Cogumelo Venenoso em ${targetPlayer.nome}!`;
@@ -192,7 +190,6 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
   }
 
   playerState.itens.splice(itemIndex, 1);
-
   gameState.turnInfo.itemUsedThisTurn = true;
 
   roomManager.broadcastToRoom(
@@ -210,7 +207,6 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
       },
     })
   );
-
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
@@ -227,13 +223,15 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   const currentPlayerState = players.find(p => p.id === userId)!;
   const bifurcationNode = findNodeById(currentPlayerState.posicao_mapa_id)!;
 
-  if (!bifurcationNode.conexoes.includes(chosenNodeId)) return;
+  if (!bifurcationNode.conexoes.includes(chosenNodeId)) {
+    console.warn(`[Sala ${room.id}] Jogador ${userId} fez uma escolha de caminho inválida.`);
+    return;
+  }
 
   const stepsRemainingAfterChoice = turnInfo.passosRestantes!;
   turnInfo.opcoesBifurcacao = [];
   turnInfo.passosRestantes = 0;
   turnInfo.fase_do_turno = 'movimento';
-
   currentPlayerState.posicao_mapa_id = chosenNodeId;
   continueMovement(room, stepsRemainingAfterChoice);
 }
@@ -258,7 +256,6 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
 
     const nextNodeId = currentNode.conexoes[0];
     const nextNode = findNodeById(nextNodeId)!;
-
     path.push(nextNode.id);
     currentNode = nextNode;
 
@@ -307,7 +304,6 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
 
   setTimeout(() => {
     currentPlayer.posicao_mapa_id = finalNodeInPath.id;
-
     if (movementStopsAtStar) {
       triggerStarFragmentInteraction(room);
     } else if (movementStopsAtShop) {
@@ -408,7 +404,6 @@ function handleIgnoreStarFragment(room: Room, user: ConnectedUser) {
     gameState.turnInfo.id_jogador_da_vez !== user.id
   )
     return;
-
   console.log(`[Sala ${room.id}] Jogador ${user.name} ignorou o Fragmento de Estrela.`);
   continueAfterFragmentDecision(room);
 }
@@ -438,7 +433,6 @@ function continueAfterFragmentDecision(room: Room) {
 
 function triggerShopInteraction(room: Room, shopNodeId: number) {
   const { turnInfo, lojas } = room.gameState!;
-
   turnInfo.fase_do_turno = 'em_loja';
   const shopState = lojas.find(s => s.nodeId === shopNodeId);
 
@@ -460,10 +454,7 @@ function triggerShopInteraction(room: Room, shopNodeId: number) {
       event: 'game_event',
       payload: {
         type: 'show_shop_modal',
-        payload: {
-          nodeId: shopNodeId,
-          items: shopState ? shopState.items : [],
-        },
+        payload: { nodeId: shopNodeId, items: shopState ? shopState.items : [] },
       },
     })
   );
@@ -526,7 +517,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
       };
     } else if (tipoCasa === 'roxa') {
       turnInfo.fase_do_turno = 'escolha_catastrofe';
-
       roomManager.broadcastToRoom(
         room.id,
         JSON.stringify({
@@ -534,7 +524,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
           payload: { type: 'gameStateUpdate', payload: room.gameState! },
         })
       );
-
       roomManager.broadcastToRoom(
         room.id,
         JSON.stringify({
@@ -545,7 +534,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
           },
         })
       );
-
       return;
     }
   }
@@ -626,9 +614,7 @@ function handleFaceTheCatastrophe(room: Room, user: ConnectedUser) {
   const sorteada = catastrofes[Math.floor(Math.random() * catastrofes.length)];
 
   console.log(`[Sala ${room.id}] Jogador ${user.name} enfrenta a catástrofe: ${sorteada.id}`);
-
   let message = sorteada.descricao;
-
   switch (sorteada.id) {
     case 'perder_metade_moedas':
       const moedasPerdidas = Math.floor(playerState.moedas / 2);
@@ -678,10 +664,7 @@ function closeCatastropheAndPassTurn(room: Room) {
       payload: { type: 'hide_catastrophe_modal' },
     })
   );
-
-  setTimeout(() => {
-    passTurn(room);
-  }, 5500);
+  setTimeout(() => passTurn(room), 5500);
 }
 
 function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
@@ -695,7 +678,6 @@ function handleBuyItem(room: Room, user: ConnectedUser, itemId: string) {
 
   const playerState = gameState.players.find(p => p.id === user.id)!;
   const itemDefinition = (gameDefinitions.itens as any)[itemId];
-
   if (!itemDefinition) return;
 
   if (playerState.moedas < itemDefinition.preco) {
@@ -770,26 +752,32 @@ function handleCloseShop(room: Room, user: ConnectedUser) {
 
   if (stepsRemaining > 0) {
     console.log(`Continuando movimento com ${stepsRemaining} passos.`);
-    setTimeout(() => {
-      continueMovement(room, stepsRemaining);
-    }, 500);
+    setTimeout(() => continueMovement(room, stepsRemaining), 500);
   } else {
-    setTimeout(() => {
-      passTurn(room);
-    }, 500);
+    setTimeout(() => passTurn(room), 500);
   }
 }
 
-function passTurn(room: Room) {
-  const players = room.getPlayers();
+export function passTurn(room: Room) {
+  if (!room.gameState || room.gameState.players.length === 0) {
+    console.warn(`[Sala ${room.id}] Tentativa de passar turno sem jogadores. Encerrando jogo.`);
+    room.endGame();
+    roomManager.broadcastToRoom(
+      room.id,
+      JSON.stringify({
+        event: 'game_ended_by_error',
+        payload: { message: 'O jogo terminou devido a um erro inesperado.' },
+      })
+    );
+    return;
+  }
+
+  const players = room.gameState.players;
   const { turnInfo } = room.gameState!;
   const currentPlayerId = turnInfo.id_jogador_da_vez;
   const currentPlayerIndex = players.findIndex(p => p.id === currentPlayerId);
 
-  if (currentPlayerIndex === -1) return;
-  if (turnInfo.fase_do_turno === 'uso_item_pre_rolagem') return;
-
-  const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+  const nextPlayerIndex = currentPlayerIndex === -1 ? 0 : (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
 
   turnInfo.id_jogador_da_vez = nextPlayer.id;
@@ -803,13 +791,11 @@ function passTurn(room: Room) {
     turnInfo.turno_atual++;
   }
 
-  console.log(`[Sala ${room.id}] Turno passado para ${nextPlayer.name}.`);
+  console.log(`[Sala ${room.id}] Turno passado para ${nextPlayer.nome}.`);
 
-  roomManager.broadcastToRoom(
-    room.id,
-    JSON.stringify({
-      event: 'gameStateUpdate',
-      payload: { type: 'gameStateUpdate', payload: room.gameState! },
-    })
-  );
+  const updatePayload = {
+    event: 'gameStateUpdate',
+    payload: { type: 'gameStateUpdate', payload: room.gameState! },
+  };
+  roomManager.broadcastToRoom(room.id, JSON.stringify(updatePayload));
 }

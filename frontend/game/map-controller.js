@@ -23,9 +23,7 @@ const mapController = {
   construirTabuleiro: function () {
     const container = document.getElementById('unified-grid-container');
     if (!container) return;
-
     container.innerHTML = '<div id="peoes-container"></div>';
-
     for (let row = 0; row < 41; row++) {
       for (let col = 0; col < 41; col++) {
         const cell = document.createElement('div');
@@ -53,13 +51,19 @@ const mapController = {
     const peoesContainer = document.getElementById('peoes-container');
     if (!peoesContainer) return;
     peoesContainer.innerHTML = '';
-
     jogadores.forEach((player, index) => {
       const peao = document.createElement('div');
       peao.id = `peao-${player.id}`;
       peao.className = `peao peao-p${index + 1}`;
       peoesContainer.appendChild(peao);
     });
+  },
+
+  removerPeao: function (playerId) {
+    const peao = document.getElementById(`peao-${playerId}`);
+    if (peao) {
+      peao.remove();
+    }
   },
 
   atualizarPosicaoPeoes: function () {
@@ -103,11 +107,8 @@ const mapController = {
       celulaAntiga.innerHTML = '';
       celulaAntiga.classList.remove('star-fragment-cell');
     }
-
-    // <<< CORREÇÃO NA LEITURA DA POSIÇÃO >>>
     const starNodeId = gameState.posicaoFragmentoEstrelaId;
     if (starNodeId === null || starNodeId === undefined) return;
-
     const pontoDoMapa = gameData.mapa.find(p => p.id === starNodeId);
     if (pontoDoMapa) {
       const celulaNova = document.querySelector(
