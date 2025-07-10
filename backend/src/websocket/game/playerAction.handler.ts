@@ -504,10 +504,10 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
         case 'imposto_coletivo':
           playerStates.forEach(p => (p.moedas = Math.max(0, p.moedas - 5)));
           break;
+        // <<< MUDANÇA AQUI >>>
         case 'roleta_da_sorte':
-          if (Math.random() < 0.5) {
-            currentPlayerState.moedas += 10;
-          }
+          // A lógica de 50% foi removida. O jogador agora sempre ganha 10 moedas.
+          currentPlayerState.moedas += 10;
           break;
       }
       notificationPayload = {

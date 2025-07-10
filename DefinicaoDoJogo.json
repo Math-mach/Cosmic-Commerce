@@ -1,9 +1,7 @@
 {
   "comentario_geral": "Este é o documento mestre completo do jogo, projetado para ser 100% autoexplicativo. Qualquer pessoa deve ser capaz de entender todas as regras e a lógica de implementação apenas lendo este arquivo.",
-
   "regras_do_jogo": {
     "comentario": "Esta seção contém todas as regras em formato de texto, para fácil leitura e consulta.",
-
     "partida": {
       "jogadores": "Mínimo de 3, máximo de 4.",
       "duracao": "A partida termina após 20 turnos completos.",
@@ -20,7 +18,6 @@
       },
       "condicao_de_vitoria": "O(s) jogador(es) com a maior pontuação vence(m). Empates no placar final são permitidos."
     },
-
     "fluxo_de_turno": {
       "fases": [
         "1. Início do Turno: Ativação de efeitos de 'início de turno'.",
@@ -31,7 +28,6 @@
         "6. Fim do Turno: O controle passa para o próximo jogador."
       ]
     },
-
     "mapa_e_casas": {
       "interacao_entre_jogadores": "Nada acontece quando um jogador passa por outro no tabuleiro.",
       "fragmento_de_estrela": {
@@ -55,12 +51,10 @@
         }
       }
     },
-
     "itens_e_loja": {
       "inventario_maximo": "4 itens por jogador.",
       "funcionamento_da_loja": "No início da partida, cada loja sorteia 3 itens únicos e o estoque permanece fixo."
     },
-
     "definicao_de_mapa_modelo": {
       "nome": "A Nebulosa Espiral",
       "tamanho": "60 casas.",
@@ -76,10 +70,8 @@
       "elementos_estrategicos": { "Portões Trancados": 2, "Lojas Totais": 3 }
     }
   },
-
   "estruturas_tecnicas": {
     "comentario": "Blueprints dos objetos JSON a serem usados diretamente no código, com lógica de implementação detalhada.",
-
     "gameState_blueprint": {
       "comentario": "Objeto dinâmico. A 'fotografia' do jogo.",
       "estrutura": {
@@ -122,7 +114,6 @@
         }
       }
     },
-
     "gameDefinitions_blueprint": {
       "comentario": "Objeto estático. O 'dicionário' do jogo, com a lógica de cada elemento.",
       "estrutura": {
@@ -169,7 +160,7 @@
             {
               "id": "roleta_da_sorte",
               "nome": "Roleta da Sorte!",
-              "efeito_detalhado": "Para o jogador que ativou: o servidor sorteia 50/50. Resultado 1: Ganha 10 moedas. Resultado 2: Ganha um item aleatório da lista de definições, se houver espaço no inventário."
+              "efeito_detalhado": "Para o jogador que ativou: o servidor concede 10 moedas."
             },
             {
               "id": "doacao_forcada",

@@ -1,5 +1,3 @@
-// frontend/game/game-data.js
-
 const gameDefinitions = {
   casas: {
     azul: { nome: 'Casa Azul', efeito: { tipo: 'ganhar_moedas', valor_base: 3 } },
@@ -21,10 +19,10 @@ const gameDefinitions = {
     {
       id: 'roleta_da_sorte',
       nome: 'Roleta da Sorte!',
-      efeito_detalhado: 'Você tem 50% de chance de ganhar 10 moedas ou um item aleatório.',
+      // <<< MUDANÇA AQUI >>>
+      efeito_detalhado: 'Você girou a roleta e ganhou 10 moedas!',
     },
   ],
-  // <<< CORREÇÃO PRINCIPAL AQUI >>>
   itens: {
     dado_adicional: {
       id: 'dado_adicional',
@@ -55,7 +53,6 @@ const gameDefinitions = {
 };
 
 const mapaBase = [
-  // ... (o resto do arquivo permanece o mesmo)
   // Caminho Inicial
   { id: 0, x: 1, y: 5, tipo: 'inicial', conexoes: [1] },
   { id: 1, x: 3, y: 5, tipo: 'caminho', conexoes: [2] },

@@ -41,7 +41,8 @@ export const gameDefinitions = {
     {
       id: 'roleta_da_sorte',
       nome: 'Roleta da Sorte!',
-      efeito_detalhado: 'Você tem 50% de chance de ganhar 10 moedas.',
+      // <<< MUDANÇA AQUI >>>
+      efeito_detalhado: 'Você girou a roleta e ganhou 10 moedas!',
     },
   ],
   itens: {
