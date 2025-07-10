@@ -26,11 +26,14 @@ export function handleCreateRoom(user: ConnectedUser) {
         return;
     }
 
+    const host = newRoom.players.get(newRoom.hostId!);
+
     const roomInfoPayload = {
         event: "room_info",
         room: {
             id: newRoom.id,
             name: newRoom.name,
+            hostName: host?.name || "N/D",
             current_users: newRoom.players.size,
             max_users: newRoom.maxPlayers,
         },

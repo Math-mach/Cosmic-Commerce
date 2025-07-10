@@ -48,6 +48,17 @@ export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
                     return;
                 }
 
+                if (room.hostId !== user.id) {
+                    user.ws.send(
+                        JSON.stringify({
+                            event: "error",
+                            message:
+                                "Apenas o dono da sala pode iniciar o jogo.",
+                        })
+                    );
+                    return;
+                }
+
                 try {
                     room.startGame();
 

@@ -51,11 +51,14 @@ export function handleJoinRoom(
         `Usuário ${user.name} entrou na sala ${room.name} (${room.id})`
     );
 
+    const host = room.players.get(room.hostId!);
+
     const roomInfoPayload = {
         event: "room_info",
         room: {
             id: room.id,
             name: room.name,
+            hostName: host?.name || "N/D",
             current_users: room.players.size,
             max_users: room.maxPlayers,
         },
