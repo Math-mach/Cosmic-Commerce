@@ -2,6 +2,7 @@ import * as gameModule from "./game/game.js";
 
 const API_BASE = "/api/user";
 let socket = null;
+let currentUser = null;
 
 // Views
 const loginView = document.getElementById("login-view");
@@ -33,6 +34,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const res = await fetch(`${API_BASE}/me`, { credentials: "include" });
         if (!res.ok) throw new Error("Não autenticado");
         const { user } = await res.json();
+        currentUser = user;
         showLobby(user);
     } catch (err) {
         showView("login");
@@ -78,6 +80,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
         });
         if (!res.ok) throw new Error("Falha no login");
         const { user } = await res.json();
+        currentUser = user;
         showLobby(user);
     } catch (err) {
         authMessage.textContent = "Erro no login";
@@ -245,7 +248,7 @@ function connectWebSocket() {
                         "O servidor iniciou o jogo! Mudando para a tela do jogo."
                     );
                     showView("game");
-                    gameModule.initGame(data.payload, socket);
+                    gameModule.initGame(data.payload, socket, currentUser.id);
                     break;
 
                 case "gameStateUpdate":

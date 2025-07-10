@@ -8,10 +8,11 @@ let socket = null;
 let actionButtonListener = null;
 let gridClickListener = null;
 
-export function initGame(initialState, socketInstance) {
+export function initGame(initialState, socketInstance, meuId) {
     console.log("Módulo do Jogo: Iniciando com o estado:", initialState);
 
     socket = socketInstance;
+    gameState.meuId = meuId;
 
     gameState.jogadores = initialState.players;
     gameState.partida = initialState.turnInfo;
@@ -109,14 +110,28 @@ export function handleServerUpdate(updateData) {
                 mapController.limparDestaquesBifurcacao();
             }
 
+            const eMinhaVez =
+                gameState.meuId === payload.turnInfo.id_jogador_da_vez;
+
             if (
                 newPhase === "escolha_bifurcacao" &&
                 payload.turnInfo.opcoesBifurcacao
             ) {
-                mapController.destacarOpcoesBifurcacao(
-                    payload.turnInfo.opcoesBifurcacao
-                );
+                if (eMinhaVez) {
+                    mapController.destacarOpcoesBifurcacao(
+                        payload.turnInfo.opcoesBifurcacao
+                    );
+                }
             }
+
+            // if (
+            //     newPhase === "escolha_bifurcacao" &&
+            //     payload.turnInfo.opcoesBifurcacao
+            // ) {
+            //     mapController.destacarOpcoesBifurcacao(
+            //         payload.turnInfo.opcoesBifurcacao
+            //     );
+            // }
             break;
     }
 }

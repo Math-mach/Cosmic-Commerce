@@ -97,10 +97,29 @@ const uiController = {
         const faseAtual = gameState.partida?.fase_do_turno;
         if (!faseAtual) return;
 
-        const uiData = FASES_UI[faseAtual] || {
-            titulo: "Aguardando Servidor",
-            acoes: [],
-        };
+        const jogadorDaVezId = gameState.partida?.id_jogador_da_vez;
+        const eMinhaVez = gameState.meuId === jogadorDaVezId;
+
+        let uiData;
+
+        if (!eMinhaVez) {
+            const jogadorAtual = gameState.jogadores.find(
+                (p) => p.id === jogadorDaVezId
+            );
+            const nomeJogador = jogadorAtual
+                ? jogadorAtual.nome
+                : "outro jogador";
+
+            uiData = {
+                titulo: `Vez de ${nomeJogador}`,
+                acoes: ["Aguardando ação..."],
+            };
+        } else {
+            uiData = FASES_UI[faseAtual] || {
+                titulo: "Aguardando Servidor",
+                acoes: [],
+            };
+        }
 
         const phaseTitle = document.getElementById("phase-title");
         if (phaseTitle) phaseTitle.textContent = uiData.titulo;
@@ -115,13 +134,18 @@ const uiController = {
             });
         }
 
+        // Lógica do botão de ação
         const actionButton = document.getElementById("action-button");
         if (actionButton) {
-            if (faseAtual === "uso_item_pre_rolagem") {
+            // O botão só fica ativo se for minha vez E a fase permitir
+            if (eMinhaVez && faseAtual === "uso_item_pre_rolagem") {
                 actionButton.textContent = "Rolar o Dado";
                 actionButton.disabled = false;
+                actionButton.classList.remove("disabled_button");
             } else {
-                this.desabilitarBotaoAcao();
+                actionButton.textContent = "Aguarde...";
+                actionButton.disabled = true;
+                actionButton.classList.add("disabled_button");
             }
         }
     },
