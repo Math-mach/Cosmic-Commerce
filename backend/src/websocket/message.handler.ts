@@ -5,6 +5,7 @@ import {
     handleCreateRoom,
     handleJoinRoom,
     handleLeaveRoom,
+    handleVoteToExpel,
 } from "./handlers";
 
 import { roomManager } from "./managers/roomManager";
@@ -81,6 +82,10 @@ export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
 
             case "player_action":
                 handlePlayerAction(user, data.payload);
+                break;
+
+            case "vote_to_expel":
+                handleVoteToExpel(user, data.payload);
                 break;
 
             default:

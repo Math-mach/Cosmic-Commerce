@@ -1,4 +1,5 @@
 import { ConnectedUser } from "../index";
+import { passTurn } from "../game/playerAction.handler";
 
 interface TurnInfo {
     fase_do_turno: string;
@@ -13,6 +14,11 @@ interface GameState {
     turnInfo: any;
 }
 
+interface DisconnectedPlayerInfo {
+    timer: NodeJS.Timeout;
+    votes: Set<string>; // Set of user IDs who voted
+}
+
 export class Room {
     id: string;
     name: string;
@@ -23,6 +29,7 @@ export class Room {
     public hostId: string | null = null;
     public state: "waiting" | "in_progress" | "finished" = "waiting";
     public gameState: GameState | null = null;
+    public disconnectedPlayers: Map<string, DisconnectedPlayerInfo> = new Map();
 
     constructor(
         id: string,
@@ -96,5 +103,54 @@ export class Room {
                 opcoesBifurcacao: [],
             },
         };
+    }
+
+    /**
+     * Encerra um jogo em andamento, resetando a sala para o estado de "espera".
+     */
+    public endGame() {
+        this.state = "waiting";
+        this.isPublic = true;
+        this.gameState = null;
+
+        // Limpa quaisquer timers de desconexão pendentes
+        for (const disconnected of this.disconnectedPlayers.values()) {
+            clearTimeout(disconnected.timer);
+        }
+        this.disconnectedPlayers.clear();
+        console.log(`[Sala ${this.id}] Jogo encerrado, voltando para o lobby.`);
+    }
+
+    /**
+     * Remove permanentemente um jogador do estado do jogo.
+     * @param playerId O ID do jogador a ser removido.
+     * @returns `true` se era o turno do jogador removido, indicando que o turno precisa ser passado.
+     */
+    public removePlayerFromGame(playerId: string): boolean {
+        if (!this.gameState) return false;
+
+        const wasTheirTurn =
+            this.gameState.turnInfo.id_jogador_da_vez === playerId;
+        const playerIndex = this.gameState.players.findIndex(
+            (p) => p.id === playerId
+        );
+
+        if (playerIndex > -1) {
+            const removedPlayerName = this.gameState.players[playerIndex].nome;
+            this.gameState.players.splice(playerIndex, 1);
+            console.log(
+                `[Sala ${this.id}] Jogador ${removedPlayerName} removido permanentemente do jogo.`
+            );
+
+            // Limpa as informações de desconexão pendentes
+            if (this.disconnectedPlayers.has(playerId)) {
+                const info = this.disconnectedPlayers.get(playerId)!;
+                clearTimeout(info.timer);
+                this.disconnectedPlayers.delete(playerId);
+            }
+
+            return wasTheirTurn;
+        }
+        return false;
     }
 }

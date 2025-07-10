@@ -4,10 +4,9 @@ import {
     authenticateWebSocket,
     AuthenticatedUserPayload,
 } from "./auth.handler";
-
 import { handleClientMessage } from "./message.handler";
-
 import { handleDisconnection } from "./handlers/disconnection.handler";
+import { roomManager, sendGameNotification } from "./managers/roomManager";
 
 export interface ConnectedUser extends AuthenticatedUserPayload {
     ws: WebSocket;
@@ -24,18 +23,74 @@ export function initializeWebSocket(wss: WebSocketServer) {
             const authPayload = authenticateWebSocket(req);
             currentUser = { ...authPayload, ws, roomId: null };
 
+            // --- LÓGICA DE RECONEXÃO ---
+            for (const room of Array.from(roomManager.getAllRooms().values())) {
+                if (
+                    room.state === "in_progress" &&
+                    room.disconnectedPlayers.has(currentUser.id)
+                ) {
+                    console.log(
+                        `[Sala ${room.id}] Jogador ${currentUser.name} está se reconectando...`
+                    );
+
+                    sendGameNotification(
+                        room.id,
+                        "Jogador Reconectado!",
+                        `✅ ${currentUser.name} voltou ao jogo!`,
+                        4000
+                    );
+
+                    const disconnectionInfo = room.disconnectedPlayers.get(
+                        currentUser.id
+                    )!;
+                    clearTimeout(disconnectionInfo.timer);
+                    room.disconnectedPlayers.delete(currentUser.id);
+
+                    room.addPlayer(currentUser);
+
+                    roomManager.broadcastToRoom(
+                        room.id,
+                        JSON.stringify({
+                            event: "game_event",
+                            payload: {
+                                type: "player_reconnected",
+                                payload: {
+                                    playerId: currentUser.id,
+                                    playerName: currentUser.name,
+                                },
+                            },
+                        })
+                    );
+
+                    currentUser.ws.send(
+                        JSON.stringify({
+                            event: "game_started",
+                            payload: room.gameState,
+                        })
+                    );
+
+                    console.log(
+                        `[Sala ${room.id}] Jogador ${currentUser.name} reconectado com sucesso.`
+                    );
+                    break;
+                }
+            }
+            // --- FIM DA LÓGICA DE RECONEXÃO ---
+
             activeConnections.add(currentUser);
 
             console.log(
                 `✅ Usuário ${currentUser.email} conectado. Total: ${activeConnections.size}`
             );
 
-            ws.send(
-                JSON.stringify({
-                    event: "connected",
-                    message: "Bem-vindo ao servidor!",
-                })
-            );
+            if (!currentUser.roomId) {
+                ws.send(
+                    JSON.stringify({
+                        event: "connected",
+                        message: "Bem-vindo ao servidor!",
+                    })
+                );
+            }
 
             ws.on("message", (message: Buffer) => {
                 handleClientMessage(currentUser!, message.toString());
@@ -61,9 +116,7 @@ export function initializeWebSocket(wss: WebSocketServer) {
 
         ws.on("close", () => {
             if (currentUser) {
-                if (currentUser.roomId) {
-                    handleDisconnection(currentUser);
-                }
+                handleDisconnection(currentUser);
 
                 activeConnections.delete(currentUser);
                 console.log(
