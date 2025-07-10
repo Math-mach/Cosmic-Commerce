@@ -8,6 +8,8 @@ let socket = null;
 let actionButtonListener = null;
 let gridClickListener = null;
 
+let voteButtonListener = null;
+
 export function initGame(initialState, socketInstance, meuId) {
     console.log("Módulo do Jogo: Iniciando com o estado:", initialState);
 
@@ -41,6 +43,18 @@ export function handleServerUpdate(updateData) {
             gameState.partida = payload.turnInfo;
             uiController.atualizarTudo();
             mapController.atualizarPosicaoPeoes();
+
+            if (
+                payload.turnInfo.fase_do_turno === "escolha_bifurcacao" &&
+                gameState.meuId === payload.turnInfo.id_jogador_da_vez
+            ) {
+                mapController.destacarOpcoesBifurcacao(
+                    payload.turnInfo.opcoesBifurcacao
+                );
+            } else {
+                mapController.limparDestaquesBifurcacao();
+            }
+
             break;
 
         case "player_is_moving":
@@ -93,45 +107,36 @@ export function handleServerUpdate(updateData) {
             }
             break;
 
-        case "gameStateUpdate":
-            const oldPhase = gameState.partida?.fase_do_turno;
-            const newPhase = payload.turnInfo.fase_do_turno;
+        case "player_disconnected_ingame":
+            uiController.showDisconnectionModal(payload);
+            break;
 
-            gameState.jogadores = payload.players;
-            gameState.partida = payload.turnInfo;
+        case "player_reconnected":
+            uiController.hideDisconnectionModal();
+            uiController.mostrarNotificacaoEvento(
+                "Jogador Reconectado!",
+                `${payload.playerName} voltou ao jogo.`,
+                3000
+            );
+            break;
 
-            uiController.atualizarTudo();
-            mapController.atualizarPosicaoPeoes();
+        case "player_removed_ingame":
+        case "player_removed_by_vote":
+            uiController.hideDisconnectionModal();
+            mapController.removerPeao(payload.playerId);
+            gameState.jogadores = gameState.jogadores.filter(
+                (p) => p.id !== payload.playerId
+            );
+            uiController.atualizarPainelJogadores();
+            uiController.mostrarNotificacaoEvento(
+                "Jogador Removido",
+                `${payload.playerName} foi removido da partida.`,
+                4000
+            );
+            break;
 
-            if (
-                oldPhase === "escolha_bifurcacao" &&
-                newPhase !== "escolha_bifurcacao"
-            ) {
-                mapController.limparDestaquesBifurcacao();
-            }
-
-            const eMinhaVez =
-                gameState.meuId === payload.turnInfo.id_jogador_da_vez;
-
-            if (
-                newPhase === "escolha_bifurcacao" &&
-                payload.turnInfo.opcoesBifurcacao
-            ) {
-                if (eMinhaVez) {
-                    mapController.destacarOpcoesBifurcacao(
-                        payload.turnInfo.opcoesBifurcacao
-                    );
-                }
-            }
-
-            // if (
-            //     newPhase === "escolha_bifurcacao" &&
-            //     payload.turnInfo.opcoesBifurcacao
-            // ) {
-            //     mapController.destacarOpcoesBifurcacao(
-            //         payload.turnInfo.opcoesBifurcacao
-            //     );
-            // }
+        case "vote_update":
+            uiController.updateVoteCount(payload.votes, payload.votedFor);
             break;
     }
 }
@@ -144,6 +149,7 @@ export function cleanupGame() {
             ?.removeEventListener("click", actionButtonListener);
         actionButtonListener = null;
     }
+    uiController.hideDisconnectionModal();
 
     document.getElementById("ui-players-panel").innerHTML = "";
     document.getElementById("unified-grid-container").innerHTML =
@@ -158,6 +164,19 @@ function addGameListeners() {
         sendActionToServer("player_action", { action: "main_button_click" });
     };
     actionButton.addEventListener("click", actionButtonListener);
+
+    const voteButton = document.getElementById("vote-to-expel-btn");
+    if (voteButton) {
+        voteButtonListener = () => {
+            const playerIdToExpel = voteButton.dataset.playerId;
+            if (playerIdToExpel) {
+                console.log(`Votando para expulsar ${playerIdToExpel}`);
+                sendActionToServer("vote_to_expel", { playerIdToExpel });
+                voteButton.disabled = true;
+            }
+        };
+        voteButton.addEventListener("click", voteButtonListener);
+    }
 
     gridClickListener = (x, y) => {
         if (gameState.partida?.fase_do_turno === "escolha_bifurcacao") {
