@@ -334,3 +334,9 @@ hr {
     margin: 0;
     font-size: 1em;
 }
+
+#game-view #action-button.disabled_button {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    color: #ccc;
+}
