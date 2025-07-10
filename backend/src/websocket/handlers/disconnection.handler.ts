@@ -1,6 +1,9 @@
-import { ConnectedUser } from "..";
+import { ConnectedUser, activeConnections } from "..";
 
-import { roomManager } from "../managers/roomManager";
+import {
+    roomManager,
+    broadcastRoomListUpdateToLobby,
+} from "../managers/roomManager";
 
 export function handleDisconnection(user: ConnectedUser) {
     if (!user.roomId) {
@@ -36,4 +39,6 @@ export function handleDisconnection(user: ConnectedUser) {
         console.log(`Sala ${room.id} está vazia e será removida.`);
         roomManager.removeRoom(room.id);
     }
+
+    broadcastRoomListUpdateToLobby(activeConnections);
 }

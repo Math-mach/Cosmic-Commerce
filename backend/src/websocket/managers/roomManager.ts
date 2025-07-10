@@ -1,5 +1,6 @@
 import { Room } from "./Room";
 import { v4 as uuidv4 } from "uuid";
+import { ConnectedUser } from "../index";
 
 class RoomManager {
     private rooms: Map<string, Room>;
@@ -47,6 +48,23 @@ class RoomManager {
             for (const player of room.getPlayers()) {
                 player.ws.send(message);
             }
+        }
+    }
+}
+
+export function broadcastRoomListUpdateToLobby(
+    activeConnections: Set<ConnectedUser>
+) {
+    const publicRooms = roomManager.getPublicRooms();
+    const roomListPayload = {
+        event: "room_list",
+        rooms: publicRooms,
+    };
+    const message = JSON.stringify(roomListPayload);
+
+    for (const connection of activeConnections) {
+        if (connection.roomId === null) {
+            connection.ws.send(message);
         }
     }
 }
