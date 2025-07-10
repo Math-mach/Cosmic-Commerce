@@ -88,6 +88,9 @@ export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
                 handleVoteToExpel(user, data.payload);
                 break;
 
+            case "ping":
+                break;
+
             default:
                 user.ws.send(
                     JSON.stringify({
