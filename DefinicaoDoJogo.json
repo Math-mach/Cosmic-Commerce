@@ -117,9 +117,7 @@
               "conteudo_especial": null
             }
           ],
-          "lojas": [
-            { "localizacao_casa_id": "id_casa", "inventario_atual_ids": [] }
-          ],
+          "lojas": [{ "localizacao_casa_id": "id_casa", "inventario_atual_ids": [] }],
           "portoes": [{ "trancado": true }]
         }
       }
@@ -140,11 +138,6 @@
             "preco": 10,
             "efeito_detalhado": "Quando usado, o jogador rola 2 dados de 6 lados (2D6) em vez de 1D6 em sua Fase de Rolagem."
           },
-          "chave_mestra": {
-            "nome": "Chave-Mestra",
-            "preco": 5,
-            "efeito_detalhado": "O jogador escolhe um portão trancado no mapa. O status 'trancado' desse portão no `gameState.mapa.portoes` é permanentemente alterado para `false`."
-          },
           "cogumelo_venenoso": {
             "nome": "Cogumelo Venenoso",
             "preco": 10,
@@ -159,11 +152,6 @@
             "nome": "Item de Teleporte",
             "preco": 15,
             "efeito_detalhado": "O servidor seleciona aleatoriamente UM OUTRO jogador. As `posicao_mapa_id` do usuário e do alvo são trocadas no `gameState`."
-          },
-          "bloqueador_de_casa": {
-            "nome": "Bloqueador de Casa",
-            "preco": 10,
-            "efeito_detalhado": "O jogador escolhe uma casa no mapa. Um `conteudo_especial` ({tipo: 'armadilha_bloqueio'}) é adicionado a essa casa. O próximo jogador adversário que passar por ou parar nela tem seu movimento imediatamente interrompido e aterrissa ali. A armadilha é então removida."
           }
         },
         "eventos": {
