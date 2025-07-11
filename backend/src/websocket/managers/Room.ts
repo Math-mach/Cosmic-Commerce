@@ -6,6 +6,7 @@ interface TurnInfo {
   turno_atual: number;
   id_jogador_da_vez: string;
   itemUsedThisTurn?: boolean;
+  itemUsedId?: string; // <<< ADICIONADO: Campo para rastrear o item usado.
   passosRestantes?: number;
   passosRestantesAposLoja?: number;
   opcoesBifurcacao?: number[];

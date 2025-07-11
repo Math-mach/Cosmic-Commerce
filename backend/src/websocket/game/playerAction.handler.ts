@@ -191,6 +191,7 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
 
   playerState.itens.splice(itemIndex, 1);
   gameState.turnInfo.itemUsedThisTurn = true;
+  gameState.turnInfo.itemUsedId = itemId; // <<< ADICIONADO: Registra o ID do item usado.
 
   roomManager.broadcastToRoom(
     room.id,
@@ -233,7 +234,7 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   turnInfo.passosRestantes = 0;
   turnInfo.fase_do_turno = 'movimento';
   currentPlayerState.posicao_mapa_id = chosenNodeId;
-  continueMovement(room, stepsRemainingAfterChoice);
+  continueMovement(room, stepsRemainingAfterChoice, stepsRemainingAfterChoice);
 }
 
 function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: number | null = null) {
@@ -425,7 +426,7 @@ function continueAfterFragmentDecision(room: Room) {
 
   if (stepsRemaining > 0) {
     console.log(`Continuando movimento com ${stepsRemaining} passos após decisão do fragmento.`);
-    setTimeout(() => continueMovement(room, stepsRemaining), 500);
+    setTimeout(() => continueMovement(room, stepsRemaining, stepsRemaining), 500);
   } else {
     setTimeout(() => passTurn(room), 500);
   }
@@ -752,7 +753,7 @@ function handleCloseShop(room: Room, user: ConnectedUser) {
 
   if (stepsRemaining > 0) {
     console.log(`Continuando movimento com ${stepsRemaining} passos.`);
-    setTimeout(() => continueMovement(room, stepsRemaining), 500);
+    setTimeout(() => continueMovement(room, stepsRemaining, stepsRemaining), 500);
   } else {
     setTimeout(() => passTurn(room), 500);
   }
@@ -783,6 +784,7 @@ export function passTurn(room: Room) {
   turnInfo.id_jogador_da_vez = nextPlayer.id;
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
   turnInfo.itemUsedThisTurn = false;
+  turnInfo.itemUsedId = undefined; // <<< ADICIONADO: Limpa o ID do item usado para o próximo turno.
   turnInfo.passosRestantes = 0;
   turnInfo.opcoesBifurcacao = [];
   turnInfo.passosRestantesAposLoja = 0;

@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/main.css" />
     <link rel="shortcut icon" href="assets/icon.svg" type="image/x-icon" />
   </head>
   <body>
@@ -104,12 +104,27 @@
         <div class="game-container">
           <div class="left-panel">
             <h1>A Nebulosa Espiral</h1>
-            <div id="ui-players-panel"></div>
-            <div id="phase-indicator">
-              <h3 id="phase-title">Fase do Turno</h3>
-              <ul id="phase-actions"></ul>
+            <div id="ui-players-panel">
+              <!-- Gerado pelo ui-controller.js -->
             </div>
-            <div id="game-info"></div>
+
+            <!-- NOVA ESTRUTURA PARA INFORMAÇÕES DO TURNO -->
+            <div id="turn-status-panel">
+              <div class="turn-player-info">
+                <span>Turno <span id="turn-counter">1</span></span>
+                <span id="current-player-turn">Vez de: fabiano</span>
+              </div>
+              <div class="turn-dice-display">
+                <span id="dice-icon">🎲</span>
+                <span id="dice-count">0</span>
+              </div>
+              <div class="turn-effects-history">
+                <h4>Efeitos usados no turno:</h4>
+                <ul id="turn-effects-list">
+                  <li class="no-effects">Nenhum efeito utilizado.</li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="board-wrapper">
             <div id="unified-grid-container">

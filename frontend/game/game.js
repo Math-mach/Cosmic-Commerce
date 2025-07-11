@@ -7,6 +7,7 @@ let socket = null;
 let actionButtonListener = null;
 let gridClickListener = null;
 let voteButtonListener = null;
+let isAnimating = false; // <<< NOVO: Nosso "semáforo" para controlar a animação
 
 export function initGame(initialState, socketInstance, meuId) {
   console.log('Módulo do Jogo: Iniciando com o estado:', initialState);
@@ -25,7 +26,9 @@ export function initGame(initialState, socketInstance, meuId) {
   mapController.atualizarDestaqueFragmento();
   uiController.registerSendActionCallback(sendActionToServer);
   uiController.inicializarUI();
+
   uiController.atualizarTudo();
+  uiController.updateDiceCount(0);
 
   addGameListeners();
 }
@@ -37,9 +40,9 @@ export function handleServerUpdate(updateData) {
 
   switch (type) {
     case 'gameStateUpdate':
+      // Atualizamos os dados brutos primeiro
       const oldPhase = gameState.partida?.fase_do_turno;
       const newPhase = payload.turnInfo.fase_do_turno;
-
       gameState.jogadores = payload.players;
       gameState.partida = payload.turnInfo;
       if (payload.lojas) gameState.lojas = payload.lojas;
@@ -47,9 +50,24 @@ export function handleServerUpdate(updateData) {
         gameState.posicaoFragmentoEstrelaId = payload.posicaoFragmentoEstrelaId;
       }
 
+      // Atualizamos a UI geral
       uiController.atualizarTudo();
       mapController.atualizarPosicaoPeoes();
       mapController.atualizarDestaqueFragmento();
+
+      // <<< MUDANÇA AQUI: Lógica do contador de dados protegida pelo "semáforo" >>>
+      // Só alteramos o contador de dados aqui se NENHUMA animação estiver ocorrendo.
+      if (!isAnimating) {
+        const movementPausePhases = [
+          'escolha_bifurcacao',
+          'em_loja',
+          'escolha_catastrofe',
+          'decisao_fragmento',
+        ];
+        if (!movementPausePhases.includes(newPhase)) {
+          uiController.updateDiceCount(0);
+        }
+      }
 
       if (oldPhase === 'escolha_bifurcacao' && newPhase !== 'escolha_bifurcacao') {
         mapController.limparDestaquesBifurcacao();
@@ -63,32 +81,58 @@ export function handleServerUpdate(updateData) {
 
     case 'player_is_moving':
       console.log(`Animando movimento para o jogador ${payload.playerId}`);
-      if (payload.diceResult) {
-        uiController.mostrarMensagemTemporaria(`Dado rolou: ${payload.diceResult}!`, 1500);
-      }
+      isAnimating = true; // <<< NOVO: "Fecha" o semáforo. A animação assume o controle.
+
+      const diceResult = payload.diceResult || payload.path.length;
+      const finalNodeId = payload.path[payload.path.length - 1];
+      const finalNode = gameData.mapa.find(p => p.id === finalNodeId);
+      const isStarFragmentNode = finalNodeId === gameState.posicaoFragmentoEstrelaId;
+
       const animateStep = stepIndex => {
-        if (stepIndex >= payload.path.length) return;
+        if (stepIndex >= payload.path.length) {
+          const stepsMoved = payload.path.length > 0 ? payload.path.length - 1 : 0;
+          const stepsLeft = diceResult - stepsMoved;
+
+          if (
+            finalNode &&
+            (finalNode.tipo === 'bifurcacao' ||
+              finalNode.tipoCasa === 'amarela' ||
+              isStarFragmentNode)
+          ) {
+            uiController.updateDiceCount(stepsLeft);
+          } else {
+            uiController.updateDiceCount(stepsLeft);
+          }
+          isAnimating = false; // <<< NOVO: "Abre" o semáforo. A animação terminou.
+          return;
+        }
+
+        const stepsRemaining = diceResult - stepIndex;
+        uiController.updateDiceCount(stepsRemaining);
+
         const nodeId = payload.path[stepIndex];
         const playerState = gameState.jogadores.find(p => p.id === payload.playerId);
         if (playerState) {
           playerState.posicao_mapa_id = nodeId;
           mapController.atualizarPosicaoPeoes();
         }
-        setTimeout(() => animateStep(stepIndex + 1), 500);
+
+        setTimeout(() => {
+          animateStep(stepIndex + 1);
+        }, 700);
       };
-      const delay = payload.diceResult ? 1500 : 0;
-      setTimeout(() => animateStep(0), delay);
+
+      animateStep(0);
       break;
 
     case 'show_notification':
       console.log(`Exibindo notificação:`, payload);
       if (payload.isEvent && payload.title) {
         uiController.mostrarNotificacaoEvento(payload.title, payload.message, payload.duration);
-      } else {
-        uiController.mostrarMensagemTemporaria(payload.message, payload.duration);
       }
       break;
 
+    // ... (restante do switch case permanece igual)
     case 'show_shop_modal':
       const eMeuTurnoNaLoja = gameState.meuId === gameState.partida.id_jogador_da_vez;
       if (eMeuTurnoNaLoja) {
@@ -196,10 +240,6 @@ function addGameListeners() {
       if (pontoClicado && gameState.partida.opcoesBifurcacao?.includes(pontoClicado.id)) {
         console.log(`Jogador escolheu o caminho: ID ${pontoClicado.id}`);
         mapController.limparDestaquesBifurcacao();
-        if (gameState.partida) {
-          gameState.partida.fase_do_turno = 'movimento';
-        }
-        uiController.atualizarFaseUI();
         sendActionToServer('player_action', { action: 'choose_path', nodeId: pontoClicado.id });
       }
     }
