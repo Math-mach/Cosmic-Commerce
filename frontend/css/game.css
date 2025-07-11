@@ -110,7 +110,14 @@
 }
 
 #game-view .player-stats span:nth-child(2)::after {
-  content: '🪙';
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('../assets/imagens/moeda.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: text-bottom;
   margin-left: 8px;
 }
 
@@ -238,12 +245,9 @@
 
 .turn-dice-display {
   display: flex;
-  flex-direction: column;
-  /* Ícone em cima, número embaixo */
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  /* Espaço menor */
+  gap: 10px;
   background-color: var(--secondary-bg);
   padding: 10px 20px;
   border-radius: 6px;

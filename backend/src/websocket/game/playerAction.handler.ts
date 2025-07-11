@@ -301,9 +301,10 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
 
     if (nextNode.id === posicaoFragmentoEstrelaId) {
       movementStopsAtStar = true;
-      turnInfo.passosRestantesAposLoja = stepsToTake - (i + 1);
-      break;
+      turnInfo.passosRestantesAposLoja = stepsToTake - (i + 1); // Guarda os passos restantes
+      break; // Interrompe o movimento na casa da estrela
     }
+    // As outras verificações só ocorrem se a casa não for a da estrela.
     if (nextNode.tipoCasa === 'amarela') {
       movementStopsAtShop = true;
       turnInfo.passosRestantesAposLoja = stepsToTake - (i + 1);
