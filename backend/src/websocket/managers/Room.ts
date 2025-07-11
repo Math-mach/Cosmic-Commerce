@@ -56,6 +56,8 @@ export class Room {
   public state: 'waiting' | 'in_progress' | 'finished' = 'waiting';
   public gameState: GameState | null = null;
   public actionTimer: NodeJS.Timeout | null = null;
+  public actionTimerStartTime: number | null = null;
+  public actionTimerRemaining: number | null = null;
   public disconnectedPlayers: Map<string, DisconnectedPlayerInfo> = new Map();
   public readonly MAX_TURNS = 10;
 

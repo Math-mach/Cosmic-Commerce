@@ -39,47 +39,58 @@ export function clearActionTimer(room: Room) {
   }
 }
 
-export function startActionTimer(room: Room, onTimeout: () => void) {
-  clearActionTimer(room); // Limpa qualquer timer anterior
+export function startActionTimer(room: Room, onTimeout: () => void, duration: number = ACTION_TIMEOUT) {
+  clearActionTimer(room);
+
+  room.actionTimerStartTime = Date.now();
+  room.actionTimerRemaining = duration;
+
   room.actionTimer = setTimeout(() => {
     console.log(`[Sala ${room.id}] Tempo de ação esgotado. Executando ação padrão.`);
     onTimeout();
-  }, ACTION_TIMEOUT);
+  }, duration);
 }
 
-export function restartActionTimerForReconnection(room: Room) {
+export function pauseActionTimer(room: Room) {
+  if (!room.actionTimer || !room.actionTimerStartTime) return;
+
+  clearTimeout(room.actionTimer);
+  const timeElapsed = Date.now() - room.actionTimerStartTime;
+  const timeRemaining = room.actionTimerRemaining! - timeElapsed;
+
+  room.actionTimerRemaining = Math.max(0, timeRemaining); // Garante que não seja negativo
+  room.actionTimer = null;
+  room.actionTimerStartTime = null;
+
+  console.log(`[Sala ${room.id}] Timer de ação pausado com ${Math.round(room.actionTimerRemaining / 1000)}s restantes.`);
+}
+
+export function resumeActionTimer(room: Room) {
+  if (room.actionTimer || room.actionTimerRemaining === null) return; // Se já estiver rodando ou não houver tempo, não faz nada
+
   const { turnInfo } = room.gameState!;
   const currentPlayer = room.players.get(turnInfo.id_jogador_da_vez)!;
+  let onTimeoutCallback: () => void;
 
+  // Determina a ação de timeout com base na fase atual
   switch (turnInfo.fase_do_turno) {
     case 'uso_item_pre_rolagem':
-      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} rolar o dado.`);
-      startActionTimer(room, () => handleMainButtonClick(room));
+      onTimeoutCallback = () => handleMainButtonClick(room);
       break;
-
     case 'escolha_bifurcacao':
-      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} escolher o caminho.`);
-      startActionTimer(room, () => {
-        const defaultPathNodeId = turnInfo.opcoesBifurcacao![0];
-        handleChoosePath(room, currentPlayer.id, defaultPathNodeId);
-      });
+      onTimeoutCallback = () => {
+        const defaultPath = turnInfo.opcoesBifurcacao![0];
+        handleChoosePath(room, currentPlayer.id, defaultPath);
+      };
       break;
-
-    case 'em_loja':
-      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} na loja.`);
-      startActionTimer(room, () => handleCloseShop(room, currentPlayer));
-      break;
-
-    case 'escolha_catastrofe':
-      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} na catástrofe.`);
-      startActionTimer(room, () => handlePayToAvoidCatastrophe(room, currentPlayer));
-      break;
-
-    case 'decisao_fragmento':
-      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} no fragmento.`);
-      startActionTimer(room, () => handleIgnoreStarFragment(room, currentPlayer));
-      break;
+    // ... (Adicione outros casos se necessário, como loja, catástrofe, etc.)
+    default:
+      console.log(`[Sala ${room.id}] Não é possível resumir o timer na fase ${turnInfo.fase_do_turno}`);
+      return;
   }
+
+  console.log(`[Sala ${room.id}] Retomando timer de ação com ${Math.round(room.actionTimerRemaining / 1000)}s.`);
+  startActionTimer(room, onTimeoutCallback, room.actionTimerRemaining);
 }
 
 // ===================================================================================

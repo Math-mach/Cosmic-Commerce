@@ -6,7 +6,7 @@ import {
 } from "./auth.handler";
 import { handleClientMessage } from "./message.handler";
 import { handleDisconnection } from "./handlers/disconnection.handler";
-import { restartActionTimerForReconnection } from "./game/playerAction.handler";
+import { resumeActionTimer } from "./game/playerAction.handler";
 import { roomManager, sendGameNotification } from "./managers/roomManager";
 
 export interface ConnectedUser extends AuthenticatedUserPayload {
@@ -51,7 +51,7 @@ export function initializeWebSocket(wss: WebSocketServer) {
 
                     if (room.gameState && room.gameState.turnInfo.id_jogador_da_vez === currentUser.id) {
                         console.log(`[Reconexão Sala ${room.id}] É a vez de ${currentUser.name}. Reiniciando o timer de ação.`);
-                        restartActionTimerForReconnection(room);
+                        resumeActionTimer(room);
                     }
 
                     roomManager.broadcastToRoom(
