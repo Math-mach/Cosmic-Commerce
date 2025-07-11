@@ -97,27 +97,19 @@ export class Room {
   }
 
   private initializeShops(): ShopState[] {
-    const shopNodes = mapa.filter(node => node.tipoCasa === 'amarela').sort((a, b) => a.id - b.id);
-    const shops: ShopState[] = [];
-    const inventarioLoja1 = [
+    const shopNodes = mapa.filter(node => node.tipoCasa === 'amarela');
+    const fullShopInventory = [
       'dado_adicional',
       'cogumelo_venenoso',
       'item_de_teleporte',
       'ladrao_de_moedas',
     ];
-    const inventarioLoja2 = [
-      'dado_adicional',
-      'cogumelo_venenoso',
-      'item_de_teleporte',
-      'ladrao_de_moedas',
-    ];
-    if (shopNodes[0]) {
-      shops.push({ nodeId: shopNodes[0].id, items: inventarioLoja1 });
-    }
-    if (shopNodes[1]) {
-      shops.push({ nodeId: shopNodes[1].id, items: inventarioLoja2 });
-    }
-    return shops;
+
+    // Agora cria uma loja para CADA casa amarela encontrada.
+    return shopNodes.map(shopNode => ({
+      nodeId: shopNode.id,
+      items: fullShopInventory,
+    }));
   }
 
   public realocateStarFragment() {

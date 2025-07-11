@@ -235,13 +235,16 @@
   border-top: 1px solid rgba(204, 204, 204, 0.2);
   border-left: 1px solid rgba(204, 204, 204, 0.2);
   box-sizing: border-box;
+  background-color: transparent;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 1.5rem;
+  color: #ffd700;
 }
 
-#game-view .grid-cell img {
+#game-view .grid-cell img:not(.seta-bifurcacao) {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -252,10 +255,88 @@
   pointer-events: none;
 }
 
-/* NOVO: Estilo para o ícone da estrela */
+/* <<< CORREÇÃO AQUI: Estilo base e classes de rotação separadas >>> */
+.seta-bifurcacao {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80% !important;
+  height: 80% !important;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.ponto-central {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  height: 25%;
+  background-color: white;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+/* Bifurcação ID: 7 */
+.seta-bifurcacao-7-1 {
+  transform: translate(-50%, -120%) rotate(-90deg);
+}
+.seta-bifurcacao-7-2 {
+  transform: translate(-120%, -45%) rotate(180deg);
+}
+
+/* Bifurcação ID: 12 */
+.seta-bifurcacao-12-1 {
+  transform: translate(30%, -50%) rotate(0deg);
+}
+.seta-bifurcacao-12-2 {
+  transform: translate(-120%, -120%) rotate(-135deg);
+} /* Ajuste de exemplo */
+
+/* Bifurcação ID: 31 */
+.seta-bifurcacao-31-1 {
+  transform: translate(-120%, -120%) rotate(-135deg);
+}
+.seta-bifurcacao-31-2 {
+  transform: translate(-50%, 30%) rotate(90deg);
+}
+
+/* Bifurcação ID: 40 */
+.seta-bifurcacao-40-1 {
+  transform: translate(-50%, -120%) rotate(-90deg);
+}
+.seta-bifurcacao-40-2 {
+  transform: translate(35%, -50%) rotate(0deg);
+}
+
+/* Bifurcação ID: 59 */
+.seta-bifurcacao-59-1 {
+  transform: translate(-120%, -120%) rotate(-135deg);
+}
+.seta-bifurcacao-59-2 {
+  transform: translate(10%, -120%) rotate(-45deg);
+}
+
+/* Bifurcação ID: 71 */
+.seta-bifurcacao-71-1 {
+  transform: translate(-120%, -100%) rotate(210deg);
+}
+.seta-bifurcacao-71-2 {
+  transform: translate(35%, -50%) rotate(0deg);
+}
+
+/* Bifurcação ID: 88 */
+.seta-bifurcacao-88-1 {
+  transform: translate(30%, -90%) rotate(-35deg);
+}
+.seta-bifurcacao-88-2 {
+  transform: translate(30%, 50%) rotate(35deg);
+}
+
 .star-icon {
   position: absolute;
-  z-index: 5; /* Abaixo dos peões (z-index 10) */
+  z-index: 5;
   font-size: 1.2rem;
   pointer-events: none;
   text-shadow: 0 0 5px gold;

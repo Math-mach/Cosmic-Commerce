@@ -7,6 +7,7 @@ let socket = null;
 let actionButtonListener = null;
 let gridClickListener = null;
 let voteButtonListener = null;
+let isAnimating = false; // <<< CORREÇÃO: "Semáforo" para controlar a animação restaurado.
 
 export function initGame(initialState, socketInstance, meuId) {
   console.log('Módulo do Jogo: Iniciando com o estado:', initialState);
@@ -18,7 +19,6 @@ export function initGame(initialState, socketInstance, meuId) {
   gameState.lojas = initialState.lojas;
   gameState.posicaoFragmentoEstrelaId = initialState.posicaoFragmentoEstrelaId;
 
-  // A função construirTabuleiro agora faz todo o trabalho de desenhar a grade e as casas.
   mapController.construirTabuleiro();
 
   mapController.criarPeoes(gameState.jogadores);
@@ -33,7 +33,6 @@ export function initGame(initialState, socketInstance, meuId) {
   addGameListeners();
 }
 
-// O restante do arquivo permanece idêntico à versão estável anterior...
 export function handleServerUpdate(updateData) {
   console.log('Módulo do Jogo: Recebendo atualização do servidor:', updateData);
 
@@ -55,15 +54,18 @@ export function handleServerUpdate(updateData) {
       mapController.atualizarPosicaoPeoes();
       mapController.atualizarDestaqueFragmento();
 
-      const movementPausePhases = [
-        'escolha_bifurcacao',
-        'em_loja',
-        'escolha_catastrofe',
-        'decisao_fragmento',
-      ];
-
-      if (!movementPausePhases.includes(newPhase)) {
-        uiController.updateDiceCount(0);
+      // <<< CORREÇÃO: Lógica do contador protegida pelo semáforo >>>
+      // Só atualizamos o dado aqui se uma animação NÃO estiver em progresso.
+      if (!isAnimating) {
+        const movementPausePhases = [
+          'escolha_bifurcacao',
+          'em_loja',
+          'escolha_catastrofe',
+          'decisao_fragmento',
+        ];
+        if (!movementPausePhases.includes(newPhase)) {
+          uiController.updateDiceCount(0);
+        }
       }
 
       if (oldPhase === 'escolha_bifurcacao' && newPhase !== 'escolha_bifurcacao') {
@@ -78,14 +80,15 @@ export function handleServerUpdate(updateData) {
 
     case 'player_is_moving':
       console.log(`Animando movimento para o jogador ${payload.playerId}`);
+      isAnimating = true; // <<< CORREÇÃO: Ativa o semáforo. A animação tem prioridade.
 
       const diceResult = payload.diceResult || payload.path.length;
 
       const animateStep = stepIndex => {
-        // Se a animação terminou, atualiza o dado com o valor final do gameState
         if (stepIndex >= payload.path.length) {
-          const finalSteps = gameState.partida.passosRestantes || 0;
-          uiController.updateDiceCount(finalSteps);
+          // A animação deste segmento terminou. Apenas desativa o semáforo.
+          // O contador manterá o último valor exibido até a próxima atualização de estado.
+          isAnimating = false;
           return;
         }
 
@@ -114,7 +117,6 @@ export function handleServerUpdate(updateData) {
       }
       break;
 
-    // ... (restante do switch case permanece igual)
     case 'show_shop_modal':
       const eMeuTurnoNaLoja = gameState.meuId === gameState.partida.id_jogador_da_vez;
       if (eMeuTurnoNaLoja) {

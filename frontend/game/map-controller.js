@@ -39,7 +39,7 @@ const mapController = {
       }
     }
 
-    // Passo 2: Popula a grade com imagens ou cores
+    // Passo 2: Popula a grade com imagens, cores e bifurcações
     const { mapa, gameDefinitions, pontosParaPintar } = gameData;
     mapa.forEach(node => {
       const cell = document.querySelector(
@@ -63,12 +63,26 @@ const mapController = {
           }
         }
 
-        if (node.id === 0) {
+        // <<< MUDANÇA AQUI: Lógica agora se aplica a TODAS as bifurcações >>>
+        if (node.tipo === 'bifurcacao') {
+          cell.title = 'Bifurcação';
+
+          node.conexoes.forEach((conexaoId, index) => {
+            const seta = document.createElement('img');
+            seta.src = 'assets/imagens/seta.png';
+            // Cria uma classe única para cada seta de cada bifurcação
+            seta.className = `seta-bifurcacao seta-bifurcacao-${node.id}-${index + 1}`;
+            cell.appendChild(seta);
+          });
+
+          const pontoCentral = document.createElement('span');
+          pontoCentral.className = 'ponto-central';
+          cell.appendChild(pontoCentral);
+        } else if (node.id === 0) {
           imagePath = 'assets/imagens/start_map.png';
           tooltipText = 'Ponto de Partida';
           isImageNode = true;
         } else {
-          // <<< MUDANÇA AQUI: Adicionado 'roxa' à lista de casas com imagem >>>
           const imageNodeTypes = ['azul', 'vermelha', 'verde', 'amarela', 'roxa'];
           if (imageNodeTypes.includes(node.tipoCasa)) {
             isImageNode = true;
@@ -92,14 +106,15 @@ const mapController = {
           }
         }
 
-        cell.title = tooltipText;
-
-        if (isImageNode && imagePath) {
-          const img = document.createElement('img');
-          img.src = imagePath;
-          img.alt = tooltipText;
-          cell.appendChild(img);
-        } else {
+        if (isImageNode) {
+          cell.title = tooltipText;
+          if (imagePath) {
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = tooltipText;
+            cell.appendChild(img);
+          }
+        } else if (node.tipo !== 'bifurcacao') {
           const pontoCor = pontosParaPintar.find(p => p.x === node.x && p.y === node.y);
           if (pontoCor) {
             cell.style.backgroundColor = pontoCor.cor;
@@ -109,6 +124,7 @@ const mapController = {
     });
   },
 
+  // ... (O resto do arquivo permanece igual)
   criarPeoes: function (jogadores) {
     const peoesContainer = document.getElementById('peoes-container');
     if (!peoesContainer) return;

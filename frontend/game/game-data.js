@@ -254,7 +254,7 @@ const pontosParaPintar = [
   { x: 31, y: 13, cor: 'green' },
   { x: 33, y: 15, cor: 'grey' },
   { x: 35, y: 17, cor: 'blue' },
-  { x: 36, y: 19, cor: 'blue' },
+  { x: 36, y: 19, cor: 'yellow' }, // MUDADO
   { x: 38, y: 20, cor: 'blue' },
   { x: 39, y: 22, cor: 'blue' },
   { x: 40, y: 25, cor: 'green' },
@@ -273,7 +273,7 @@ const pontosParaPintar = [
   { x: 24, y: 27, cor: 'green' },
   { x: 26, y: 28, cor: 'blue' },
   { x: 28, y: 29, cor: 'red' },
-  { x: 30, y: 30, cor: 'blue' },
+  { x: 30, y: 30, cor: 'yellow' }, // MUDADO
   { x: 32, y: 33, cor: 'grey' },
   { x: 34, y: 34, cor: 'blue' },
   { x: 34, y: 36, cor: 'red' },
@@ -298,7 +298,7 @@ const pontosParaPintar = [
   { x: 6, y: 40, cor: 'green' },
   { x: 4, y: 39, cor: 'purple' },
   { x: 3, y: 37, cor: 'green' },
-  { x: 2, y: 35, cor: 'blue' },
+  { x: 2, y: 35, cor: 'yellow' }, // MUDADO
   { x: 1, y: 33, cor: 'blue' },
   { x: 1, y: 31, cor: 'green' },
   { x: 3, y: 29, cor: 'blue' },
@@ -311,7 +311,7 @@ const pontosParaPintar = [
   { x: 10, y: 34, cor: 'blue' },
   { x: 13, y: 18, cor: 'green' },
   { x: 14, y: 21, cor: 'red' },
-  { x: 15, y: 24, cor: 'blue' },
+  { x: 15, y: 24, cor: 'yellow' }, // MUDADO
   { x: 16, y: 27, cor: 'blue' },
   { x: 17, y: 30, cor: 'blue' },
 ];
