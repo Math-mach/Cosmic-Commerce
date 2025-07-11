@@ -1,148 +1,404 @@
+:root {
+  --primary-bg: #0d0c1d;
+  --secondary-bg: #1a193d;
+  --accent-color: #4c3cff;
+  --accent-hover: #6c5eff;
+  --text-color: #f0f0f0;
+  --subtitle-color: #a0a0d0;
+  --input-bg: #2a285e;
+  --danger-color: #dc3545;
+  --danger-hover: #c82333;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  margin: 20px auto;
-  padding: 0 10px;
-  background: #f9f9f9;
-  color: #333;
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--primary-bg);
+  color: var(--text-color);
 }
 
 main {
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-main:has(#game-view:not([style*='display: none'])) {
   max-width: none;
+  margin: 0;
 }
 
-h2,
-h3,
-h4 {
-  margin-top: 0;
-  color: #333;
-}
-
-form {
-  margin-bottom: 20px;
-}
-
-input,
-button {
-  padding: 8px;
-  margin: 5px 0;
+/* --- ESTILOS DE AUTENTICAÇÃO --- */
+#login-view,
+#register-view {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  background-color: var(--primary-bg);
+  overflow-y: auto;
+}
+.auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 20px;
   box-sizing: border-box;
-  border-radius: 4px;
-  border: 1px solid #ccc;
 }
-
-input {
-  background-color: #fff;
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  background-color: var(--secondary-bg);
+  border-radius: 12px;
+  border: 1px solid var(--input-bg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
-
-button {
-  cursor: pointer;
-  background-color: #0066cc;
+.auth-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  text-shadow: 0 0 10px rgba(76, 60, 255, 0.4);
+  margin: 0;
+}
+.auth-subtitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 10px 0 30px 0;
   border: none;
+  color: var(--subtitle-color);
+}
+#login-form,
+#register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 0;
+}
+.auth-container input {
+  padding: 12px 15px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.auth-container input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(76, 60, 255, 0.3);
+}
+.auth-container button {
+  padding: 12px;
+  margin: 10px 0 0 0;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: var(--accent-color);
   color: white;
   font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
-button:hover {
-  background-color: #004999;
+.auth-container button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
 }
-
+.auth-link {
+  margin-top: 20px;
+  color: var(--subtitle-color);
+  font-size: 0.9rem;
+}
+.auth-link a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+.auth-link a:hover {
+  text-decoration: underline;
+}
 #auth-message {
-  margin-top: 10px;
-  color: red;
+  margin-top: 15px;
+  color: #ff4d4d;
   min-height: 20px;
+  font-weight: 500;
 }
 
-hr {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 20px 0;
+/* --- NOVOS ESTILOS PARA O LOBBY --- */
+#lobby-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-bg);
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
 }
-
-#lobby-view h3 {
-  text-align: center;
+.lobby-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.lobby-header h3 {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin: 0;
+}
+#lobby-username {
+  color: var(--accent-color);
+}
+.lobby-panels {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+.lobby-panel {
+  background-color: var(--secondary-bg);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--input-bg);
+}
+.lobby-panel h4 {
+  font-size: 1.25rem;
+  margin-top: 0;
+  margin-bottom: 5px;
+  color: var(--text-color);
+}
+.lobby-panel p {
+  font-size: 0.9rem;
+  color: var(--subtitle-color);
+  margin: 0 0 20px 0;
+}
+#lobby-view input {
+  width: 100%;
+  padding: 12px 15px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid var(--input-bg);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
   margin-bottom: 15px;
 }
-
-#lobby-username {
+#lobby-view button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: var(--accent-color);
+  color: white;
   font-weight: bold;
-  color: #0066cc;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
+#lobby-view button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+}
+#lobby-logout-btn {
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  width: auto;
+  padding: 8px 16px;
+}
+#lobby-logout-btn:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+#create-room-btn {
+  margin-top: 20px;
+}
 #public-rooms-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
-  min-height: 300px;
+  padding: 5px;
+  min-height: 250px;
+  max-height: 40vh;
+  overflow-y: auto;
+  background-color: var(--primary-bg);
+  border-radius: 6px;
 }
-
 .room-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column; /* Coloca os detalhes e o botão em coluna */
+  align-items: stretch; /* Faz os itens internos ocuparem a largura total */
   padding: 12px;
-  border: 1px solid #e0e0e0;
   border-radius: 5px;
-  background-color: #f9f9f9;
+  background-color: var(--input-bg);
+  transition: background-color 0.2s ease;
+  text-align: left;
 }
-
+.room-item:hover {
+  background-color: #3a387a;
+}
 .room-details {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 10px; /* Espaço entre os detalhes e o botão */
 }
-
 .room-name {
   font-weight: bold;
-  font-size: 1.1em;
-  margin-bottom: 4px;
+  font-size: 1rem;
+  color: var(--text-color);
+  word-break: break-all; /* Garante que nomes de sala muito longos quebrem a linha */
 }
-
 .room-players {
-  font-size: 0.9em;
-  color: #666;
+  font-size: 0.85em;
+  color: var(--subtitle-color);
+}
+.join-room-btn {
+  width: 100%; /* Botão ocupa a largura toda */
+  padding: 8px 14px;
+  font-size: 0.9rem;
 }
 
+/* --- ESTILOS PARA A SALA DE ESPERA/CHAT --- */
+#ws-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex; /* Usamos flex para centralizar o container */
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.room-container {
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--secondary-bg);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--input-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 90vh;
+}
+#room-name-display {
+  font-size: 1.75rem;
+  text-align: center;
+  color: var(--text-color);
+  margin: 0;
+}
 #room-info-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  padding: 10px 15px;
+  background-color: var(--primary-bg);
+  border-radius: 6px;
   font-size: 0.9em;
+  color: var(--subtitle-color);
 }
-
-.join-room-btn {
-  width: auto;
-  padding: 8px 16px;
-  flex-shrink: 0;
+#room-info-header strong {
+  color: var(--text-color);
 }
-
-#game-view {
+#messages {
+  height: 300px;
+  overflow-y: auto;
+  background: var(--primary-bg);
+  border: 1px solid var(--input-bg);
+  padding: 10px;
+  border-radius: 6px;
+  flex-grow: 1;
+  color: var(--subtitle-color);
+  font-size: 0.9rem;
+}
+.chat-controls {
   display: flex;
+  gap: 10px;
+}
+#ws-input {
+  flex-grow: 1;
+  background-color: var(--input-bg);
+  border: 1px solid transparent;
+  color: var(--text-color);
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+#ws-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+#send-chat {
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+.room-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.room-actions button {
+  flex-grow: 1;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.room-actions button:hover {
+  transform: translateY(-2px);
+}
+#send-game {
+  background-color: #28a745;
+  color: white;
+}
+#send-game:hover {
+  background-color: #218838;
+}
+#leave-room-btn {
+  background-color: var(--danger-color);
+  color: white;
+}
+#leave-room-btn:hover {
+  background-color: var(--danger-hover);
+}
+
+/* --- ESTILOS DO JOGO --- */
+#game-view {
+  display: none; /* Controlado por JS */
+  background-color: #f9f9f9;
+  color: #333;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-sizing: border-box;
   justify-content: center;
   align-items: flex-start;
-  width: 100%;
+  width: auto;
 }
-
 #game-view .game-container {
   display: flex;
   gap: 20px;
   width: 100%;
   max-width: 1200px;
 }
-
 #game-view .left-panel {
   display: flex;
   flex-direction: column;
@@ -151,7 +407,6 @@ hr {
   width: 250px;
   padding: 0 15px;
 }
-
 #game-view .player-card {
   border: 2px solid #ccc;
   border-radius: 8px;
@@ -159,59 +414,49 @@ hr {
   background-color: #fff;
   transition: all 0.3s ease;
 }
-
 #game-view .player-card:first-child {
   margin-bottom: 5px;
 }
-
 #game-view .player-card.active-player {
   border-color: #007bff;
   box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
 }
-
 #game-view .player-card h3 {
   margin: 0 0 10px 0;
   font-size: 1.2em;
   color: #333;
 }
-
 #game-view .player-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5px;
 }
-
 #game-view .player-inventory {
   margin-top: 12px;
   border-top: 1px solid #eee;
   padding-top: 10px;
 }
-
 #game-view .player-inventory h4 {
   margin: 0 0 5px 0;
   font-size: 1em;
   color: #555;
 }
-
 #game-view .player-item-list {
   list-style: none;
   padding: 0;
   margin: 0;
   font-size: 0.9em;
 }
-
 #game-view .player-item-list li {
   padding: 2px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 #game-view .player-item-list li.no-items {
   color: #888;
   font-style: italic;
 }
-
 #game-view #phase-indicator {
   border: 2px solid #5a6268;
   background-color: #e9ecef;
@@ -219,14 +464,12 @@ hr {
   padding: 10px;
   text-align: center;
 }
-
 #game-view #phase-indicator h3 {
   margin: 0 0 10px 0;
   color: #343a40;
   border-bottom: 1px solid #ced4da;
   padding-bottom: 5px;
 }
-
 #game-view #phase-indicator ul {
   list-style: none;
   padding: 0;
@@ -234,17 +477,14 @@ hr {
   font-size: 0.9em;
   color: #495057;
 }
-
 #game-view .board-wrapper {
   position: relative;
 }
-
 #game-view h1 {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   text-align: center;
 }
-
 #game-view #unified-grid-container {
   display: grid;
   grid-template-columns: repeat(40, 1fr) 35px;
@@ -256,7 +496,6 @@ hr {
   border: 2px solid black;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
-
 #game-view .grid-cell {
   border-top: 1px solid #ccc;
   border-left: 1px solid #ccc;
@@ -267,7 +506,6 @@ hr {
   align-items: center;
   font-size: 12px;
 }
-
 #game-view .label {
   display: flex;
   align-items: center;
@@ -276,15 +514,12 @@ hr {
   font-family: monospace;
   color: #333;
 }
-
 #game-view .x-axis-label {
   border-top: 2px solid black;
 }
-
 #game-view .y-axis-label {
   border-left: 2px solid black;
 }
-
 #game-view #peoes-container {
   position: absolute;
   top: 0;
@@ -293,7 +528,6 @@ hr {
   height: calc(100% - 25px);
   pointer-events: none;
 }
-
 #game-view .peao {
   position: absolute;
   width: 15px;
@@ -304,7 +538,6 @@ hr {
   z-index: 10;
   transition: transform 0.4s ease-in-out;
 }
-
 #game-view .peao-p1 {
   background-color: #e63946;
 }
@@ -317,31 +550,26 @@ hr {
 #game-view .peao-p4 {
   background-color: #88ff00;
 }
-
 #game-view #ui-actions-panel {
   margin-top: 15px;
   text-align: center;
 }
-
 #game-view #game-info {
   margin-bottom: 12px;
   font-weight: bold;
   text-align: center;
 }
-
 #game-view #action-button {
   padding: 10px 20px;
   font-size: 1em;
   cursor: pointer;
 }
-
 #game-view .ponto-bifurcacao-opcao {
   border: 4px dashed #ffc107 !important;
   background-color: #fff3cd !important;
   cursor: pointer !important;
   animation: pulse 1.5s infinite;
 }
-
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
@@ -353,7 +581,6 @@ hr {
     box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
   }
 }
-
 #game-view .event-notification {
   position: fixed;
   top: 50%;
@@ -370,28 +597,23 @@ hr {
   opacity: 0;
   transition: opacity 0.5s ease;
 }
-
 #game-view .event-notification.visible {
   opacity: 1;
 }
-
 #game-view .event-notification h4 {
   margin: 0 0 10px 0;
   font-size: 1.5em;
   color: #ffc107;
 }
-
 #game-view .event-notification p {
   margin: 0;
   font-size: 1em;
 }
-
 #game-view #action-button.disabled_button {
   background-color: #6c757d;
   cursor: not-allowed;
   color: #ccc;
 }
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -399,12 +621,11 @@ hr {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 2000;
 }
-
 .modal-content {
   background-color: #fff;
   padding: 25px;
@@ -413,8 +634,8 @@ hr {
   max-width: 500px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   text-align: center;
+  color: #333;
 }
-
 .modal-content h3 {
   margin-top: 0;
   color: #333;
@@ -422,7 +643,6 @@ hr {
   padding-bottom: 10px;
   margin-bottom: 20px;
 }
-
 #shop-items-container {
   display: flex;
   flex-direction: column;
@@ -431,7 +651,6 @@ hr {
   max-height: 40vh;
   overflow-y: auto;
 }
-
 .shop-item {
   display: flex;
   justify-content: space-between;
@@ -441,7 +660,6 @@ hr {
   border-radius: 5px;
   text-align: left;
 }
-
 .shop-item-info {
   flex-grow: 1;
 }
@@ -453,33 +671,28 @@ hr {
   color: #666;
   margin: 4px 0 0 0;
 }
-
 .buy-item-btn {
   width: auto;
   padding: 8px 15px;
   margin-left: 15px;
   flex-shrink: 0;
 }
-
 #close-shop-btn {
   background-color: #6c757d;
 }
 #close-shop-btn:hover {
   background-color: #5a6268;
 }
-
 #catastrophe-modal .modal-content p {
   margin: 10px 0 25px 0;
   font-size: 1.1em;
   color: #444;
 }
-
 .modal-actions {
   display: flex;
   gap: 15px;
   justify-content: center;
 }
-
 #catastrophe-modal .modal-actions button {
   width: 50%;
 }
@@ -489,7 +702,6 @@ hr {
 #face-catastrophe-btn:hover {
   background-color: #c82333;
 }
-
 .player-item-list button {
   width: auto;
   padding: 2px 8px;
@@ -505,14 +717,12 @@ hr {
   background-color: #6c757d;
   cursor: not-allowed;
 }
-
 #target-players-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
 }
-
 #target-players-container button {
   background-color: #17a2b8;
   text-align: center;
@@ -526,7 +736,6 @@ hr {
 #cancel-target-btn:hover {
   background-color: #5a6268;
 }
-
 #star-fragment-modal #buy-star-btn {
   background-color: #ffc107;
   color: #212529;
@@ -538,7 +747,6 @@ hr {
 #star-fragment-modal #ignore-star-btn {
   background-color: #6c757d;
 }
-
 #disconnection-modal .modal-content {
   background-color: white;
   padding: 30px;
@@ -548,25 +756,21 @@ hr {
   width: 90%;
   max-width: 400px;
 }
-
 #disconnection-modal h2 {
   color: #d9534f;
   margin-top: 0;
 }
-
 #disconnection-modal .timer {
   font-size: 2.5em;
   font-weight: bold;
   color: #333;
   margin: 15px 0;
 }
-
 #disconnection-modal .vote-status {
   font-size: 0.9em;
   color: #666;
   margin-bottom: 20px;
 }
-
 #disconnection-modal #vote-to-expel-btn {
   background-color: #f0ad4e;
   color: white;
@@ -576,7 +780,6 @@ hr {
   cursor: pointer;
   font-size: 1em;
 }
-
 #disconnection-modal #vote-to-expel-btn:hover {
   background-color: #ec971f;
 }
