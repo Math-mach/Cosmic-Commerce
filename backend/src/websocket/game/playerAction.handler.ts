@@ -11,15 +11,15 @@ import { findNodeById, gameDefinitions } from './gameData';
 
 interface PlayerActionPayload {
   action:
-  | 'main_button_click'
-  | 'choose_path'
-  | 'buy_item'
-  | 'close_shop'
-  | 'pay_to_avoid_catastrophe'
-  | 'face_the_catastrophe'
-  | 'use_item'
-  | 'buy_star_fragment'
-  | 'ignore_star_fragment';
+    | 'main_button_click'
+    | 'choose_path'
+    | 'buy_item'
+    | 'close_shop'
+    | 'pay_to_avoid_catastrophe'
+    | 'face_the_catastrophe'
+    | 'use_item'
+    | 'buy_star_fragment'
+    | 'ignore_star_fragment';
   nodeId?: number;
   itemId?: string;
   targetPlayerId?: string;
@@ -230,11 +230,11 @@ function handleMainButtonClick(room: Room) {
       e => e.id !== 'cogumelo_venenoso'
     );
   } else {
-    dadoComum = Math.floor(Math.random() * 6) + 1;
+    dadoComum = Math.floor(Math.random() * 10) + 1;
   }
 
   if (dadoAdicionalEffect) {
-    dadoExtra = Math.floor(Math.random() * 6) + 1;
+    dadoExtra = Math.floor(Math.random() * 10) + 1;
     currentPlayer.efeitos_ativos = currentPlayer.efeitos_ativos.filter(
       e => e.id !== 'dado_adicional'
     );
@@ -272,7 +272,6 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
 
   const stepsRemainingAfterChoice = turnInfo.passosRestantes!;
   turnInfo.opcoesBifurcacao = [];
-  turnInfo.passosRestantes = 0;
   turnInfo.fase_do_turno = 'movimento';
   currentPlayerState.posicao_mapa_id = chosenNodeId;
   continueMovement(room, stepsRemainingAfterChoice, stepsRemainingAfterChoice);
@@ -378,7 +377,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     } else if (tipoCasa === 'verde') {
       const evento =
         gameDefinitions.eventos_casa_interrogacao[
-        Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
+          Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
         ];
       notificationPayload = { title: evento.nome, message: evento.efeito_detalhado, isEvent: true };
       switch (evento.id) {

@@ -79,7 +79,12 @@ export function handleServerUpdate(updateData) {
       mapController.atualizarDestaqueFragmento();
 
       if (!isAnimating) {
-        const movementPausePhases = ['escolha_bifurcacao', 'em_loja', 'escolha_catastrofe', 'decisao_fragmento'];
+        const movementPausePhases = [
+          'escolha_bifurcacao',
+          'em_loja',
+          'escolha_catastrofe',
+          'decisao_fragmento',
+        ];
         if (!movementPausePhases.includes(newPhase)) {
           uiController.updateDiceCount(0);
         }
@@ -163,7 +168,11 @@ export function handleServerUpdate(updateData) {
 
     case 'player_reconnected':
       uiController.hideDisconnectionModal();
-      uiController.mostrarNotificacaoEvento('Jogador Reconectado!', `${payload.playerName} voltou ao jogo.`, 3000);
+      uiController.mostrarNotificacaoEvento(
+        'Jogador Reconectado!',
+        `${payload.playerName} voltou ao jogo.`,
+        3000
+      );
       break;
 
     case 'player_removed_ingame':
@@ -172,7 +181,11 @@ export function handleServerUpdate(updateData) {
       mapController.removerPeao(payload.playerId);
       gameState.jogadores = gameState.jogadores.filter(p => p.id !== payload.playerId);
       uiController.atualizarPainelJogadores();
-      uiController.mostrarNotificacaoEvento('Jogador Removido', `${payload.playerName} foi removido da partida.`, 4000);
+      uiController.mostrarNotificacaoEvento(
+        'Jogador Removido',
+        `${payload.playerName} foi removido da partida.`,
+        4000
+      );
       break;
 
     case 'vote_update':
@@ -224,18 +237,16 @@ function addGameListeners() {
     voteButton.addEventListener('click', voteButtonListener);
   }
 
-  if (!gridClickListener) {
-    gridClickListener = (x, y) => {
-      if (gameState.partida?.fase_do_turno === 'escolha_bifurcacao') {
-        const pontoClicado = gameData.mapa.find(p => p.x === x && p.y === y);
-        if (pontoClicado && gameState.partida.opcoesBifurcacao?.includes(pontoClicado.id)) {
-          mapController.limparDestaquesBifurcacao();
-          sendActionToServer('player_action', { action: 'choose_path', nodeId: pontoClicado.id });
-        }
+  gridClickListener = (x, y) => {
+    if (gameState.partida?.fase_do_turno === 'escolha_bifurcacao') {
+      const pontoClicado = gameData.mapa.find(p => p.x === x && p.y === y);
+      if (pontoClicado && gameState.partida.opcoesBifurcacao?.includes(pontoClicado.id)) {
+        mapController.limparDestaquesBifurcacao();
+        sendActionToServer('player_action', { action: 'choose_path', nodeId: pontoClicado.id });
       }
-    };
-    mapController.addGridClickListener(gridClickListener);
-  }
+    }
+  };
+  mapController.addGridClickListener(gridClickListener);
 }
 
 function sendActionToServer(type, payload) {
