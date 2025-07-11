@@ -3,7 +3,6 @@ import gameData from './game-data.js';
 
 // Coordenadas das casas especiais para adicionar a imagem da seta
 const casasComSeta = [
-  { x: 15, y: 2 },
   { x: 2, y: 9 },
   { x: 21, y: 4 },
   { x: 2, y: 17 },

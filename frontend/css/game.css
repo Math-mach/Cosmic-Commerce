@@ -279,9 +279,6 @@ img.casa-especial {
   height: 300% !important;
   /* A posição já é controlada pela regra de rotação abaixo */
 }
-.seta-especial-15-2 {
-  transform: translate(-50%, -50%) rotate(180deg);
-}
 .seta-especial-2-9 {
   transform: translate(-50%, -50%) rotate(90deg);
 }
