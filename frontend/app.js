@@ -14,6 +14,7 @@ const gameView = document.getElementById('game-view');
 
 // Elementos de Autenticação
 const authMessage = document.getElementById('auth-message');
+const registerMessage = document.getElementById('register-message');
 
 // Elementos do Lobby
 const publicRoomsList = document.getElementById('public-rooms-list');
@@ -92,6 +93,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
 
 document.getElementById('register-form').addEventListener('submit', async e => {
     e.preventDefault();
+    registerMessage.textContent = '';
     authMessage.textContent = '';
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
@@ -103,13 +105,16 @@ document.getElementById('register-form').addEventListener('submit', async e => {
             credentials: 'include',
             body: JSON.stringify({ name, email, password }),
         });
-        if (!res.ok) throw new Error('Falha no registro');
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || 'Falha no registro');
+        }
         authMessage.style.color = 'green';
         authMessage.textContent = 'Registrado com sucesso! Faça login.';
         showView('login');
     } catch (err) {
-        authMessage.style.color = 'red';
-        authMessage.textContent = 'Erro no registro';
+        registerMessage.style.color = 'red';
+        registerMessage.textContent = err.message || 'Erro inesperado no registro';
     }
 });
 
