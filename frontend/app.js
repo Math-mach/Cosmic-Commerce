@@ -14,6 +14,7 @@ const gameView = document.getElementById('game-view');
 
 // Elementos de Autenticação
 const authMessage = document.getElementById('auth-message');
+const registerMessage = document.getElementById('register-message');
 
 // Elementos do Lobby
 const publicRoomsList = document.getElementById('public-rooms-list');
@@ -103,13 +104,16 @@ document.getElementById('register-form').addEventListener('submit', async e => {
       credentials: 'include',
       body: JSON.stringify({ name, email, password }),
     });
-    if (!res.ok) throw new Error('Falha no registro');
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Falha no registro');
+    }
     authMessage.style.color = 'green';
     authMessage.textContent = 'Registrado com sucesso! Faça login.';
     showView('login');
   } catch (err) {
     authMessage.style.color = 'red';
-    authMessage.textContent = 'Erro no registro';
+    registerMessage.textContent = err.message || 'Erro inesperado no registro';
   }
 });
 
@@ -267,9 +271,15 @@ function connectWebSocket() {
         case 'room_info':
           const gameOverModal = document.getElementById('game-over-modal');
           if (gameOverModal && gameOverModal.style.display !== 'none') {
-            gameModule.hideGameOver();
-            showView('chat');
+            // O Jogo acabou, vamos voltar para a sala de espera.
+            gameModule.hideGameOver(); // 1. Esconde o modal.
+            showView('chat'); // 2. Muda a view para a sala de espera.
+            gameModule.cleanupGame(); // 3. Limpa os elementos do jogo (tabuleiro, peões, etc).
+
+            messagesDiv.innerHTML = ''; // 4. Limpa o chat explicitamente.
+            appendMessage('A partida terminou. Bem-vindo de volta à sala!');
           } else if (lobbyView.style.display === 'block') {
+            messagesDiv.innerHTML = ''; // Limpa o chat antes de entrar.
             showView('chat');
             appendMessage(`Bem-vindo à sala!`);
           }
@@ -304,6 +314,31 @@ function connectWebSocket() {
           if (gameView.style.display === 'block') {
             gameModule.handleGameOver(data.payload);
           }
+          break;
+
+        case 'game_ended_by_disconnection':
+          gameModule.cleanupGame();
+          showView('chat');
+          messagesDiv.innerHTML = '';
+          appendMessage(
+            'O jogo foi encerrado por falta de pessoas e a sala voltou para o modo de espera.'
+          );
+          break;
+        case 'left_game_success':
+          gameModule.cleanupGame(); // Limpa os recursos do jogo
+          showView('lobby'); // Mostra a tela de lobby
+          socket.send(JSON.stringify({ type: 'get_rooms' })); // Pede a lista de salas atualizada
+          break;
+        // >>>>>>>>>>>> FIM DO NOVO CASE <<<<<<<<<<<<
+
+        case 'game_ended_by_leave':
+        case 'game_ended_by_disconnection':
+          gameModule.cleanupGame(); // Limpa a tela do jogo
+          showView('chat'); // Mostra a tela da sala de espera
+          messagesDiv.innerHTML = ''; // Limpa as mensagens antigas
+          appendMessage(
+            data.payload.message || 'O jogo foi encerrado e a sala voltou ao modo de espera.'
+          );
           break;
 
         case 'game_ended_by_disconnection':

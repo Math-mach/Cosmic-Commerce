@@ -1,10 +1,9 @@
 import gameState from './game-state.js';
 import gameData from './game-data.js';
 
-let disconnectionCountdownInterval = null;
-
 const uiController = {
   _sendActionCallback: null,
+  disconnectionCountdownInterval: null, // <-- ADICIONADO AQUI como uma propriedade
 
   registerSendActionCallback(callback) {
     this._sendActionCallback = callback;
@@ -37,13 +36,13 @@ const uiController = {
     });
   },
 
+  // ... (função atualizarPainelJogadores e outras permanecem iguais) ...
   atualizarPainelJogadores: function () {
     const playersPanelLeft = document.getElementById('ui-players-panel');
     const playersPanelRight = document.getElementById('ui-players-panel-right');
 
     if (!playersPanelLeft || !playersPanelRight) return;
 
-    // Limpa ambos os painéis antes de redesenhar
     playersPanelLeft.innerHTML = '';
     playersPanelRight.innerHTML = '';
 
@@ -58,7 +57,6 @@ const uiController = {
         card.classList.add('active-player');
       }
 
-      // Lógica para gerar a lista de itens (continua a mesma)
       let itemsHtml = '<ul class="player-item-list">';
       if (player.itens && player.itens.length > 0) {
         player.itens.forEach(itemId => {
@@ -75,7 +73,6 @@ const uiController = {
       }
       itemsHtml += '</ul>';
 
-      // Lógica para exibir os efeitos ativos (continua a mesma)
       let effectsHtml = '';
       if (player.efeitos_ativos && player.efeitos_ativos.length > 0) {
         player.efeitos_ativos.forEach(effect => {
@@ -92,7 +89,6 @@ const uiController = {
 
       const playerImageSrc = `assets/imagens/player_${index + 1}.png`;
 
-      // Monta o HTML final do card do jogador (continua o mesmo)
       card.innerHTML = `
         <h3><img src="${playerImageSrc}" alt="Ícone do Jogador"> ${player.nome}</h3>
         <div class="player-stats">
@@ -119,7 +115,6 @@ const uiController = {
       }
     });
 
-    // Adiciona os event listeners aos botões "Usar" (continua o mesmo)
     document.querySelectorAll('.use-item-btn').forEach(button => {
       button.addEventListener('click', e => {
         const itemId = e.target.dataset.itemId;
@@ -133,7 +128,6 @@ const uiController = {
     const currentPlayerTurn = document.getElementById('current-player-turn');
     const turnEffectsList = document.getElementById('turn-effects-list');
 
-    // Agora a verificação vai funcionar, pois todos os elementos existem
     if (!turnCounter || !currentPlayerTurn || !turnEffectsList) return;
 
     const { partida, jogadores } = gameState;
@@ -144,7 +138,6 @@ const uiController = {
     turnCounter.textContent = partida.turno_atual || '1';
     currentPlayerTurn.textContent = `Vez de: ${jogadorAtual ? jogadorAtual.nome : '...'}`;
 
-    // Esta lógica agora funciona novamente
     const itemUsadoId = partida.itemUsedId;
     if (itemUsadoId) {
       const itemDef = gameData.gameDefinitions.itens[itemUsadoId];
@@ -316,6 +309,10 @@ const uiController = {
     const majority = Math.floor(connectedPlayersCount / 2) + 1;
     voteStatus.textContent = `Votos para expulsar: 0 / ${majority}`;
 
+    if (this.disconnectionCountdownInterval) {
+      clearInterval(this.disconnectionCountdownInterval);
+    }
+
     let timeLeft = 60;
     const updateTimer = () => {
       const minutes = Math.floor(timeLeft / 60)
@@ -324,19 +321,25 @@ const uiController = {
       const seconds = (timeLeft % 60).toString().padStart(2, '0');
       timerDisplay.textContent = `${minutes}:${seconds}`;
       timeLeft--;
-      if (timeLeft < 0) clearInterval(disconnectionCountdownInterval);
+      if (timeLeft < 0) {
+        clearInterval(this.disconnectionCountdownInterval);
+        this.disconnectionCountdownInterval = null;
+      }
     };
     updateTimer();
-    disconnectionCountdownInterval = setInterval(updateTimer, 1000);
+    // Acessa a variável como uma propriedade do objeto
+    this.disconnectionCountdownInterval = setInterval(updateTimer, 1000);
     modal.style.display = 'flex';
   },
 
   hideDisconnectionModal: function () {
     const modal = document.getElementById('disconnection-modal');
     if (modal) modal.style.display = 'none';
-    if (disconnectionCountdownInterval) {
-      clearInterval(disconnectionCountdownInterval);
-      disconnectionCountdownInterval = null;
+
+    // Acessa a variável como uma propriedade do objeto
+    if (this.disconnectionCountdownInterval) {
+      clearInterval(this.disconnectionCountdownInterval);
+      this.disconnectionCountdownInterval = null;
     }
   },
 
@@ -352,9 +355,8 @@ const uiController = {
     const modal = document.getElementById('game-over-modal');
     const scoresList = document.getElementById('final-scores-list');
     const awardsList = document.getElementById('awards-list');
-    const returnBtn = document.getElementById('return-to-lobby-btn');
 
-    if (!modal || !scoresList || !awardsList || !returnBtn) return;
+    if (!modal || !scoresList || !awardsList) return;
 
     scoresList.innerHTML = '';
     finalScores.forEach((player, index) => {
@@ -388,10 +390,6 @@ const uiController = {
     })</span>
         </div>
     `;
-
-    returnBtn.onclick = () => {
-      this.hideGameOverModal();
-    };
 
     modal.style.display = 'flex';
   },

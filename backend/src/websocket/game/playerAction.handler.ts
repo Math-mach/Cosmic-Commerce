@@ -126,8 +126,8 @@ export function passTurn(room: Room) {
     if (finalPayload) {
       roomManager.broadcastToRoom(room.id, JSON.stringify(finalPayload));
     }
+    room.endGame();
     setTimeout(() => {
-      room.endGame();
       const host = room.players.get(room.hostId!);
       const roomInfoPayload = {
         event: 'room_info',
@@ -137,6 +137,7 @@ export function passTurn(room: Room) {
           hostName: host?.name || 'N/D',
           current_users: room.getPlayers().length,
           max_users: room.maxPlayers,
+          players: room.getPlayers().map(p => ({ id: p.id, name: p.name })),
         },
       };
       roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));

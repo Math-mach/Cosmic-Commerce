@@ -5,6 +5,7 @@ import { handleDisconnection } from "./disconnection.handler";
 import { handleJoinRoom } from "./joinRoom.handler";
 import { handleLeaveRoom } from "./leaveRoom.handler";
 import { handleVoteToExpel } from "./voteToExpel.handler";
+import { handleLeaveGame } from "./leaveGame.handler";
 
 export {
     handleChatMessage,
@@ -14,4 +15,5 @@ export {
     handleJoinRoom,
     handleLeaveRoom,
     handleVoteToExpel,
+    handleLeaveGame
 };
