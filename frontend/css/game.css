@@ -194,7 +194,7 @@
   gap: 20px;
   width: 100%;
   max-width: 700px; /* Um pouco maior para caber tudo */
-  padding: 15px;
+  padding: 5px 15px;
   background-color: var(--primary-bg);
   border: 1px solid var(--input-bg);
   border-radius: 8px;
