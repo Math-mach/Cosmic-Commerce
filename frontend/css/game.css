@@ -81,7 +81,14 @@
   margin-left: 8px;
 }
 #game-view .player-stats span:nth-child(4)::after {
-  content: '⭐';
+  content: ''; /* Remove o emoji */
+  display: inline-block;
+  width: 16px; /* Largura da imagem */
+  height: 16px; /* Altura da imagem */
+  background-image: url('../assets/imagens/estrela.png'); /* Caminho para a imagem */
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: text-bottom; /* Alinha a imagem com o texto */
   margin-left: 8px;
 }
 
@@ -390,9 +397,10 @@ img.seta-especial-18-32 {
 .star-icon {
   position: absolute;
   z-index: 5;
-  font-size: 1.2rem;
+  width: 24px; /* Largura da imagem da estrela no tabuleiro */
+  height: 24px; /* Altura da imagem da estrela no tabuleiro */
   pointer-events: none;
-  text-shadow: 0 0 5px gold;
+  filter: drop-shadow(0 0 3px gold); /* Efeito de brilho */
 }
 
 #game-view .label {

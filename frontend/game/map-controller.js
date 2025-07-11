@@ -204,9 +204,10 @@ const mapController = {
         `#game-view .grid-cell[data-x='${pontoDoMapa.x}'][data-y='${pontoDoMapa.y}']`
       );
       if (celulaNova) {
-        const starIcon = document.createElement('span');
+        const starIcon = document.createElement('img');
         starIcon.className = 'star-icon';
-        starIcon.textContent = '⭐';
+        starIcon.src = 'assets/imagens/estrela.png';
+        starIcon.alt = 'Fragmento de Estrela';
         celulaNova.appendChild(starIcon);
       }
     }
