@@ -5,6 +5,7 @@ import gameData from './game-data.js';
 const casasComSeta = [
   { x: 15, y: 2 },
   { x: 2, y: 9 },
+  { x: 21, y: 4 },
   { x: 2, y: 17 },
   { x: 2, y: 28 },
   { x: 33, y: 32 },
