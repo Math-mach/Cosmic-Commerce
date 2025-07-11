@@ -142,6 +142,10 @@ const mapController = {
       const peao = document.createElement('div');
       peao.id = `peao-${player.id}`;
       peao.className = `peao peao-p${index + 1}`;
+      const nomePeao = document.createElement('span');
+      nomePeao.className = 'peao-nome';
+      nomePeao.textContent = player.nome;
+      peao.appendChild(nomePeao);
       peoesContainer.appendChild(peao);
     });
   },
