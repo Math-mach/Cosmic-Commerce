@@ -34,11 +34,26 @@ export function handleLeaveGame(user: ConnectedUser) {
     };
     roomManager.broadcastToRoom(room.id, JSON.stringify(chatMessage));
 
-    // Remove o jogador do estado do jogo e da sala
     const wasHost = room.hostId === userId;
     const wasTheirTurn = room.removePlayerFromGame(userId);
     room.removePlayer(userId);
     user.roomId = null;
+
+    // 2. Promove um novo host IMEDIATAMENTE, se necessário.
+    //    Isso garante que, mesmo se o jogo for cancelado, a sala terá um host correto.
+    if (wasHost && room.getPlayers().length > 0) {
+        room.promoteNextHost();
+        const newHost = room.players.get(room.hostId!);
+        if (newHost) {
+            const promotionMessage = {
+                event: 'chat_message',
+                from: 'Sistema',
+                message: `O anfitrião, ${name}, saiu. ${newHost.name} agora é o novo anfitrião.`,
+                isSystemMessage: true
+            };
+            roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
+        }
+    }
 
     // Verifica se a partida deve ser cancelada
     if (room.getPlayers().length < 2) {
@@ -74,21 +89,6 @@ export function handleLeaveGame(user: ConnectedUser) {
             }
         }, 1000);
         return;
-    }
-
-    // Se o jogo continua, promove um novo host se necessário
-    if (wasHost) {
-        room.promoteNextHost();
-        const newHost = room.players.get(room.hostId!);
-        if (newHost) {
-            const promotionMessage = {
-                event: 'chat_message',
-                from: 'Sistema',
-                message: `O anfitrião, ${name}, saiu. ${newHost.name} agora é o novo anfitrião.`,
-                isSystemMessage: true
-            };
-            roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
-        }
     }
 
     // Passa o turno se o jogador que saiu era o da vez

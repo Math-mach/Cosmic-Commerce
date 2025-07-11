@@ -279,22 +279,20 @@ function connectWebSocket() {
 
         case 'room_info':
           const gameOverModal = document.getElementById('game-over-modal');
-          if (gameOverModal && gameOverModal.style.display !== 'none') {
-            // O Jogo acabou, vamos voltar para a sala de espera.
-            gameModule.hideGameOver(); // 1. Esconde o modal.
-            showView('chat'); // 2. Muda a view para a sala de espera.
-            gameModule.cleanupGame(); // 3. Limpa os elementos do jogo (tabuleiro, peões, etc).
 
-            messagesDiv.innerHTML = ''; // 4. Limpa o chat explicitamente.
+          if (gameOverModal && gameOverModal.style.display !== 'none') {
+            gameModule.hideGameOver();
+            showView('chat');
+            gameModule.cleanupGame();
+            messagesDiv.innerHTML = '';
             appendMessage('A partida terminou. Bem-vindo de volta à sala!');
           } else if (lobbyView.style.display === 'block') {
-            messagesDiv.innerHTML = ''; // Limpa o chat antes de entrar.
+            messagesDiv.innerHTML = '';
             showView('chat');
             appendMessage(`Bem-vindo à sala!`);
           }
           updateRoomView(data.room);
           updatePlayerListInLobby(data.room.players, data.room.hostName);
-
           break;
 
         // EVENTOS DO CHAT
@@ -326,16 +324,16 @@ function connectWebSocket() {
           break;
 
         case 'left_game_success':
-          gameModule.cleanupGame(); // Limpa os recursos do jogo
-          showView('lobby'); // Mostra a tela de lobby
-          socket.send(JSON.stringify({ type: 'get_rooms' })); // Pede a lista de salas atualizada
+          gameModule.cleanupGame();
+          showView('lobby');
+          socket.send(JSON.stringify({ type: 'get_rooms' }));
           break;
 
         case 'game_ended_by_leave':
         case 'game_ended_by_disconnection':
-          gameModule.cleanupGame(); // Limpa a tela do jogo
-          showView('chat'); // Mostra a tela da sala de espera
-          messagesDiv.innerHTML = ''; // Limpa as mensagens antigas
+          gameModule.cleanupGame();
+          showView('chat');
+          messagesDiv.innerHTML = '';
           appendMessage(
             data.payload.message || 'O jogo foi encerrado e a sala voltou ao modo de espera.'
           );
