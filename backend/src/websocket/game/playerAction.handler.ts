@@ -126,8 +126,8 @@ export function passTurn(room: Room) {
     if (finalPayload) {
       roomManager.broadcastToRoom(room.id, JSON.stringify(finalPayload));
     }
+    room.endGame();
     setTimeout(() => {
-      room.endGame();
       const host = room.players.get(room.hostId!);
       const roomInfoPayload = {
         event: 'room_info',
