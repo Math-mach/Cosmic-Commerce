@@ -463,7 +463,7 @@ img.seta-especial-18-32 {
   position: absolute;
   width: 25px;
   height: 25px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.7));
   z-index: 10;
   transition: transform 0.4s ease-in-out;
   background-size: contain;
@@ -481,6 +481,22 @@ img.seta-especial-18-32 {
 }
 #game-view .peao-p4 {
   background-image: url('../assets/imagens/player_4.png');
+}
+
+#game-view .peao-nome {
+  position: absolute;
+  bottom: -20px; /* Distância do nome abaixo do peão */
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffffff; /* Cor do texto */
+  background-color: rgba(0, 0, 0, 0.6); /* Fundo para legibilidade */
+  padding: 2px 8px; /* Espaçamento interno */
+  border-radius: 4px; /* Bordas arredondadas */
+  font-size: 13px; /* Tamanho da fonte */
+  font-weight: bold; /* Peso da fonte */
+  white-space: nowrap; /* Impede que o nome quebre em duas linhas */
+  text-shadow: 1px 1px 2px black; /* Sombra para destacar */
+  pointer-events: none; /* Garante que o texto não interfira em cliques */
 }
 
 #game-view #ui-actions-panel {
