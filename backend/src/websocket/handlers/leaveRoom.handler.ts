@@ -61,6 +61,8 @@ export function handleLeaveRoom(user: ConnectedUser) {
                 hostName: host?.name || "N/D",
                 current_users: remainingPlayers.length,
                 max_users: room.maxPlayers,
+                players: remainingPlayers.map(p => ({ id: p.id, name: p.name })),
+
             },
         };
         roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));

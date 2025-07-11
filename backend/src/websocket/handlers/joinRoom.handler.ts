@@ -72,6 +72,7 @@ export function handleJoinRoom(
             hostName: host?.name || "N/D",
             current_users: room.players.size,
             max_users: room.maxPlayers,
+            players: room.getPlayers().map(p => ({ id: p.id, name: p.name })),
         },
     };
     roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));
