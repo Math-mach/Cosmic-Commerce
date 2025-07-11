@@ -355,9 +355,8 @@ const uiController = {
     const modal = document.getElementById('game-over-modal');
     const scoresList = document.getElementById('final-scores-list');
     const awardsList = document.getElementById('awards-list');
-    const returnBtn = document.getElementById('return-to-lobby-btn');
 
-    if (!modal || !scoresList || !awardsList || !returnBtn) return;
+    if (!modal || !scoresList || !awardsList) return;
 
     scoresList.innerHTML = '';
     finalScores.forEach((player, index) => {
@@ -392,9 +391,7 @@ const uiController = {
         </div>
     `;
 
-    returnBtn.onclick = () => {
-      this.hideGameOverModal();
-    };
+
 
     modal.style.display = 'flex';
   },
