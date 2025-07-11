@@ -6,6 +6,7 @@ import {
     handleJoinRoom,
     handleLeaveRoom,
     handleVoteToExpel,
+    handleLeaveGame
 } from "./handlers";
 
 import { roomManager } from "./managers/roomManager";
@@ -31,6 +32,10 @@ export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
 
             case "leave_room":
                 handleLeaveRoom(user);
+                break;
+
+            case "leave_game":
+                handleLeaveGame(user);
                 break;
 
             case "chat":

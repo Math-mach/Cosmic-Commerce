@@ -1,3 +1,5 @@
+// C:/Users/Matt/Desktop/Projeto Relampago 4/backend/src/websocket/handlers/leaveGame.handler.ts
+
 import { ConnectedUser, activeConnections } from "..";
 import { passTurn } from "../game/playerAction.handler";
 import { roomManager, broadcastRoomListUpdateToLobby, sendGameNotification } from "../managers/roomManager";
@@ -17,6 +19,12 @@ export function handleLeaveGame(user: ConnectedUser) {
 
     console.log(`[Sala ${room.id}] Jogador ${name} está saindo voluntariamente da partida.`);
 
+    // >>>>>>>>>>>> NOVA LINHA ADICIONADA AQUI <<<<<<<<<<<<
+    // Envia uma confirmação imediata para o jogador que clicou no botão.
+    user.ws.send(JSON.stringify({ event: 'left_game_success' }));
+    // >>>>>>>>>>>> FIM DA NOVA LINHA <<<<<<<<<<<<
+
+    // Notifica os outros jogadores sobre a saída
     sendGameNotification(room.id, "Jogador Saiu", `👋 ${name} abandonou a partida.`, 5000);
     const chatMessage = {
         event: 'chat_message',
@@ -26,11 +34,13 @@ export function handleLeaveGame(user: ConnectedUser) {
     };
     roomManager.broadcastToRoom(room.id, JSON.stringify(chatMessage));
 
+    // Remove o jogador do estado do jogo e da sala
     const wasHost = room.hostId === userId;
     const wasTheirTurn = room.removePlayerFromGame(userId);
     room.removePlayer(userId);
     user.roomId = null;
 
+    // Verifica se a partida deve ser cancelada
     if (room.getPlayers().length < 2) {
         console.log(`[Sala ${room.id}] Menos de 2 jogadores restantes. Encerrando o jogo.`);
         sendGameNotification(room.id, "Jogo Encerrado", "Não há jogadores suficientes para continuar.", 6000);
@@ -43,6 +53,20 @@ export function handleLeaveGame(user: ConnectedUser) {
                 payload: { message: 'O outro jogador saiu. O jogo foi encerrado.' }
             }));
 
+            const host = room.getPlayers().length > 0 ? room.players.get(room.hostId!) : null;
+            const roomInfoPayload = {
+                event: 'room_info',
+                room: {
+                    id: room.id,
+                    name: room.name,
+                    hostName: host?.name || 'N/D',
+                    current_users: room.getPlayers().length,
+                    max_users: room.maxPlayers,
+                    players: room.getPlayers().map(p => ({ id: p.id, name: p.name })),
+                },
+            };
+            roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));
+
             broadcastRoomListUpdateToLobby(activeConnections);
 
             if (room.getPlayers().length === 0) {
@@ -52,6 +76,7 @@ export function handleLeaveGame(user: ConnectedUser) {
         return;
     }
 
+    // Se o jogo continua, promove um novo host se necessário
     if (wasHost) {
         room.promoteNextHost();
         const newHost = room.players.get(room.hostId!);
@@ -66,10 +91,11 @@ export function handleLeaveGame(user: ConnectedUser) {
         }
     }
 
+    // Passa o turno se o jogador que saiu era o da vez
     if (wasTheirTurn) {
         passTurn(room);
     } else {
-
+        // Caso contrário, apenas envia o estado atualizado do jogo
         roomManager.broadcastToRoom(
             room.id,
             JSON.stringify({
@@ -78,6 +104,4 @@ export function handleLeaveGame(user: ConnectedUser) {
             })
         );
     }
-
-    broadcastRoomListUpdateToLobby(activeConnections);
 }

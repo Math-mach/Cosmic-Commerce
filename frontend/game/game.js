@@ -7,6 +7,7 @@ let socket = null;
 let actionButtonListener = null;
 let gridClickListener = null;
 let voteButtonListener = null;
+let leaveGameButtonListener = null;
 let isAnimating = false;
 
 export function initGame(initialState, socketInstance, meuId) {
@@ -205,11 +206,20 @@ export function hideGameOver() {
 
 export function cleanupGame() {
   console.log('Módulo do Jogo: Limpando recursos.');
+
   const actionButton = document.getElementById('action-button');
+  const leaveGameButton = document.getElementById('leave-game-btn'); // <-- Pega o novo botão
+
   if (actionButton && actionButtonListener) {
     actionButton.removeEventListener('click', actionButtonListener);
     actionButtonListener = null;
   }
+
+  if (leaveGameButton && leaveGameButtonListener) {
+    leaveGameButton.removeEventListener('click', leaveGameButtonListener);
+    leaveGameButtonListener = null;
+  }
+
   uiController.hideDisconnectionModal();
   uiController.hideGameOverModal();
   document.getElementById('ui-players-panel').innerHTML = '';
@@ -237,16 +247,32 @@ function addGameListeners() {
     voteButton.addEventListener('click', voteButtonListener);
   }
 
-  gridClickListener = (x, y) => {
-    if (gameState.partida?.fase_do_turno === 'escolha_bifurcacao') {
-      const pontoClicado = gameData.mapa.find(p => p.x === x && p.y === y);
-      if (pontoClicado && gameState.partida.opcoesBifurcacao?.includes(pontoClicado.id)) {
-        mapController.limparDestaquesBifurcacao();
-        sendActionToServer('player_action', { action: 'choose_path', nodeId: pontoClicado.id });
+  const leaveGameButton = document.getElementById('leave-game-btn');
+  if (leaveGameButton && !leaveGameButtonListener) {
+    leaveGameButtonListener = async () => {
+      const confirmed = await uiController.showConfirmationModal(
+        'Abandonar Partida',
+        'Você tem certeza que deseja abandonar a partida? Esta ação não pode ser desfeita.'
+      );
+      if (confirmed) {
+        sendActionToServer('leave_game');
       }
-    }
-  };
-  mapController.addGridClickListener(gridClickListener);
+    };
+    leaveGameButton.addEventListener('click', leaveGameButtonListener);
+  }
+
+  if (!gridClickListener) {
+    gridClickListener = (x, y) => {
+      if (gameState.partida?.fase_do_turno === 'escolha_bifurcacao') {
+        const pontoClicado = gameData.mapa.find(p => p.x === x && p.y === y);
+        if (pontoClicado && gameState.partida.opcoesBifurcacao?.includes(pontoClicado.id)) {
+          mapController.limparDestaquesBifurcacao();
+          sendActionToServer('player_action', { action: 'choose_path', nodeId: pontoClicado.id });
+        }
+      }
+    };
+    mapController.addGridClickListener(gridClickListener);
+  }
 }
 
 function sendActionToServer(type, payload) {

@@ -325,20 +325,11 @@ function connectWebSocket() {
           }
           break;
 
-        case 'game_ended_by_disconnection':
-          gameModule.cleanupGame();
-          showView('chat');
-          messagesDiv.innerHTML = '';
-          appendMessage(
-            'O jogo foi encerrado por falta de pessoas e a sala voltou para o modo de espera.'
-          );
-          break;
         case 'left_game_success':
           gameModule.cleanupGame(); // Limpa os recursos do jogo
           showView('lobby'); // Mostra a tela de lobby
           socket.send(JSON.stringify({ type: 'get_rooms' })); // Pede a lista de salas atualizada
           break;
-        // >>>>>>>>>>>> FIM DO NOVO CASE <<<<<<<<<<<<
 
         case 'game_ended_by_leave':
         case 'game_ended_by_disconnection':
@@ -347,15 +338,6 @@ function connectWebSocket() {
           messagesDiv.innerHTML = ''; // Limpa as mensagens antigas
           appendMessage(
             data.payload.message || 'O jogo foi encerrado e a sala voltou ao modo de espera.'
-          );
-          break;
-
-        case 'game_ended_by_disconnection':
-          gameModule.cleanupGame();
-          showView('chat');
-          messagesDiv.innerHTML = '';
-          appendMessage(
-            'O jogo foi encerrado por falta de pessoas e a sala voltou para o modo de espera.'
           );
           break;
 
