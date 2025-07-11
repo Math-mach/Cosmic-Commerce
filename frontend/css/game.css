@@ -10,20 +10,34 @@
 
 #game-view .game-container {
   display: flex;
+  justify-content: center; /* Centraliza as colunas */
+  align-items: flex-start; /* Alinha os painéis pelo topo */
   gap: 20px;
   width: 100%;
-  max-width: 1400px;
 }
-
-#game-view .left-panel {
+.center-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza o tabuleiro e o painel abaixo */
+  gap: 20px;
+}
+#game-view .left-panel,
+#game-view .right-panel {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 280px;
+  flex-shrink: 0; /* Impede que os painéis encolham */
   padding: 20px;
   background-color: var(--secondary-bg);
   border-radius: 12px;
   border: 1px solid var(--input-bg);
+}
+
+#game-view #ui-players-panel-right {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 #game-view h1 {
@@ -162,42 +176,54 @@
 }
 
 #turn-status-panel {
-  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.5fr; /* Colunas para [Info+Efeito] [Dado] [Botão] */
+  grid-template-areas: 'info dice action'; /* Nomeando as áreas */
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 700px; /* Um pouco maior para caber tudo */
   padding: 15px;
   background-color: var(--primary-bg);
   border: 1px solid var(--input-bg);
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
 }
 
 .turn-player-info {
   display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
+  justify-content: space-between; /* Coloca um de cada lado da sua coluna */
+  align-items: center; /* Alinha eles verticalmente */
+  gap: 20px; /* Garante um espaço mínimo entre eles */
+  font-size: 1rem; /* Aumenta um pouco para melhor leitura */
   color: var(--subtitle-color);
 }
+
 #current-player-turn {
   font-weight: 700;
   color: var(--text-color);
+  font-size: 1.1em;
 }
 .turn-dice-display {
   display: flex;
+  flex-direction: column; /* Ícone em cima, número embaixo */
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 5px; /* Espaço menor */
   background-color: var(--secondary-bg);
-  padding: 10px;
+  padding: 10px 20px;
   border-radius: 6px;
+  min-width: 80px;
 }
 #dice-icon {
-  font-size: 2rem;
+  font-size: 1.5rem; /* Ícone um pouco menor */
 }
 #dice-count {
-  font-size: 2.5rem;
+  font-size: 2rem; /* Número um pouco menor */
   font-weight: 700;
   color: var(--text-color);
+}
+.turn-effects-history {
+  display: none;
 }
 .turn-effects-history h4 {
   margin: 0 0 8px 0;
@@ -446,8 +472,8 @@ img.seta-especial-18-32 {
 }
 
 #game-view #ui-actions-panel {
-  margin-top: 15px;
   text-align: center;
+  margin-top: 0; /* Remove a margem antiga */
 }
 #game-view #action-button {
   padding: 12px 25px;

@@ -36,20 +36,27 @@ const uiController = {
   },
 
   atualizarPainelJogadores: function () {
-    const playersPanel = document.getElementById('ui-players-panel');
-    if (!playersPanel) return;
-    playersPanel.innerHTML = '';
+    const playersPanelLeft = document.getElementById('ui-players-panel');
+    const playersPanelRight = document.getElementById('ui-players-panel-right');
+
+    if (!playersPanelLeft || !playersPanelRight) return;
+
+    // Limpa ambos os painéis antes de redesenhar
+    playersPanelLeft.innerHTML = '';
+    playersPanelRight.innerHTML = '';
+
     const eMinhaVez = gameState.meuId === gameState.partida?.id_jogador_da_vez;
     const faseDeUso = gameState.partida?.fase_do_turno === 'uso_item_pre_rolagem';
     const itemJaUsado = gameState.partida?.itemUsedThisTurn;
 
-    gameState.jogadores.forEach(player => {
+    gameState.jogadores.forEach((player, index) => {
       const card = document.createElement('div');
       card.className = 'player-card';
       if (player.id === gameState.partida?.id_jogador_da_vez) {
         card.classList.add('active-player');
       }
 
+      // Lógica para gerar a lista de itens (continua a mesma)
       let itemsHtml = '<ul class="player-item-list">';
       if (player.itens && player.itens.length > 0) {
         player.itens.forEach(itemId => {
@@ -66,6 +73,7 @@ const uiController = {
       }
       itemsHtml += '</ul>';
 
+      // Lógica para exibir os efeitos ativos (continua a mesma)
       let effectsHtml = '';
       if (player.efeitos_ativos && player.efeitos_ativos.length > 0) {
         player.efeitos_ativos.forEach(effect => {
@@ -80,6 +88,7 @@ const uiController = {
         effectsHtml = `<li class="no-effects">Nenhum efeito ativo.</li>`;
       }
 
+      // Monta o HTML final do card do jogador (continua o mesmo)
       card.innerHTML = `
         <h3>${player.nome}</h3>
         <div class="player-stats">
@@ -98,9 +107,19 @@ const uiController = {
             <h4>Itens (${player.itens.length}/4)</h4>
             ${itemsHtml}
         </div>`;
-      playersPanel.appendChild(card);
+
+      // ==========================================================
+      // =====> AQUI ESTÁ A MUDANÇA PRINCIPAL <=====
+      // Decide em qual painel colocar o card do jogador
+      // ==========================================================
+      if (index < 2) {
+        playersPanelLeft.appendChild(card);
+      } else {
+        playersPanelRight.appendChild(card);
+      }
     });
 
+    // Adiciona os event listeners aos botões "Usar" (continua o mesmo)
     document.querySelectorAll('.use-item-btn').forEach(button => {
       button.addEventListener('click', e => {
         const itemId = e.target.dataset.itemId;
@@ -109,29 +128,34 @@ const uiController = {
     });
   },
 
+  // frontend/game/ui-controller.js
+
+  // frontend/game/ui-controller.js
+
   updateTurnStatusPanel: function () {
     const turnCounter = document.getElementById('turn-counter');
     const currentPlayerTurn = document.getElementById('current-player-turn');
     const turnEffectsList = document.getElementById('turn-effects-list');
 
+    // Agora a verificação vai funcionar, pois todos os elementos existem
     if (!turnCounter || !currentPlayerTurn || !turnEffectsList) return;
 
     const { partida, jogadores } = gameState;
     if (!partida || !jogadores) return;
 
     const jogadorAtual = jogadores.find(p => p.id === partida.id_jogador_da_vez);
-    const maxTurns = 10;
 
-    turnCounter.textContent = `${partida.turno_atual || '1'} / ${maxTurns}`;
+    turnCounter.textContent = partida.turno_atual || '1';
     currentPlayerTurn.textContent = `Vez de: ${jogadorAtual ? jogadorAtual.nome : '...'}`;
 
+    // Esta lógica agora funciona novamente
     const itemUsadoId = partida.itemUsedId;
     if (itemUsadoId) {
       const itemDef = gameData.gameDefinitions.itens[itemUsadoId];
       const itemName = itemDef ? itemDef.nome : 'Item Desconhecido';
       turnEffectsList.innerHTML = `<li>${itemName}</li>`;
     } else {
-      turnEffectsList.innerHTML = `<li class="no-effects">Nenhum efeito utilizado.</li>`;
+      turnEffectsList.innerHTML = `<li class="no-effects">Nenhum</li>`;
     }
   },
 
