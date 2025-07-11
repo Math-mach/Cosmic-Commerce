@@ -6,7 +6,7 @@ interface TurnInfo {
   turno_atual: number;
   id_jogador_da_vez: string;
   itemUsedThisTurn?: boolean;
-  itemUsedId?: string; // <<< ADICIONADO: Campo para rastrear o item usado.
+  itemUsedId?: string;
   passosRestantes?: number;
   passosRestantesAposLoja?: number;
   opcoesBifurcacao?: number[];
@@ -122,7 +122,13 @@ export class Room {
 
   public realocateStarFragment() {
     if (!this.gameState) return;
-    const possibleNodes = mapa.filter(node => node.id >= 15).map(node => node.id);
+
+    const casasInvalidas = ['roxa', 'amarela', 'cinza'];
+
+    const possibleNodes = mapa
+      .filter(node => node.id >= 15 && !casasInvalidas.includes(node.tipoCasa!))
+      .map(node => node.id);
+
     const randomIndex = Math.floor(Math.random() * possibleNodes.length);
     const newStarNodeId = possibleNodes[randomIndex];
     this.gameState.posicaoFragmentoEstrelaId = newStarNodeId;

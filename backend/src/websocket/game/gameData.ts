@@ -26,6 +26,10 @@ export const gameDefinitions = {
       nome: 'Casa da Catástrofe',
       efeito: { tipo: 'catastrofe', custo_para_evitar: 15 },
     },
+    // <<< ADICIONADO AQUI >>>
+    cinza: {
+      nome: 'Bifurcação',
+    },
   },
   eventos_casa_interrogacao: [
     {

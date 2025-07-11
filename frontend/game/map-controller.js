@@ -11,46 +11,12 @@ const mapController = {
     });
   },
 
-  pintarPonto: function (x, y, cor) {
-    const cell = document.querySelector(`#game-view .grid-cell[data-x='${x}'][data-y='${y}']`);
-    if (cell) {
-      // As casas agora não têm fundo, então restauramos o background branco aqui
-      cell.style.backgroundColor = 'white';
-
-      // E criamos um 'miolo' colorido
-      const innerSquare = document.createElement('div');
-      innerSquare.style.width = '70%';
-      innerSquare.style.height = '70%';
-      innerSquare.style.backgroundColor = cor;
-      cell.innerHTML = ''; // Limpa a célula
-      cell.appendChild(innerSquare);
-    }
-  },
-
-  pintarVariosPontos: function (pontos) {
-    // Primeiro, limpa o fundo de todas as células que fazem parte do mapa
-    gameData.mapa.forEach(node => {
-      const cell = document.querySelector(
-        `#game-view .grid-cell[data-x='${node.x}'][data-y='${node.y}']`
-      );
-      if (cell) cell.style.backgroundColor = 'transparent';
-    });
-
-    // Depois, pinta apenas as casas coloridas
-    pontos.forEach(ponto => {
-      const cell = document.querySelector(
-        `#game-view .grid-cell[data-x='${ponto.x}'][data-y='${ponto.y}']`
-      );
-      if (cell) {
-        cell.style.backgroundColor = ponto.cor;
-      }
-    });
-  },
-
   construirTabuleiro: function () {
     const container = document.getElementById('unified-grid-container');
     if (!container) return;
     container.innerHTML = '<div id="peoes-container"></div>';
+
+    // Passo 1: Desenha a grade vazia e os eixos
     for (let row = 0; row < 41; row++) {
       for (let col = 0; col < 41; col++) {
         const cell = document.createElement('div');
@@ -72,6 +38,75 @@ const mapController = {
         container.insertBefore(cell, container.querySelector('#peoes-container'));
       }
     }
+
+    // Passo 2: Popula a grade com imagens ou cores
+    const { mapa, gameDefinitions, pontosParaPintar } = gameData;
+    mapa.forEach(node => {
+      const cell = document.querySelector(
+        `#game-view .grid-cell[data-x='${node.x}'][data-y='${node.y}']`
+      );
+      if (cell) {
+        cell.innerHTML = '';
+        let imagePath = '';
+        let tooltipText = '';
+        let isImageNode = false;
+
+        const casaDef = gameDefinitions.casas[node.tipoCasa];
+        if (casaDef) {
+          tooltipText = casaDef.nome;
+          if (casaDef.efeito?.valor_base) {
+            tooltipText = `${casaDef.nome}: ${
+              casaDef.efeito.tipo === 'ganhar_moedas' ? 'Ganha' : 'Perca'
+            } ${casaDef.efeito.valor_base} moedas.`;
+          } else if (casaDef.efeito?.custo_para_evitar) {
+            tooltipText = `${casaDef.nome}: Pague ${casaDef.efeito.custo_para_evitar} moedas para evitar uma catástrofe.`;
+          }
+        }
+
+        if (node.id === 0) {
+          imagePath = 'assets/imagens/start_map.png';
+          tooltipText = 'Ponto de Partida';
+          isImageNode = true;
+        } else {
+          // <<< MUDANÇA AQUI: Adicionado 'roxa' à lista de casas com imagem >>>
+          const imageNodeTypes = ['azul', 'vermelha', 'verde', 'amarela', 'roxa'];
+          if (imageNodeTypes.includes(node.tipoCasa)) {
+            isImageNode = true;
+            switch (node.tipoCasa) {
+              case 'azul':
+                imagePath = 'assets/imagens/casa_azul.png';
+                break;
+              case 'vermelha':
+                imagePath = 'assets/imagens/casa_vermelha.png';
+                break;
+              case 'verde':
+                imagePath = 'assets/imagens/casa_verde.png';
+                break;
+              case 'amarela':
+                imagePath = 'assets/imagens/casa_loja.png';
+                break;
+              case 'roxa':
+                imagePath = 'assets/imagens/casa_do_azar.png';
+                break;
+            }
+          }
+        }
+
+        cell.title = tooltipText;
+
+        if (isImageNode && imagePath) {
+          const img = document.createElement('img');
+          img.src = imagePath;
+          img.alt = tooltipText;
+          cell.appendChild(img);
+        } else {
+          const pontoCor = pontosParaPintar.find(p => p.x === node.x && p.y === node.y);
+          if (pontoCor) {
+            cell.style.backgroundColor = pontoCor.cor;
+          }
+        }
+      }
+    });
   },
 
   criarPeoes: function (jogadores) {
@@ -129,21 +164,24 @@ const mapController = {
   },
 
   atualizarDestaqueFragmento: function () {
-    const celulaAntiga = document.querySelector('.star-fragment-cell');
-    if (celulaAntiga) {
-      celulaAntiga.innerHTML = '';
-      celulaAntiga.classList.remove('star-fragment-cell');
+    const oldStar = document.querySelector('.star-icon');
+    if (oldStar) {
+      oldStar.remove();
     }
+
     const starNodeId = gameState.posicaoFragmentoEstrelaId;
     if (starNodeId === null || starNodeId === undefined) return;
+
     const pontoDoMapa = gameData.mapa.find(p => p.id === starNodeId);
     if (pontoDoMapa) {
       const celulaNova = document.querySelector(
         `#game-view .grid-cell[data-x='${pontoDoMapa.x}'][data-y='${pontoDoMapa.y}']`
       );
       if (celulaNova) {
-        celulaNova.innerHTML = '⭐';
-        celulaNova.classList.add('star-fragment-cell');
+        const starIcon = document.createElement('span');
+        starIcon.className = 'star-icon';
+        starIcon.textContent = '⭐';
+        celulaNova.appendChild(starIcon);
       }
     }
   },

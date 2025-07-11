@@ -18,8 +18,9 @@ export function initGame(initialState, socketInstance, meuId) {
   gameState.lojas = initialState.lojas;
   gameState.posicaoFragmentoEstrelaId = initialState.posicaoFragmentoEstrelaId;
 
+  // A função construirTabuleiro agora faz todo o trabalho de desenhar a grade e as casas.
   mapController.construirTabuleiro();
-  mapController.pintarVariosPontos(gameData.pontosParaPintar); // Restaurado
+
   mapController.criarPeoes(gameState.jogadores);
   mapController.atualizarPosicaoPeoes();
   mapController.atualizarDestaqueFragmento();
@@ -32,7 +33,7 @@ export function initGame(initialState, socketInstance, meuId) {
   addGameListeners();
 }
 
-// ... o resto do arquivo é a versão estável que tínhamos antes.
+// O restante do arquivo permanece idêntico à versão estável anterior...
 export function handleServerUpdate(updateData) {
   console.log('Módulo do Jogo: Recebendo atualização do servidor:', updateData);
 
