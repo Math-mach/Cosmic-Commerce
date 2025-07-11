@@ -6,7 +6,7 @@ import {
 } from "../managers/roomManager";
 
 export function handleLeaveRoom(user: ConnectedUser) {
-    const { roomId, id: userId, name } = user; // MODIFICAÇÃO: Adicionado 'name'
+    const { roomId, id: userId, name } = user;
 
     if (!roomId) {
         return;
@@ -40,6 +40,16 @@ export function handleLeaveRoom(user: ConnectedUser) {
     if (remainingPlayers.length > 0) {
         if (wasHost) {
             room.promoteNextHost();
+            const newHost = room.players.get(room.hostId!);
+            if (newHost) {
+                const promotionMessage = {
+                    event: 'chat_message',
+                    from: 'Sistema',
+                    message: `O anfitrião, ${name}, saiu. ${newHost.name} agora é o novo anfitrião.`,
+                    isSystemMessage: true
+                };
+                roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
+            }
         }
 
         const host = room.players.get(room.hostId!);

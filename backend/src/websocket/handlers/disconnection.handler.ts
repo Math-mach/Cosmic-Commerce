@@ -24,6 +24,7 @@ export function handleDisconnection(user: ConnectedUser) {
     );
 
     const wasHost = room.hostId === user.id;
+    const oldHostName = user.name;
 
     if (room.state === "waiting") {
         console.log(
@@ -43,6 +44,16 @@ export function handleDisconnection(user: ConnectedUser) {
         if (remainingPlayers.length > 0) {
             if (wasHost) {
                 room.promoteNextHost();
+                const newHost = room.players.get(room.hostId!);
+                if (newHost) {
+                    const promotionMessage = {
+                        event: 'chat_message',
+                        from: 'Sistema',
+                        message: `O anfitrião, ${oldHostName}, saiu. ${newHost.name} agora é o novo anfitrião.`,
+                        isSystemMessage: true
+                    };
+                    roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
+                }
             }
             const host = room.players.get(room.hostId!);
             const roomInfoPayload = {
@@ -91,6 +102,16 @@ export function handleDisconnection(user: ConnectedUser) {
 
         if (wasHost && room.getPlayers().length > 0) {
             room.promoteNextHost();
+            const newHost = room.players.get(room.hostId!);
+            if (newHost) {
+                const promotionMessage = {
+                    event: 'chat_message',
+                    from: 'Sistema',
+                    message: `O anfitrião, ${oldHostName}, perdeu a conexão. ${newHost.name} agora é o novo anfitrião.`,
+                    isSystemMessage: true
+                };
+                roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
+            }
         }
 
         if (room.gameState.players.length <= 2) {
