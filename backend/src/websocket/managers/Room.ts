@@ -56,7 +56,7 @@ export class Room {
   public state: 'waiting' | 'in_progress' | 'finished' = 'waiting';
   public gameState: GameState | null = null;
   public disconnectedPlayers: Map<string, DisconnectedPlayerInfo> = new Map();
-  public readonly MAX_TURNS = 10;
+  public readonly MAX_TURNS = 2;
 
   constructor(id: string, name: string, isPublic: boolean = true, maxPlayers: number = 4) {
     this.id = id;
