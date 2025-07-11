@@ -145,7 +145,7 @@ export class Room {
         id: p.id,
         nome: p.name,
         posicao_mapa_id: 0,
-        moedas: 10,
+        moedas: 10000000,
         fragmentos: 0,
         itens: [],
         efeitos_ativos: [],
