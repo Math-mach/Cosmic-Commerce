@@ -88,9 +88,11 @@ const uiController = {
         effectsHtml = `<li class="no-effects">Nenhum efeito ativo.</li>`;
       }
 
+      const playerImageSrc = `assets/imagens/player_${index + 1}.png`;
+
       // Monta o HTML final do card do jogador (continua o mesmo)
       card.innerHTML = `
-        <h3>${player.nome}</h3>
+        <h3><img src="${playerImageSrc}" alt="Ícone do Jogador"> ${player.nome}</h3>
         <div class="player-stats">
             <span>Moedas:</span><span>${player.moedas}</span>
             <span>Fragmentos:</span><span>${player.fragmentos}</span>
@@ -108,10 +110,6 @@ const uiController = {
             ${itemsHtml}
         </div>`;
 
-      // ==========================================================
-      // =====> AQUI ESTÁ A MUDANÇA PRINCIPAL <=====
-      // Decide em qual painel colocar o card do jogador
-      // ==========================================================
       if (index < 2) {
         playersPanelLeft.appendChild(card);
       } else {
@@ -127,10 +125,6 @@ const uiController = {
       });
     });
   },
-
-  // frontend/game/ui-controller.js
-
-  // frontend/game/ui-controller.js
 
   updateTurnStatusPanel: function () {
     const turnCounter = document.getElementById('turn-counter');

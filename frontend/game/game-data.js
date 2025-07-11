@@ -4,6 +4,13 @@ const gameDefinitions = {
     vermelha: { nome: 'Casa Vermelha', efeito: { tipo: 'perder_moedas', valor_base: 3 } },
     verde: { nome: 'Casa de Evento' },
     amarela: { nome: 'Loja Cósmica', efeito: { tipo: 'loja' } },
+    roxa: {
+      nome: 'Casa da Catástrofe',
+      efeito: { tipo: 'catastrofe', custo_para_evitar: 15 },
+    },
+    cinza: {
+      nome: 'Bifurcação',
+    },
   },
   eventos_casa_interrogacao: [
     {
@@ -19,7 +26,6 @@ const gameDefinitions = {
     {
       id: 'roleta_da_sorte',
       nome: 'Roleta da Sorte!',
-      // <<< MUDANÇA AQUI >>>
       efeito_detalhado: 'Você girou a roleta e ganhou 10 moedas!',
     },
   ],
@@ -68,6 +74,20 @@ const gameDefinitions = {
       efeito_detalhado: 'Jogue em um oponente para que ele perca a próxima vez de jogar.',
     },
   },
+  catastrofes: [
+    {
+      id: 'perder_metade_moedas',
+      descricao: 'Um buraco negro engoliu metade das suas moedas!',
+    },
+    {
+      id: 'perder_item',
+      descricao: 'Um cometa destruiu um dos seus itens!',
+    },
+    {
+      id: 'voltar_ao_inicio',
+      descricao: 'Você foi puxado por um portal de volta para o início!',
+    },
+  ],
 };
 
 const mapaBase = [

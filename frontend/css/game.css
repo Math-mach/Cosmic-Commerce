@@ -72,6 +72,17 @@
   margin: 0 0 12px 0;
   font-size: 1.4em;
   color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#game-view .player-card h3 img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 50%;
+  background-color: var(--primary-bg);
 }
 
 #game-view .player-stats {
@@ -450,25 +461,26 @@ img.seta-especial-18-32 {
 }
 #game-view .peao {
   position: absolute;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 2px solid white;
+  width: 25px;
+  height: 25px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   z-index: 10;
   transition: transform 0.4s ease-in-out;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 #game-view .peao-p1 {
-  background-color: #e63946;
+  background-image: url('../assets/imagens/player_1.png');
 }
 #game-view .peao-p2 {
-  background-color: #457b9d;
+  background-image: url('../assets/imagens/player_2.png');
 }
 #game-view .peao-p3 {
-  background-color: #52b788;
+  background-image: url('../assets/imagens/player_3.png');
 }
 #game-view .peao-p4 {
-  background-color: #88ff00;
+  background-image: url('../assets/imagens/player_4.png');
 }
 
 #game-view #ui-actions-panel {
