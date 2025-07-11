@@ -217,6 +217,22 @@ function updateRoomView(roomData) {
     }
 }
 
+function updatePlayerListInLobby(players, hostName) {
+    const playerListElement = document.getElementById('player-list-lobby');
+    if (!playerListElement) return;
+
+    playerListElement.innerHTML = '';
+
+    players.forEach(player => {
+        const li = document.createElement('li');
+        li.textContent = player.name;
+        if (player.name === hostName) {
+            li.classList.add('host');
+        }
+        playerListElement.appendChild(li);
+    });
+}
+
 // WebSocket
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -258,6 +274,8 @@ function connectWebSocket() {
                         appendMessage(`Bem-vindo à sala!`);
                     }
                     updateRoomView(data.room);
+                    updatePlayerListInLobby(data.room.players, data.room.hostName);
+
                     break;
 
                 // EVENTOS DO CHAT

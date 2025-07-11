@@ -4,15 +4,25 @@
   left: 0;
   width: 100%;
   height: 100%;
-  display: none; /* Controlado por JS */
+  display: none;
+  /* Controlado por JS */
   align-items: center;
   justify-content: center;
   padding: 20px;
   box-sizing: border-box;
 }
+
+.room-layout-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10rem;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+}
+
 .room-container {
   width: 100%;
-  max-width: 800px;
   background-color: var(--secondary-bg);
   padding: 25px;
   border-radius: 12px;
@@ -22,12 +32,62 @@
   gap: 15px;
   max-height: 90vh;
 }
+
+.room-container-player {
+  background-color: var(--secondary-bg);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--input-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.room-container-player h3 {
+  font-size: 1.75rem;
+  text-align: center;
+  color: var(--text-color);
+  margin: 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--input-bg);
+}
+
+#player-list-lobby {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+#player-list-lobby li {
+  padding: 12px 15px;
+  background-color: var(--primary-bg);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  color: var(--subtitle-color);
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+#player-list-lobby li.host {
+  color: var(--text-color);
+  font-weight: 700;
+  border-left: 3px solid var(--accent-color);
+}
+
+#player-list-lobby li.host::before {
+  content: "👑 ";
+  margin-right: 8px;
+}
+
 #room-name-display {
   font-size: 1.75rem;
   text-align: center;
   color: var(--text-color);
   margin: 0;
 }
+
 #room-info-header {
   display: flex;
   justify-content: space-between;
@@ -38,9 +98,11 @@
   font-size: 0.9em;
   color: var(--subtitle-color);
 }
+
 #room-info-header strong {
   color: var(--text-color);
 }
+
 #messages {
   height: 300px;
   overflow-y: auto;
@@ -52,10 +114,12 @@
   color: var(--subtitle-color);
   font-size: 0.9rem;
 }
+
 .chat-controls {
   display: flex;
   gap: 10px;
 }
+
 #ws-input {
   flex-grow: 1;
   background-color: var(--input-bg);
@@ -65,10 +129,12 @@
   padding: 10px 15px;
   font-family: "Space Grotesk", sans-serif;
 }
+
 #ws-input:focus {
   outline: none;
   border-color: var(--accent-color);
 }
+
 #send-chat {
   background-color: var(--accent-color);
   border: none;
@@ -78,11 +144,13 @@
   padding: 10px 20px;
   cursor: pointer;
 }
+
 .room-actions {
   display: flex;
   gap: 10px;
   margin-top: 10px;
 }
+
 .room-actions button {
   flex-grow: 1;
   padding: 12px;
@@ -93,20 +161,25 @@
   font-size: 1rem;
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
+
 .room-actions button:hover {
   transform: translateY(-2px);
 }
+
 #send-game {
   background-color: #28a745;
   color: white;
 }
+
 #send-game:hover {
   background-color: #218838;
 }
+
 #leave-room-btn {
   background-color: var(--danger-color);
   color: white;
 }
+
 #leave-room-btn:hover {
   background-color: var(--danger-hover);
 }
