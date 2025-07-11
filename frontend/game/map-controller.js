@@ -1,6 +1,18 @@
 import gameState from './game-state.js';
 import gameData from './game-data.js';
 
+// Coordenadas das casas especiais para adicionar a imagem da seta
+const casasComSeta = [
+  { x: 15, y: 2 },
+  { x: 2, y: 9 },
+  { x: 21, y: 4 },
+  { x: 2, y: 17 },
+  { x: 2, y: 28 },
+  { x: 33, y: 32 },
+  { x: 18, y: 32 },
+  { x: 15, y: 37 },
+];
+
 const mapController = {
   addGridClickListener: function (callback) {
     const gridCells = document.querySelectorAll('#game-view .grid-cell');
@@ -11,19 +23,12 @@ const mapController = {
     });
   },
 
-  pintarPonto: function (x, y, cor) {
-    const cell = document.querySelector(`#game-view .grid-cell[data-x='${x}'][data-y='${y}']`);
-    if (cell) cell.style.backgroundColor = cor;
-  },
-
-  pintarVariosPontos: function (pontos) {
-    pontos.forEach(ponto => this.pintarPonto(ponto.x, ponto.y, ponto.cor));
-  },
-
   construirTabuleiro: function () {
     const container = document.getElementById('unified-grid-container');
     if (!container) return;
     container.innerHTML = '<div id="peoes-container"></div>';
+
+    // Passo 1: Desenha a grade vazia e os eixos
     for (let row = 0; row < 41; row++) {
       for (let col = 0; col < 41; col++) {
         const cell = document.createElement('div');
@@ -45,8 +50,91 @@ const mapController = {
         container.insertBefore(cell, container.querySelector('#peoes-container'));
       }
     }
+
+    // Passo 2: Popula a grade com imagens, cores e bifurcações
+    const { mapa, gameDefinitions, pontosParaPintar } = gameData;
+    mapa.forEach(node => {
+      const cell = document.querySelector(
+        `#game-view .grid-cell[data-x='${node.x}'][data-y='${node.y}']`
+      );
+      if (cell) {
+        cell.innerHTML = '';
+        cell.style.backgroundColor = 'transparent';
+
+        let imagePath = '';
+        let tooltipText = '';
+
+        const casaDef = gameDefinitions.casas[node.tipoCasa];
+        if (casaDef) {
+          tooltipText = casaDef.nome;
+        }
+
+        if (node.tipo === 'bifurcacao') {
+          cell.title = 'Bifurcação';
+          node.conexoes.forEach((conexaoId, index) => {
+            const seta = document.createElement('img');
+            seta.src = 'assets/imagens/seta.png';
+            seta.className = `seta-bifurcacao seta-bifurcacao-${node.id}-${index + 1}`;
+            cell.appendChild(seta);
+          });
+          const pontoCentral = document.createElement('span');
+          pontoCentral.className = 'ponto-central';
+          cell.appendChild(pontoCentral);
+        } else if (node.id === 0) {
+          imagePath = 'assets/imagens/start_map.png';
+          tooltipText = 'Ponto de Partida';
+          if (imagePath) {
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = tooltipText;
+            cell.appendChild(img);
+          }
+        } else {
+          const imageNodeTypes = ['azul', 'vermelha', 'verde', 'amarela', 'roxa'];
+          if (imageNodeTypes.includes(node.tipoCasa)) {
+            switch (node.tipoCasa) {
+              case 'azul':
+                imagePath = 'assets/imagens/casa_azul.png';
+                break;
+              case 'vermelha':
+                imagePath = 'assets/imagens/casa_vermelha.png';
+                break;
+              case 'verde':
+                imagePath = 'assets/imagens/casa_verde.png';
+                break;
+              case 'amarela':
+                imagePath = 'assets/imagens/casa_loja.png';
+                break;
+              case 'roxa':
+                imagePath = 'assets/imagens/casa_do_azar.png';
+                break;
+            }
+            if (imagePath) {
+              const img = document.createElement('img');
+              img.src = imagePath;
+              cell.appendChild(img);
+            }
+          }
+        }
+      }
+    });
+
+    casasComSeta.forEach(coord => {
+      const cell = document.querySelector(
+        `#game-view .grid-cell[data-x='${coord.x}'][data-y='${coord.y}']`
+      );
+      if (cell) {
+        cell.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = 'assets/imagens/direcao.png';
+        // <<< MUDANÇA AQUI: Classe única baseada na coordenada >>>
+        img.className = `casa-especial seta-especial-${coord.x}-${coord.y}`;
+        cell.appendChild(img);
+      }
+    });
   },
 
+  // ... (O resto do arquivo permanece igual)
   criarPeoes: function (jogadores) {
     const peoesContainer = document.getElementById('peoes-container');
     if (!peoesContainer) return;
@@ -102,21 +190,24 @@ const mapController = {
   },
 
   atualizarDestaqueFragmento: function () {
-    const celulaAntiga = document.querySelector('.star-fragment-cell');
-    if (celulaAntiga) {
-      celulaAntiga.innerHTML = '';
-      celulaAntiga.classList.remove('star-fragment-cell');
+    const oldStar = document.querySelector('.star-icon');
+    if (oldStar) {
+      oldStar.remove();
     }
+
     const starNodeId = gameState.posicaoFragmentoEstrelaId;
     if (starNodeId === null || starNodeId === undefined) return;
+
     const pontoDoMapa = gameData.mapa.find(p => p.id === starNodeId);
     if (pontoDoMapa) {
       const celulaNova = document.querySelector(
         `#game-view .grid-cell[data-x='${pontoDoMapa.x}'][data-y='${pontoDoMapa.y}']`
       );
       if (celulaNova) {
-        celulaNova.innerHTML = '⭐';
-        celulaNova.classList.add('star-fragment-cell');
+        const starIcon = document.createElement('span');
+        starIcon.className = 'star-icon';
+        starIcon.textContent = '⭐';
+        celulaNova.appendChild(starIcon);
       }
     }
   },

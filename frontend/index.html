@@ -1,89 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Cosmic Commerce</title>
-    <link rel="stylesheet" href="style.css" />
+    <!-- Fontes do Google para um visual mais moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/main.css" />
     <link rel="shortcut icon" href="assets/icon.svg" type="image/x-icon" />
-</head>
-<body>
+  </head>
+  <body>
     <main>
-        <!-- LOGIN VIEW -->
-        <section id="login-view" style="display: none">
-            <h2>Login</h2>
+      <!-- LOGIN VIEW -->
+      <section id="login-view" style="display: none">
+        <div class="auth-wrapper">
+          <div class="auth-container">
+            <h1 class="auth-title">Cosmic Commerce</h1>
+            <h2 class="auth-subtitle">Login</h2>
             <form id="login-form">
-                <input type="email" id="login-email" placeholder="Email" required />
-                <input type="password" id="login-password" placeholder="Senha" required />
-                <button type="submit">Entrar</button>
+              <input type="email" id="login-email" placeholder="Email" required />
+              <input type="password" id="login-password" placeholder="Senha" required />
+              <button type="submit">Entrar</button>
             </form>
-            <p>Não tem conta? <a href="#" id="go-to-register">Registrar-se</a></p>
+            <p class="auth-link">Não tem conta? <a href="#" id="go-to-register">Registrar-se</a></p>
             <div id="auth-message"></div>
-        </section>
-
+          </div>
+        </div>
+      </section>
 
       <!-- REGISTRO VIEW -->
       <section id="register-view" style="display: none">
-        <h2>Registro</h2>
-        <form id="register-form">
-          <input type="text" id="register-name" placeholder="Nome" required />
-          <input type="email" id="register-email" placeholder="Email" required />
-          <input type="password" id="register-password" placeholder="Senha" required />
-          <button type="submit">Registrar</button>
-        </form>
-        <p>Já tem conta? <a href="#" id="go-to-login">Fazer login</a></p>
-        <div id="auth-message"></div>
+        <div class="auth-wrapper">
+          <div class="auth-container">
+            <h1 class="auth-title">Cosmic Commerce</h1>
+            <h2 class="auth-subtitle">Registro</h2>
+            <form id="register-form">
+              <input type="text" id="register-name" placeholder="Nome" required />
+              <input type="email" id="register-email" placeholder="Email" required />
+              <input type="password" id="register-password" placeholder="Senha" required />
+              <button type="submit">Registrar</button>
+            </form>
+            <p class="auth-link">Já tem conta? <a href="#" id="go-to-login">Fazer login</a></p>
+          </div>
+        </div>
       </section>
 
       <!-- LOBBY VIEW -->
       <section id="lobby-view" style="display: none">
-        <h3>Bem-vindo, <span id="lobby-username"></span></h3>
-        <hr />
-        <div>
-          <h4>Sala Privada</h4>
-          <input
-            type="text"
-            id="private-room-code"
-            placeholder="Insira o código da sala"
-            style="width: 100%"
-          />
-          <button id="join-private-room-btn">Entrar na Sala</button>
+        <div class="lobby-container">
+          <div class="lobby-header">
+            <h3>Bem-vindo, <span id="lobby-username"></span></h3>
+            <button id="lobby-logout-btn">Sair</button>
+          </div>
+
+          <div class="lobby-panels">
+            <div class="lobby-panel">
+              <h4>Salas Públicas</h4>
+              <p>Entre em uma partida ou crie a sua.</p>
+              <div id="public-rooms-list">
+                <!-- Gerado por JS -->
+              </div>
+              <button id="create-room-btn">Criar Nova Sala</button>
+            </div>
+
+            <div class="lobby-panel">
+              <h4>Sala Privada</h4>
+              <p>Tem um código? Digite abaixo para entrar.</p>
+              <input type="text" id="private-room-code" placeholder="Insira o código da sala" />
+              <button id="join-private-room-btn">Entrar com Código</button>
+            </div>
+          </div>
         </div>
-        <hr />
-        <div>
-          <h3>Salas Públicas</h3>
-          <div id="public-rooms-list"></div>
-        </div>
-        <button id="create-room-btn" style="margin-top: 20px">Criar uma sala</button>
-        <button id="lobby-logout-btn">Logout</button>
       </section>
 
       <!-- CHAT/ROOM VIEW -->
       <section id="ws-section" style="display: none">
-        <h2 id="room-name-display">Nome da Sala</h2>
-        <div id="room-info-header">
-          <span>ID da Sala: <strong id="room-id-display"></strong></span>
-          <span>Jogadores: <strong id="room-players-display"></strong></span>
-          <span>Dono: <strong id="room-host-display">Aguardando...</strong></span>
-        </div>
-        <div
-          id="messages"
-          style="
-            height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 5px;
-            margin-bottom: 10px;
-            background: #f9f9f9;
-          "
-        ></div>
-        <div class="chat-controls">
-          <input type="text" id="ws-input" placeholder="Digite sua mensagem" />
-          <button id="send-chat">Enviar</button>
-        </div>
-        <div class="room-actions">
-          <button id="send-game">Iniciar Jogo</button>
-          <button id="leave-room-btn">Sair da Sala</button>
+        <div class="room-container">
+          <h2 id="room-name-display">Nome da Sala</h2>
+          <div id="room-info-header">
+            <span>ID da Sala: <strong id="room-id-display"></strong></span>
+            <span>Jogadores: <strong id="room-players-display"></strong></span>
+            <span>Dono: <strong id="room-host-display">Aguardando...</strong></span>
+          </div>
+          <div id="messages"></div>
+          <div class="chat-controls">
+            <input type="text" id="ws-input" placeholder="Digite sua mensagem..." />
+            <button id="send-chat">Enviar</button>
+          </div>
+          <div class="room-actions">
+            <button id="send-game">Iniciar Jogo</button>
+            <button id="leave-room-btn">Sair da Sala</button>
+          </div>
         </div>
       </section>
 
@@ -92,12 +104,27 @@
         <div class="game-container">
           <div class="left-panel">
             <h1>A Nebulosa Espiral</h1>
-            <div id="ui-players-panel"></div>
-            <div id="phase-indicator">
-              <h3 id="phase-title">Fase do Turno</h3>
-              <ul id="phase-actions"></ul>
+            <div id="ui-players-panel">
+              <!-- Gerado pelo ui-controller.js -->
             </div>
-            <div id="game-info"></div>
+
+            <!-- NOVA ESTRUTURA PARA INFORMAÇÕES DO TURNO -->
+            <div id="turn-status-panel">
+              <div class="turn-player-info">
+                <span>Turno <span id="turn-counter">1</span></span>
+                <span id="current-player-turn">Vez de: fabiano</span>
+              </div>
+              <div class="turn-dice-display">
+                <span id="dice-icon">🎲</span>
+                <span id="dice-count">0</span>
+              </div>
+              <div class="turn-effects-history">
+                <h4>Efeitos usados no turno:</h4>
+                <ul id="turn-effects-list">
+                  <li class="no-effects">Nenhum efeito utilizado.</li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="board-wrapper">
             <div id="unified-grid-container">

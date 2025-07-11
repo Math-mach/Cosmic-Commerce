@@ -71,8 +71,9 @@ const uiController = {
         card.classList.add('active-player');
       }
 
+      // Lógica para gerar a lista de itens
       let itemsHtml = '<ul class="player-item-list">';
-      if (player.itens.length > 0) {
+      if (player.itens && player.itens.length > 0) {
         player.itens.forEach(itemId => {
           const itemDef = gameData.gameDefinitions.itens[itemId];
           const itemName = itemDef ? itemDef.nome : 'Item Desconhecido';
@@ -80,19 +81,43 @@ const uiController = {
           const useButtonHtml = podeUsar
             ? `<button class="use-item-btn" data-item-id="${itemId}">Usar</button>`
             : '';
-          itemsHtml += `<li>${itemName} ${useButtonHtml}</li>`;
+          itemsHtml += `<li><span>${itemName}</span> ${useButtonHtml}</li>`;
         });
       } else {
         itemsHtml += `<li class="no-items">Nenhum item</li>`;
       }
       itemsHtml += '</ul>';
 
+      // Lógica para exibir os efeitos ativos
+      let effectsHtml = '';
+      if (player.efeitos_ativos && player.efeitos_ativos.length > 0) {
+        player.efeitos_ativos.forEach(effect => {
+          const effectDef = gameData.gameDefinitions.itens[effect.id];
+          const effectName = effectDef ? effectDef.nome : 'Efeito Desconhecido';
+          const turnsText = `(${effect.turnos_restantes} turno${
+            effect.turnos_restantes > 1 ? 's' : ''
+          })`;
+          effectsHtml += `<li>${effectName} ${turnsText}</li>`;
+        });
+      } else {
+        effectsHtml = `<li class="no-effects">Nenhum efeito ativo.</li>`;
+      }
+
+      // Monta o HTML final do card do jogador
       card.innerHTML = `
         <h3>${player.nome}</h3>
         <div class="player-stats">
             <span>Moedas:</span><span>${player.moedas}</span>
             <span>Fragmentos:</span><span>${player.fragmentos}</span>
         </div>
+        
+        <div class="player-effects">
+            <h4>Efeitos Ativos</h4>
+            <ul class="player-effect-list">
+                ${effectsHtml}
+            </ul>
+        </div>
+
         <div class="player-inventory">
             <h4>Itens (${player.itens.length}/4)</h4>
             ${itemsHtml}
@@ -100,12 +125,45 @@ const uiController = {
       playersPanel.appendChild(card);
     });
 
+    // Adiciona os event listeners aos botões "Usar"
     document.querySelectorAll('.use-item-btn').forEach(button => {
       button.addEventListener('click', e => {
         const itemId = e.target.dataset.itemId;
         this.handleItemUseClick(itemId);
       });
     });
+  },
+
+  updateTurnStatusPanel: function () {
+    const turnCounter = document.getElementById('turn-counter');
+    const currentPlayerTurn = document.getElementById('current-player-turn');
+    const turnEffectsList = document.getElementById('turn-effects-list');
+
+    if (!turnCounter || !currentPlayerTurn || !turnEffectsList) return;
+
+    const { partida, jogadores } = gameState;
+    if (!partida || !jogadores) return;
+
+    const jogadorAtual = jogadores.find(p => p.id === partida.id_jogador_da_vez);
+
+    turnCounter.textContent = partida.turno_atual || '1';
+    currentPlayerTurn.textContent = `Vez de: ${jogadorAtual ? jogadorAtual.nome : '...'}`;
+
+    const itemUsadoId = partida.itemUsedId;
+    if (itemUsadoId) {
+      const itemDef = gameData.gameDefinitions.itens[itemUsadoId];
+      const itemName = itemDef ? itemDef.nome : 'Item Desconhecido';
+      turnEffectsList.innerHTML = `<li>${itemName}</li>`;
+    } else {
+      turnEffectsList.innerHTML = `<li class="no-effects">Nenhum efeito utilizado.</li>`;
+    }
+  },
+
+  updateDiceCount: function (count) {
+    const diceCountEl = document.getElementById('dice-count');
+    if (diceCountEl) {
+      diceCountEl.textContent = count;
+    }
   },
 
   handleItemUseClick: function (itemId) {
@@ -147,65 +205,21 @@ const uiController = {
     if (modal) modal.style.display = 'none';
   },
 
-  atualizarInformacoesGerais: function () {
-    const gameInfo = document.getElementById('game-info');
-    if (!gameInfo || !gameState.partida?.id_jogador_da_vez) return;
-    const jogadorAtual = gameState.jogadores.find(
-      p => p.id === gameState.partida.id_jogador_da_vez
-    );
-    if (!jogadorAtual) return;
-    gameInfo.textContent = `Turno: ${gameState.partida.turno_atual} - Vez de: ${jogadorAtual.nome}`;
-  },
-
-  mostrarMensagemTemporaria: function (texto, duracaoMs) {
-    const gameInfo = document.getElementById('game-info');
-    if (!gameInfo) return;
-    const textoOriginal = gameInfo.textContent;
-    gameInfo.textContent = texto;
-    setTimeout(() => {
-      if (gameInfo.textContent === texto) {
-        this.atualizarInformacoesGerais();
-      }
-    }, duracaoMs);
-  },
-
   atualizarFaseUI: function () {
-    const faseAtual = gameState.partida?.fase_do_turno;
-    if (!faseAtual) return;
-    const jogadorDaVezId = gameState.partida?.id_jogador_da_vez;
-    const eMinhaVez = gameState.meuId === jogadorDaVezId;
-    let uiData;
-
-    if (!eMinhaVez) {
-      const jogadorAtual = gameState.jogadores.find(p => p.id === jogadorDaVezId);
-      const nomeJogador = jogadorAtual ? jogadorAtual.nome : 'outro jogador';
-      uiData = { titulo: `Vez de ${nomeJogador}`, acoes: ['Aguardando ação...'] };
-    } else {
-      uiData = FASES_UI[faseAtual] || { titulo: 'Aguardando Servidor', acoes: [] };
-    }
-
-    const phaseTitle = document.getElementById('phase-title');
-    if (phaseTitle) phaseTitle.textContent = uiData.titulo;
-    const actionsList = document.getElementById('phase-actions');
-    if (actionsList) {
-      actionsList.innerHTML = '';
-      uiData.acoes.forEach(acao => {
-        const li = document.createElement('li');
-        li.textContent = acao;
-        actionsList.appendChild(li);
-      });
-    }
     const actionButton = document.getElementById('action-button');
-    if (actionButton) {
-      if (eMinhaVez && faseAtual === 'uso_item_pre_rolagem') {
-        actionButton.textContent = 'Rolar o Dado';
-        actionButton.disabled = false;
-        actionButton.classList.remove('disabled_button');
-      } else {
-        actionButton.textContent = 'Aguarde...';
-        actionButton.disabled = true;
-        actionButton.classList.add('disabled_button');
-      }
+    if (!actionButton) return;
+
+    const faseAtual = gameState.partida?.fase_do_turno;
+    const eMinhaVez = gameState.meuId === gameState.partida?.id_jogador_da_vez;
+
+    if (eMinhaVez && faseAtual === 'uso_item_pre_rolagem') {
+      actionButton.textContent = 'Rolar o Dado';
+      actionButton.disabled = false;
+      actionButton.classList.remove('disabled_button');
+    } else {
+      actionButton.textContent = 'Aguarde...';
+      actionButton.disabled = true;
+      actionButton.classList.add('disabled_button');
     }
   },
 
@@ -334,7 +348,7 @@ const uiController = {
 
   atualizarTudo: function () {
     this.atualizarPainelJogadores();
-    this.atualizarInformacoesGerais();
+    this.updateTurnStatusPanel();
     this.atualizarFaseUI();
   },
 };

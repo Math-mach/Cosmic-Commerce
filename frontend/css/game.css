@@ -1,0 +1,518 @@
+#game-view {
+  display: none;
+  background-color: var(--primary-bg);
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#game-view .game-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+}
+
+#game-view .left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 280px;
+  padding: 20px;
+  background-color: var(--secondary-bg);
+  border-radius: 12px;
+  border: 1px solid var(--input-bg);
+}
+
+#game-view h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--text-color);
+  text-align: center;
+  font-size: 1.75rem;
+  margin: 0 0 10px 0;
+}
+
+#game-view #ui-players-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+#game-view .player-card {
+  border: 1px solid var(--input-bg);
+  border-radius: 8px;
+  padding: 15px;
+  background-color: var(--primary-bg);
+  transition: all 0.3s ease;
+  color: var(--subtitle-color);
+}
+
+#game-view .player-card.active-player {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 15px rgba(76, 60, 255, 0.5);
+}
+
+#game-view .player-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.4em;
+  color: var(--text-color);
+}
+
+#game-view .player-stats {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  font-size: 1rem;
+  align-items: center;
+}
+
+#game-view .player-stats span:nth-child(odd) {
+  text-align: left;
+}
+#game-view .player-stats span:nth-child(even) {
+  text-align: right;
+  font-weight: 700;
+  color: var(--text-color);
+}
+#game-view .player-stats span:nth-child(2)::after {
+  content: '🪙';
+  margin-left: 8px;
+}
+#game-view .player-stats span:nth-child(4)::after {
+  content: '⭐';
+  margin-left: 8px;
+}
+
+.player-effects,
+#game-view .player-inventory {
+  margin-top: 15px;
+  border-top: 1px solid var(--input-bg);
+  padding-top: 15px;
+}
+
+.player-effects h4,
+#game-view .player-inventory h4 {
+  margin: 0 0 8px 0;
+  font-size: 1em;
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.player-effect-list,
+#game-view .player-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-effect-list li,
+#game-view .player-item-list li {
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player-effect-list .no-effects,
+#game-view .player-item-list .no-items {
+  font-style: italic;
+  opacity: 0.7;
+  justify-content: flex-start;
+}
+
+#game-view .player-item-list button {
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: var(--input-bg);
+  color: var(--subtitle-color);
+  border: 1px solid var(--input-bg);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#game-view .player-item-list button:hover {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  border-color: var(--accent-color);
+}
+
+#game-view .player-item-list button:disabled {
+  background-color: var(--primary-bg);
+  color: var(--subtitle-color);
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  border-color: var(--primary-bg);
+}
+
+#turn-status-panel {
+  margin-top: auto;
+  padding: 15px;
+  background-color: var(--primary-bg);
+  border: 1px solid var(--input-bg);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.turn-player-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--subtitle-color);
+}
+#current-player-turn {
+  font-weight: 700;
+  color: var(--text-color);
+}
+.turn-dice-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  background-color: var(--secondary-bg);
+  padding: 10px;
+  border-radius: 6px;
+}
+#dice-icon {
+  font-size: 2rem;
+}
+#dice-count {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+.turn-effects-history h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+#turn-effects-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+}
+#turn-effects-list .no-effects {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+#game-view .board-wrapper {
+  position: relative;
+  padding: 10px;
+  border: 2px solid var(--accent-color);
+  background-color: var(--primary-bg);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(76, 60, 255, 0.4);
+}
+#game-view #unified-grid-container {
+  display: grid;
+  grid-template-columns: repeat(40, 1fr) 35px;
+  grid-template-rows: repeat(40, 1fr) 25px;
+  width: 80vh;
+  height: 80vh;
+  max-width: 800px;
+  max-height: 800px;
+  border: none;
+  background-image: url('../assets/imagens/espaco.jpeg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+#game-view .grid-cell {
+  border-top: 1px solid rgba(204, 204, 204, 0.2);
+  border-left: 1px solid rgba(204, 204, 204, 0.2);
+  box-sizing: border-box;
+  background-color: transparent;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #ffd700;
+}
+
+#game-view .grid-cell img:not(.seta-bifurcacao):not(.casa-especial) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  height: 110%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.casa-especial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80% !important;
+  height: 80% !important;
+  object-fit: contain;
+}
+
+/* ======================================================================== */
+/* <<< SEU PAINEL DE CONTROLE PARA AS SETAS ESPECIAIS >>>                   */
+/* ======================================================================== */
+img.casa-especial {
+  width: 300% !important; /* Aumenta o tamanho da imagem da seta */
+  height: 300% !important;
+  /* A posição já é controlada pela regra de rotação abaixo */
+}
+.seta-especial-15-2 {
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+.seta-especial-2-9 {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.seta-especial-21-4 {
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.seta-especial-2-17 {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.seta-especial-2-28 {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.seta-especial-33-32 {
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+img.seta-especial-33-32 {
+  width: 150% !important; /* Aumenta o tamanho da imagem da seta */
+  height: 150% !important;
+  /* A posição já é controlada pela regra de rotação abaixo */
+}
+.seta-especial-18-32 {
+  transform: translate(-50%, -50%) rotate(-40deg);
+}
+img.seta-especial-18-32 {
+  width: 200% !important; /* Aumenta o tamanho da imagem da seta */
+  height: 200% !important;
+  /* A posição já é controlada pela regra de rotação abaixo */
+}
+.seta-especial-15-37 {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* ======================================================================== */
+
+.seta-bifurcacao {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80% !important;
+  height: 80% !important;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.ponto-central {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  height: 25%;
+  background-color: white;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+/* Bifurcação ID: 7 */
+.seta-bifurcacao-7-1 {
+  transform: translate(-50%, -120%) rotate(-90deg);
+}
+.seta-bifurcacao-7-2 {
+  transform: translate(-120%, -45%) rotate(180deg);
+}
+
+/* Bifurcação ID: 12 */
+.seta-bifurcacao-12-1 {
+  transform: translate(30%, -50%) rotate(0deg);
+}
+.seta-bifurcacao-12-2 {
+  transform: translate(-120%, -120%) rotate(-135deg);
+}
+
+/* Bifurcação ID: 31 */
+.seta-bifurcacao-31-1 {
+  transform: translate(-120%, -120%) rotate(-135deg);
+}
+.seta-bifurcacao-31-2 {
+  transform: translate(-50%, 30%) rotate(90deg);
+}
+
+/* Bifurcação ID: 40 */
+.seta-bifurcacao-40-1 {
+  transform: translate(-50%, -120%) rotate(-90deg);
+}
+.seta-bifurcacao-40-2 {
+  transform: translate(35%, -50%) rotate(0deg);
+}
+
+/* Bifurcação ID: 59 */
+.seta-bifurcacao-59-1 {
+  transform: translate(-120%, -120%) rotate(-135deg);
+}
+.seta-bifurcacao-59-2 {
+  transform: translate(10%, -120%) rotate(-45deg);
+}
+
+/* Bifurcação ID: 71 */
+.seta-bifurcacao-71-1 {
+  transform: translate(-120%, -100%) rotate(210deg);
+}
+.seta-bifurcacao-71-2 {
+  transform: translate(35%, -50%) rotate(0deg);
+}
+
+/* Bifurcação ID: 88 */
+.seta-bifurcacao-88-1 {
+  transform: translate(30%, -90%) rotate(-35deg);
+}
+.seta-bifurcacao-88-2 {
+  transform: translate(30%, 50%) rotate(35deg);
+}
+
+.star-icon {
+  position: absolute;
+  z-index: 5;
+  font-size: 1.2rem;
+  pointer-events: none;
+  text-shadow: 0 0 5px gold;
+}
+
+#game-view .label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-color);
+}
+#game-view .x-axis-label {
+  border-top: 2px solid var(--accent-color);
+}
+#game-view .y-axis-label {
+  border-left: 2px solid var(--accent-color);
+}
+#game-view #peoes-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - 35px);
+  height: calc(100% - 25px);
+  pointer-events: none;
+}
+#game-view .peao {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  transition: transform 0.4s ease-in-out;
+}
+#game-view .peao-p1 {
+  background-color: #e63946;
+}
+#game-view .peao-p2 {
+  background-color: #457b9d;
+}
+#game-view .peao-p3 {
+  background-color: #52b788;
+}
+#game-view .peao-p4 {
+  background-color: #88ff00;
+}
+
+#game-view #ui-actions-panel {
+  margin-top: 15px;
+  text-align: center;
+}
+#game-view #action-button {
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: bold;
+}
+#game-view #action-button.disabled_button {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#game-view .ponto-bifurcacao-opcao {
+  cursor: pointer !important;
+}
+
+#game-view .ponto-bifurcacao-opcao img {
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+  pointer-events: all;
+}
+
+#game-view .ponto-bifurcacao-opcao:not(:has(img)) {
+  border: 4px dashed #ffc107 !important;
+  background-color: #fff3cd !important;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
+
+#game-view .event-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #ffc107;
+  text-align: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#game-view .event-notification.visible {
+  opacity: 1;
+}
+#game-view .event-notification h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.5em;
+  color: #ffc107;
+}
+#game-view .event-notification p {
+  margin: 0;
+  font-size: 1em;
+}
