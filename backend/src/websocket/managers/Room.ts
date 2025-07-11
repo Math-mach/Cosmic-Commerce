@@ -25,6 +25,8 @@ interface PlayerState {
   fragmentos: number;
   itens: string[];
   efeitos_ativos: PlayerEffect[];
+  casas_andadas: number;
+  eventos_ativados: number;
 }
 
 interface ShopState {
@@ -54,6 +56,7 @@ export class Room {
   public state: 'waiting' | 'in_progress' | 'finished' = 'waiting';
   public gameState: GameState | null = null;
   public disconnectedPlayers: Map<string, DisconnectedPlayerInfo> = new Map();
+  public readonly MAX_TURNS = 10;
 
   constructor(id: string, name: string, isPublic: boolean = true, maxPlayers: number = 4) {
     this.id = id;
@@ -105,7 +108,6 @@ export class Room {
       'ladrao_de_moedas',
     ];
 
-    // Agora cria uma loja para CADA casa amarela encontrada.
     return shopNodes.map(shopNode => ({
       nodeId: shopNode.id,
       items: fullShopInventory,
@@ -144,6 +146,8 @@ export class Room {
         fragmentos: 0,
         itens: ['dado_adicional', 'cogumelo_venenoso', 'ladrao_de_moedas', 'item_de_teleporte'],
         efeitos_ativos: [],
+        casas_andadas: 0,
+        eventos_ativados: 0,
       })),
       turnInfo: {
         fase_do_turno: 'uso_item_pre_rolagem',
@@ -159,6 +163,94 @@ export class Room {
     };
 
     this.realocateStarFragment();
+  }
+
+  public calculateAwards(): object | null {
+    if (!this.gameState) return null;
+
+    console.log(`[Sala ${this.id}] Calculando prêmios de final de jogo...`);
+
+    const players = this.gameState.players;
+
+    const findWinners = (players: PlayerState[], metric: keyof PlayerState) => {
+      if (players.length === 0) return [];
+      let maxVal = -1;
+      players.forEach(p => {
+        const val = p[metric];
+        if (typeof val === 'number' && val > maxVal) {
+          maxVal = val;
+        }
+      });
+      if (maxVal <= 0 && players.length > 0) maxVal = 0;
+      return players.filter(p => p[metric] === maxVal);
+    };
+
+    const mostCoinsWinners = findWinners(players, 'moedas');
+    mostCoinsWinners.forEach(winner => {
+      const player = this.gameState!.players.find(p => p.id === winner.id);
+      if (player && player.moedas > 0) {
+        player.fragmentos += 1;
+        console.log(
+          `[Sala ${this.id}] Jogador ${player.nome} ganhou uma estrela bônus por ter mais moedas.`
+        );
+      }
+    });
+
+    const mostMovedWinners = findWinners(players, 'casas_andadas');
+    mostMovedWinners.forEach(winner => {
+      const player = this.gameState!.players.find(p => p.id === winner.id);
+      if (player && player.casas_andadas > 0) {
+        player.fragmentos += 1;
+        console.log(
+          `[Sala ${this.id}] Jogador ${player.nome} ganhou uma estrela bônus por andar mais.`
+        );
+      }
+    });
+
+    const mostEventsWinners = findWinners(players, 'eventos_ativados');
+    mostEventsWinners.forEach(winner => {
+      const player = this.gameState!.players.find(p => p.id === winner.id);
+      if (player && player.eventos_ativados > 0) {
+        player.fragmentos += 1;
+        console.log(
+          `[Sala ${this.id}] Jogador ${player.nome} ganhou uma estrela bônus por cair em mais eventos.`
+        );
+      }
+    });
+
+    const finalScores = players
+      .map(p => ({
+        id: p.id,
+        nome: p.nome,
+        finalScore: p.fragmentos,
+        moedas: p.moedas,
+        casasAndadas: p.casas_andadas,
+        eventosAtivados: p.eventos_ativados,
+      }))
+      .sort((a, b) => b.finalScore - a.finalScore || b.moedas - a.moedas);
+
+    const awards = {
+      mostCoins: {
+        winners: mostCoinsWinners.map(p => p.nome),
+        value: mostCoinsWinners.length > 0 ? mostCoinsWinners[0].moedas : 0,
+      },
+      mostMoved: {
+        winners: mostMovedWinners.map(p => p.nome),
+        value: mostMovedWinners.length > 0 ? mostMovedWinners[0].casas_andadas : 0,
+      },
+      mostEvents: {
+        winners: mostEventsWinners.map(p => p.nome),
+        value: mostEventsWinners.length > 0 ? mostEventsWinners[0].eventos_ativados : 0,
+      },
+    };
+
+    return {
+      event: 'game_over',
+      payload: {
+        finalScores,
+        awards,
+      },
+    };
   }
 
   public endGame() {

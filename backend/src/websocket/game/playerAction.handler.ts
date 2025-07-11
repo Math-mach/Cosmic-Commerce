@@ -9,15 +9,15 @@ import { findNodeById, gameDefinitions } from './gameData';
 
 interface PlayerActionPayload {
   action:
-    | 'main_button_click'
-    | 'choose_path'
-    | 'buy_item'
-    | 'close_shop'
-    | 'pay_to_avoid_catastrophe'
-    | 'face_the_catastrophe'
-    | 'use_item'
-    | 'buy_star_fragment'
-    | 'ignore_star_fragment';
+  | 'main_button_click'
+  | 'choose_path'
+  | 'buy_item'
+  | 'close_shop'
+  | 'pay_to_avoid_catastrophe'
+  | 'face_the_catastrophe'
+  | 'use_item'
+  | 'buy_star_fragment'
+  | 'ignore_star_fragment';
   nodeId?: number;
   itemId?: string;
   targetPlayerId?: string;
@@ -93,7 +93,7 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
 //  LÓGICA DE TURNO
 // ===================================================================================
 
-function passTurn(room: Room) {
+export function passTurn(room: Room) {
   if (!room.gameState || room.gameState.players.length === 0) {
     console.warn(`[Sala ${room.id}] Tentativa de passar turno sem jogadores. Encerrando jogo.`);
     room.endGame();
@@ -108,13 +108,41 @@ function passTurn(room: Room) {
   }
 
   const players = room.gameState.players;
-  const { turnInfo } = room.gameState!;
-  const currentPlayerId = turnInfo.id_jogador_da_vez;
-  const currentPlayerIndex = players.findIndex(p => p.id === currentPlayerId);
+  const { turnInfo } = room.gameState;
+  const currentPlayerIndex = players.findIndex(p => p.id === turnInfo.id_jogador_da_vez);
 
-  const nextPlayerIndex = currentPlayerIndex === -1 ? 0 : (currentPlayerIndex + 1) % players.length;
+  if (turnInfo.turno_atual >= room.MAX_TURNS && currentPlayerIndex === players.length - 1) {
+    console.log(`[Sala ${room.id}] Turno final ${room.MAX_TURNS} concluído. Encerrando o jogo.`);
+    const finalPayload = room.calculateAwards();
+    if (finalPayload) {
+      roomManager.broadcastToRoom(room.id, JSON.stringify(finalPayload));
+    }
+    setTimeout(() => {
+      room.endGame();
+      const host = room.players.get(room.hostId!);
+      const roomInfoPayload = {
+        event: 'room_info',
+        room: {
+          id: room.id,
+          name: room.name,
+          hostName: host?.name || 'N/D',
+          current_users: room.getPlayers().length,
+          max_users: room.maxPlayers,
+        },
+      };
+      roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));
+    }, 10000);
+    return;
+  }
+
+  const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+
+  if (nextPlayerIndex === 0) {
+    turnInfo.turno_atual++;
+    console.log(`[Sala ${room.id}] Iniciando turno ${turnInfo.turno_atual}.`);
+  }
+
   const nextPlayer = players[nextPlayerIndex];
-
   turnInfo.id_jogador_da_vez = nextPlayer.id;
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
   turnInfo.itemUsedThisTurn = false;
@@ -122,10 +150,6 @@ function passTurn(room: Room) {
   turnInfo.passosRestantes = 0;
   turnInfo.opcoesBifurcacao = [];
   turnInfo.passosRestantesAposLoja = 0;
-
-  if (nextPlayerIndex === 0) {
-    turnInfo.turno_atual++;
-  }
 
   console.log(`[Sala ${room.id}] Turno passado para ${nextPlayer.nome}.`);
 
@@ -171,6 +195,10 @@ function handleMainButtonClick(room: Room) {
   }
 
   const diceRoll = dadoComum + dadoExtra;
+  currentPlayer.casas_andadas += diceRoll;
+  console.log(
+    `[Sala ${room.id}] ${currentPlayer.nome} andou ${diceRoll} casas. Total: ${currentPlayer.casas_andadas}`
+  );
   continueMovement(room, diceRoll, diceRoll);
 }
 
@@ -272,6 +300,12 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
 
   if (finalNode?.tipoCasa) {
     const { tipoCasa } = finalNode;
+    if (tipoCasa === 'verde' || tipoCasa === 'roxa') {
+      currentPlayerState.eventos_ativados += 1;
+      console.log(
+        `[Sala ${room.id}] ${currentPlayerState.nome} caiu em casa de evento/desastre. Total: ${currentPlayerState.eventos_ativados}`
+      );
+    }
     if (tipoCasa === 'azul' || tipoCasa === 'vermelha') {
       const { efeito } = gameDefinitions.casas[tipoCasa];
       if (efeito.tipo === 'ganhar_moedas') {
@@ -291,7 +325,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     } else if (tipoCasa === 'verde') {
       const evento =
         gameDefinitions.eventos_casa_interrogacao[
-          Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
+        Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
         ];
       notificationPayload = { title: evento.nome, message: evento.efeito_detalhado, isEvent: true };
       switch (evento.id) {
