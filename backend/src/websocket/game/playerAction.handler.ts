@@ -1,9 +1,7 @@
-// backend/src/websocket/game/playerAction.handler.ts
-
 import { ConnectedUser } from '..';
 import { roomManager } from '../managers/roomManager';
 import { Room } from '../managers/Room';
-import { findNodeById, gameDefinitions } from './gameData';
+import { findNodeById, gameDefinitions, MapNode } from './gameData';
 
 // ===================================================================================
 //  TIPOS E INTERFACE
@@ -49,7 +47,6 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     'ignore_star_fragment',
   ];
 
-  // Apenas o jogador da vez pode usar itens de pré-rolagem
   if (payload.action === 'use_item' && room.gameState.turnInfo.id_jogador_da_vez !== userId) {
     ws.send(JSON.stringify({ event: 'error', message: 'Você só pode usar itens no seu turno.' }));
     return;
@@ -145,19 +142,12 @@ export function passTurn(room: Room) {
     return;
   }
 
-  // Determina o próximo jogador
   const nextPlayerIndex = currentPlayerIndex === -1 ? 0 : (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
 
-  // =======================================================================
-  // =====> LÓGICA CORRIGIDA DA TEIA CÓSMICA (PULAR TURNO) <=====
-  // =======================================================================
   const teiaEffect = nextPlayer.efeitos_ativos.find(e => e.id === 'preso_na_teia');
   if (teiaEffect) {
-    // 1. Remove o efeito do jogador que seria o próximo
     nextPlayer.efeitos_ativos = nextPlayer.efeitos_ativos.filter(e => e.id !== 'preso_na_teia');
-
-    // 2. Notifica a todos que o jogador perdeu a vez
     roomManager.broadcastToRoom(
       room.id,
       JSON.stringify({
@@ -173,19 +163,11 @@ export function passTurn(room: Room) {
         },
       })
     );
-
-    // 3. Oficializa que o turno agora seria do jogador preso...
     turnInfo.id_jogador_da_vez = nextPlayer.id;
-
-    // 4. ... e imediatamente chama a função de novo para pular para o próximo!
-    // A função vai recomeçar, mas agora o `id_jogador_da_vez` é o jogador preso,
-    // então o próximo na fila será o jogador seguinte a ele.
-    setTimeout(() => passTurn(room), 1500); // Delay para a notificação ser lida
-    return; // Para a execução aqui para não dar o turno ao jogador errado.
+    setTimeout(() => passTurn(room), 1500);
+    return;
   }
-  // =======================================================================
 
-  // Se não houver efeito de teia, o fluxo normal continua
   turnInfo.id_jogador_da_vez = nextPlayer.id;
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
   turnInfo.itemUsedThisTurn = false;
@@ -221,7 +203,6 @@ function handleMainButtonClick(room: Room) {
 
   const dadoAdicionalEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'dado_adicional');
   const cogumeloEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'cogumelo_venenoso');
-
   let dadoComum = 0;
   let dadoExtra = 0;
 
@@ -245,9 +226,7 @@ function handleMainButtonClick(room: Room) {
 
   const botaJatoEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'bota_a_jato');
   if (botaJatoEffect) {
-    if (diceRoll < 4) {
-      diceRoll = 4;
-    }
+    if (diceRoll < 4) diceRoll = 4;
     currentPlayer.efeitos_ativos = currentPlayer.efeitos_ativos.filter(e => e.id !== 'bota_a_jato');
   }
 
@@ -268,7 +247,6 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
 
   const currentPlayerState = players.find(p => p.id === userId)!;
   const bifurcationNode = findNodeById(currentPlayerState.posicao_mapa_id)!;
-
   if (!bifurcationNode.conexoes.includes(chosenNodeId)) return;
 
   const stepsRemainingAfterChoice = turnInfo.passosRestantes!;
@@ -278,6 +256,9 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   continueMovement(room, stepsRemainingAfterChoice, stepsRemainingAfterChoice);
 }
 
+// ===================================================================================
+//  LÓGICA DE MOVIMENTO (CORRIGIDA)
+// ===================================================================================
 function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: number | null = null) {
   const { turnInfo, players, posicaoFragmentoEstrelaId } = room.gameState!;
   const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
@@ -287,56 +268,76 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
     return;
   }
 
-  let currentNode = findNodeById(currentPlayer.posicao_mapa_id);
-  const path: number[] = [currentNode!.id];
-  let movementStopsAtBifurcation = false;
-  let movementStopsAtShop = false;
-  let movementStopsAtStar = false;
-
+  // 1. Gerar o caminho completo que o jogador percorreria com o dado.
+  let tempNode = findNodeById(currentPlayer.posicao_mapa_id);
+  const fullPathNodes: MapNode[] = [tempNode!];
   for (let i = 0; i < stepsToTake; i++) {
-    if (!currentNode || currentNode.conexoes.length === 0) break;
-    const nextNode = findNodeById(currentNode.conexoes[0])!;
-    path.push(nextNode.id);
-    currentNode = nextNode;
+    if (!tempNode || !tempNode.conexoes[0]) break; // Para se chegar a um beco sem saída.
+    tempNode = findNodeById(tempNode.conexoes[0]);
+    if (!tempNode) break;
+    fullPathNodes.push(tempNode);
+  }
 
-    if (nextNode.id === posicaoFragmentoEstrelaId) {
+  // 2. Analisar o caminho gerado para encontrar o PRIMEIRO ponto de parada.
+  let stopIndex = -1;
+  let movementStopsAtStar = false;
+  let movementStopsAtShop = false;
+  let movementStopsAtBifurcation = false;
+
+  // Começa em 1 para ignorar a casa atual do jogador.
+  for (let i = 1; i < fullPathNodes.length; i++) {
+    const pathNode = fullPathNodes[i];
+
+    // A estrela tem a maior prioridade.
+    if (pathNode.id === posicaoFragmentoEstrelaId) {
+      stopIndex = i;
       movementStopsAtStar = true;
-      turnInfo.passosRestantesAposLoja = stepsToTake - (i + 1); // Guarda os passos restantes
-      break; // Interrompe o movimento na casa da estrela
-    }
-    // As outras verificações só ocorrem se a casa não for a da estrela.
-    if (nextNode.tipoCasa === 'amarela') {
-      movementStopsAtShop = true;
-      turnInfo.passosRestantesAposLoja = stepsToTake - (i + 1);
+      turnInfo.passosRestantesAposLoja = stepsToTake - i;
       break;
     }
-    if (nextNode.tipo === 'bifurcacao') {
+    // Em seguida, a loja.
+    if (pathNode.tipoCasa === 'amarela') {
+      stopIndex = i;
+      movementStopsAtShop = true;
+      turnInfo.passosRestantesAposLoja = stepsToTake - i;
+      break;
+    }
+    // Por último, a bifurcação.
+    if (pathNode.tipo === 'bifurcacao') {
+      stopIndex = i;
       movementStopsAtBifurcation = true;
-      turnInfo.passosRestantes = stepsToTake - (i + 1);
-      turnInfo.opcoesBifurcacao = nextNode.conexoes;
+      turnInfo.passosRestantes = stepsToTake - i;
+      turnInfo.opcoesBifurcacao = pathNode.conexoes;
       break;
     }
   }
 
+  // 3. Determinar o caminho final para a animação.
+  const finalPath = stopIndex !== -1 ? fullPathNodes.slice(0, stopIndex + 1) : fullPathNodes;
+  const finalPathIds = finalPath.map(node => node.id);
+
+  // 4. Transmitir o evento e agendar a lógica de final de movimento.
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
       event: 'game_event',
       payload: {
         type: 'player_is_moving',
-        payload: { playerId: currentPlayer.id, path, diceResult: initialDiceRoll },
+        payload: { playerId: currentPlayer.id, path: finalPathIds, diceResult: initialDiceRoll },
       },
     })
   );
 
-  const finalNodeInPath = findNodeById(path[path.length - 1])!;
-  const animationDuration = path.length * 500 + (initialDiceRoll ? 500 : 0);
+  const finalNodeInPath = finalPath[finalPath.length - 1];
+  const animationDuration = finalPath.length * 500 + (initialDiceRoll ? 500 : 0);
 
   setTimeout(() => {
     currentPlayer.posicao_mapa_id = finalNodeInPath.id;
-    if (movementStopsAtStar) triggerStarFragmentInteraction(room);
-    else if (movementStopsAtShop) triggerShopInteraction(room, finalNodeInPath.id);
-    else if (movementStopsAtBifurcation) {
+    if (movementStopsAtStar) {
+      triggerStarFragmentInteraction(room);
+    } else if (movementStopsAtShop) {
+      triggerShopInteraction(room, finalNodeInPath.id);
+    } else if (movementStopsAtBifurcation) {
       turnInfo.fase_do_turno = 'escolha_bifurcacao';
       roomManager.broadcastToRoom(
         room.id,
@@ -345,7 +346,9 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
           payload: { type: 'gameStateUpdate', payload: room.gameState! },
         })
       );
-    } else processEndOfMovement(room, finalNodeInPath.id);
+    } else {
+      processEndOfMovement(room, finalNodeInPath.id);
+    }
   }, animationDuration);
 }
 
@@ -648,7 +651,7 @@ function handleCloseShop(room: Room, user: ConnectedUser) {
   gameState.turnInfo.passosRestantesAposLoja = 0;
 
   if (stepsRemaining > 0) {
-    setTimeout(() => continueMovement(room, stepsRemaining, stepsRemaining), 500);
+    setTimeout(() => continueMovement(room, stepsRemaining, null), 500); // Dado nulo aqui
   } else {
     setTimeout(() => passTurn(room), 500);
   }
@@ -850,7 +853,7 @@ function continueAfterFragmentDecision(room: Room) {
   gameState.turnInfo.passosRestantesAposLoja = 0;
 
   if (stepsRemaining > 0) {
-    setTimeout(() => continueMovement(room, stepsRemaining, stepsRemaining), 500);
+    setTimeout(() => continueMovement(room, stepsRemaining, null), 500); // Dado nulo aqui
   } else {
     setTimeout(() => passTurn(room), 500);
   }

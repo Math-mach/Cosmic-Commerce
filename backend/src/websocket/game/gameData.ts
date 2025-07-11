@@ -1,4 +1,4 @@
-interface MapNode {
+export interface MapNode {
   id: number;
   x: number;
   y: number;
