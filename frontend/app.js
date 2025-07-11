@@ -29,6 +29,7 @@ const roomHostDisplay = document.getElementById('room-host-display');
 const messagesDiv = document.getElementById('messages');
 const wsInput = document.getElementById('ws-input');
 const leaveRoomBtn = document.getElementById('leave-room-btn');
+const sendChatBtn = document.getElementById('send-chat');
 
 // Inicializa app
 window.addEventListener('DOMContentLoaded', async () => {
@@ -160,13 +161,22 @@ publicRoomsList.addEventListener('click', e => {
 });
 
 // Event listener para sala privada
-joinPrivateRoomBtn.addEventListener('click', () => {
+function joinPrivateRoom() {
     const roomId = privateRoomCodeInput.value.trim();
     if (roomId) {
         joinRoom(roomId);
         privateRoomCodeInput.value = '';
     } else {
         alert('Por favor, insira o código da sala privada.');
+    }
+}
+
+joinPrivateRoomBtn.addEventListener('click', joinPrivateRoom);
+
+privateRoomCodeInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        joinPrivateRoom();
     }
 });
 
@@ -309,7 +319,7 @@ function connectWebSocket() {
 }
 
 // Enviar mensagens (Chat View)
-document.getElementById('send-chat').addEventListener('click', () => {
+function sendChatMessage() {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
         appendMessage('⚠️ WebSocket não conectado');
         return;
@@ -318,6 +328,15 @@ document.getElementById('send-chat').addEventListener('click', () => {
     if (!message) return;
     socket.send(JSON.stringify({ type: 'chat', payload: message }));
     wsInput.value = '';
+}
+
+sendChatBtn.addEventListener('click', sendChatMessage);
+
+wsInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        sendChatMessage();
+    }
 });
 
 document.getElementById('send-game').addEventListener('click', () => {
