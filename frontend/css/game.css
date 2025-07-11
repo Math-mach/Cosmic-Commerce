@@ -27,7 +27,7 @@
 }
 
 #game-view h1 {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   color: var(--text-color);
   text-align: center;
   font-size: 1.75rem;
@@ -77,11 +77,11 @@
   color: var(--text-color);
 }
 #game-view .player-stats span:nth-child(2)::after {
-  content: "🪙";
+  content: '🪙';
   margin-left: 8px;
 }
 #game-view .player-stats span:nth-child(4)::after {
-  content: "⭐";
+  content: '⭐';
   margin-left: 8px;
 }
 
@@ -127,7 +127,7 @@
 }
 
 #game-view .player-item-list button {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   background-color: var(--input-bg);
   color: var(--subtitle-color);
   border: 1px solid var(--input-bg);
@@ -211,6 +211,11 @@
 
 #game-view .board-wrapper {
   position: relative;
+  padding: 10px;
+  border: 2px solid var(--accent-color);
+  background-color: var(--primary-bg);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(76, 60, 255, 0.4);
 }
 #game-view #unified-grid-container {
   display: grid;
@@ -220,14 +225,17 @@
   height: 80vh;
   max-width: 800px;
   max-height: 800px;
-  border: 2px solid black;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border: none;
+  background-image: url('../assets/imagens/espaco.jpeg');
+  background-size: cover;
+  background-position: center;
+  position: relative; /* Adicionado para ser o contexto de #peoes-container */
 }
 #game-view .grid-cell {
-  border-top: 1px solid #ccc;
-  border-left: 1px solid #ccc;
+  border-top: 1px solid rgba(204, 204, 204, 0.2);
+  border-left: 1px solid rgba(204, 204, 204, 0.2);
   box-sizing: border-box;
-  background-color: white;
+  background-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -239,20 +247,22 @@
   justify-content: center;
   font-size: 11px;
   font-family: monospace;
-  color: #333;
+  color: var(--text-color);
 }
 #game-view .x-axis-label {
-  border-top: 2px solid black;
+  border-top: 2px solid var(--accent-color);
 }
 #game-view .y-axis-label {
-  border-left: 2px solid black;
+  border-left: 2px solid var(--accent-color);
 }
+
+/* --- CORREÇÃO DE POSICIONAMENTO --- */
 #game-view #peoes-container {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(100% - 35px);
-  height: calc(100% - 25px);
+  top: 0; /* CORRIGIDO: Alinhado com o topo da grade */
+  left: 0; /* CORRIGIDO: Alinhado com a esquerda da grade */
+  width: calc(100% - 35px); /* Mantido para excluir a label do eixo Y */
+  height: calc(100% - 25px); /* Mantido para excluir a label do eixo X */
   pointer-events: none;
 }
 #game-view .peao {

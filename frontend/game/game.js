@@ -7,7 +7,6 @@ let socket = null;
 let actionButtonListener = null;
 let gridClickListener = null;
 let voteButtonListener = null;
-let isAnimating = false; // <<< NOVO: Nosso "semáforo" para controlar a animação
 
 export function initGame(initialState, socketInstance, meuId) {
   console.log('Módulo do Jogo: Iniciando com o estado:', initialState);
@@ -20,7 +19,7 @@ export function initGame(initialState, socketInstance, meuId) {
   gameState.posicaoFragmentoEstrelaId = initialState.posicaoFragmentoEstrelaId;
 
   mapController.construirTabuleiro();
-  mapController.pintarVariosPontos(gameData.pontosParaPintar);
+  mapController.pintarVariosPontos(gameData.pontosParaPintar); // Restaurado
   mapController.criarPeoes(gameState.jogadores);
   mapController.atualizarPosicaoPeoes();
   mapController.atualizarDestaqueFragmento();
@@ -33,6 +32,7 @@ export function initGame(initialState, socketInstance, meuId) {
   addGameListeners();
 }
 
+// ... o resto do arquivo é a versão estável que tínhamos antes.
 export function handleServerUpdate(updateData) {
   console.log('Módulo do Jogo: Recebendo atualização do servidor:', updateData);
 
@@ -40,9 +40,9 @@ export function handleServerUpdate(updateData) {
 
   switch (type) {
     case 'gameStateUpdate':
-      // Atualizamos os dados brutos primeiro
       const oldPhase = gameState.partida?.fase_do_turno;
       const newPhase = payload.turnInfo.fase_do_turno;
+
       gameState.jogadores = payload.players;
       gameState.partida = payload.turnInfo;
       if (payload.lojas) gameState.lojas = payload.lojas;
@@ -50,23 +50,19 @@ export function handleServerUpdate(updateData) {
         gameState.posicaoFragmentoEstrelaId = payload.posicaoFragmentoEstrelaId;
       }
 
-      // Atualizamos a UI geral
       uiController.atualizarTudo();
       mapController.atualizarPosicaoPeoes();
       mapController.atualizarDestaqueFragmento();
 
-      // <<< MUDANÇA AQUI: Lógica do contador de dados protegida pelo "semáforo" >>>
-      // Só alteramos o contador de dados aqui se NENHUMA animação estiver ocorrendo.
-      if (!isAnimating) {
-        const movementPausePhases = [
-          'escolha_bifurcacao',
-          'em_loja',
-          'escolha_catastrofe',
-          'decisao_fragmento',
-        ];
-        if (!movementPausePhases.includes(newPhase)) {
-          uiController.updateDiceCount(0);
-        }
+      const movementPausePhases = [
+        'escolha_bifurcacao',
+        'em_loja',
+        'escolha_catastrofe',
+        'decisao_fragmento',
+      ];
+
+      if (!movementPausePhases.includes(newPhase)) {
+        uiController.updateDiceCount(0);
       }
 
       if (oldPhase === 'escolha_bifurcacao' && newPhase !== 'escolha_bifurcacao') {
@@ -81,29 +77,14 @@ export function handleServerUpdate(updateData) {
 
     case 'player_is_moving':
       console.log(`Animando movimento para o jogador ${payload.playerId}`);
-      isAnimating = true; // <<< NOVO: "Fecha" o semáforo. A animação assume o controle.
 
       const diceResult = payload.diceResult || payload.path.length;
-      const finalNodeId = payload.path[payload.path.length - 1];
-      const finalNode = gameData.mapa.find(p => p.id === finalNodeId);
-      const isStarFragmentNode = finalNodeId === gameState.posicaoFragmentoEstrelaId;
 
       const animateStep = stepIndex => {
+        // Se a animação terminou, atualiza o dado com o valor final do gameState
         if (stepIndex >= payload.path.length) {
-          const stepsMoved = payload.path.length > 0 ? payload.path.length - 1 : 0;
-          const stepsLeft = diceResult - stepsMoved;
-
-          if (
-            finalNode &&
-            (finalNode.tipo === 'bifurcacao' ||
-              finalNode.tipoCasa === 'amarela' ||
-              isStarFragmentNode)
-          ) {
-            uiController.updateDiceCount(stepsLeft);
-          } else {
-            uiController.updateDiceCount(stepsLeft);
-          }
-          isAnimating = false; // <<< NOVO: "Abre" o semáforo. A animação terminou.
+          const finalSteps = gameState.partida.passosRestantes || 0;
+          uiController.updateDiceCount(finalSteps);
           return;
         }
 

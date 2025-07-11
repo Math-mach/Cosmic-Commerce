@@ -13,11 +13,38 @@ const mapController = {
 
   pintarPonto: function (x, y, cor) {
     const cell = document.querySelector(`#game-view .grid-cell[data-x='${x}'][data-y='${y}']`);
-    if (cell) cell.style.backgroundColor = cor;
+    if (cell) {
+      // As casas agora não têm fundo, então restauramos o background branco aqui
+      cell.style.backgroundColor = 'white';
+
+      // E criamos um 'miolo' colorido
+      const innerSquare = document.createElement('div');
+      innerSquare.style.width = '70%';
+      innerSquare.style.height = '70%';
+      innerSquare.style.backgroundColor = cor;
+      cell.innerHTML = ''; // Limpa a célula
+      cell.appendChild(innerSquare);
+    }
   },
 
   pintarVariosPontos: function (pontos) {
-    pontos.forEach(ponto => this.pintarPonto(ponto.x, ponto.y, ponto.cor));
+    // Primeiro, limpa o fundo de todas as células que fazem parte do mapa
+    gameData.mapa.forEach(node => {
+      const cell = document.querySelector(
+        `#game-view .grid-cell[data-x='${node.x}'][data-y='${node.y}']`
+      );
+      if (cell) cell.style.backgroundColor = 'transparent';
+    });
+
+    // Depois, pinta apenas as casas coloridas
+    pontos.forEach(ponto => {
+      const cell = document.querySelector(
+        `#game-view .grid-cell[data-x='${ponto.x}'][data-y='${ponto.y}']`
+      );
+      if (cell) {
+        cell.style.backgroundColor = ponto.cor;
+      }
+    });
   },
 
   construirTabuleiro: function () {
