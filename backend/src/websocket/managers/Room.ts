@@ -147,7 +147,12 @@ export class Room {
         posicao_mapa_id: 0,
         moedas: 10000000,
         fragmentos: 0,
-        itens: [],
+        itens: [
+          'energetico_cosmico',
+          'energetico_cosmico',
+          'energetico_cosmico',
+          'energetico_cosmico',
+        ],
         efeitos_ativos: [],
         casas_andadas: 0,
         eventos_ativados: 0,

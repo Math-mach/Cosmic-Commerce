@@ -797,6 +797,7 @@ function handleBuyStarFragment(room: Room, user: ConnectedUser) {
 
   playerState.moedas -= cost;
   playerState.fragmentos += 1;
+  room.realocateStarFragment();
   roomManager.broadcastToRoom(
     room.id,
     JSON.stringify({
