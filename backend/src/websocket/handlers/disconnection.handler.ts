@@ -24,17 +24,36 @@ export function handleDisconnection(user: ConnectedUser) {
     );
 
     const wasHost = room.hostId === user.id;
+    const oldHostName = user.name;
 
-    // --- LÓGICA PARA DESCONEXÃO NO LOBBY (SALA EM ESPERA) ---
     if (room.state === "waiting") {
         console.log(
             `Usuário ${user.name} desconectado do lobby da sala ${user.roomId}.`
         );
         room.removePlayer(user.id);
+
+        const disconnectMessage = {
+            event: 'chat_message',
+            from: 'Sistema',
+            message: `${user.name} saiu da sala.`,
+            isSystemMessage: true
+        };
+        roomManager.broadcastToRoom(room.id, JSON.stringify(disconnectMessage));
+
         const remainingPlayers = room.getPlayers();
         if (remainingPlayers.length > 0) {
             if (wasHost) {
                 room.promoteNextHost();
+                const newHost = room.players.get(room.hostId!);
+                if (newHost) {
+                    const promotionMessage = {
+                        event: 'chat_message',
+                        from: 'Sistema',
+                        message: `O anfitrião, ${oldHostName}, saiu. ${newHost.name} agora é o novo anfitrião.`,
+                        isSystemMessage: true
+                    };
+                    roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
+                }
             }
             const host = room.players.get(room.hostId!);
             const roomInfoPayload = {
@@ -45,6 +64,8 @@ export function handleDisconnection(user: ConnectedUser) {
                     hostName: host?.name || "N/D",
                     current_users: remainingPlayers.length,
                     max_users: room.maxPlayers,
+                    players: remainingPlayers.map(p => ({ id: p.id, name: p.name })),
+
                 },
             };
             roomManager.broadcastToRoom(
@@ -59,7 +80,6 @@ export function handleDisconnection(user: ConnectedUser) {
         return;
     }
 
-    // --- LÓGICA PARA DESCONEXÃO DURANTE O JOGO ---
     if (room.state === "in_progress" && room.gameState) {
         console.log(
             `Jogador ${user.name} desconectou-se durante o jogo na sala ${room.id}.`
@@ -74,8 +94,26 @@ export function handleDisconnection(user: ConnectedUser) {
 
         room.removePlayer(user.id);
 
+        const disconnectGameMessage = {
+            event: 'chat_message',
+            from: 'Sistema',
+            message: `${user.name} perdeu a conexão.`,
+            isSystemMessage: true
+        };
+        roomManager.broadcastToRoom(room.id, JSON.stringify(disconnectGameMessage));
+
         if (wasHost && room.getPlayers().length > 0) {
             room.promoteNextHost();
+            const newHost = room.players.get(room.hostId!);
+            if (newHost) {
+                const promotionMessage = {
+                    event: 'chat_message',
+                    from: 'Sistema',
+                    message: `O anfitrião, ${oldHostName}, perdeu a conexão. ${newHost.name} agora é o novo anfitrião.`,
+                    isSystemMessage: true
+                };
+                roomManager.broadcastToRoom(room.id, JSON.stringify(promotionMessage));
+            }
         }
 
         if (room.gameState.players.length <= 2) {

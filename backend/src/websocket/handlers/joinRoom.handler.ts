@@ -54,6 +54,14 @@ export function handleJoinRoom(
         `Usuário ${user.name} entrou na sala ${room.name} (${room.id})`
     );
 
+    const joinMessagePayload = {
+        event: 'chat_message',
+        from: 'Sistema',
+        message: `${user.name} entrou na sala.`,
+        isSystemMessage: true
+    };
+    roomManager.broadcastToRoom(room.id, JSON.stringify(joinMessagePayload));
+
     const host = room.players.get(room.hostId!);
 
     const roomInfoPayload = {
@@ -64,6 +72,7 @@ export function handleJoinRoom(
             hostName: host?.name || "N/D",
             current_users: room.players.size,
             max_users: room.maxPlayers,
+            players: room.getPlayers().map(p => ({ id: p.id, name: p.name })),
         },
     };
     roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));

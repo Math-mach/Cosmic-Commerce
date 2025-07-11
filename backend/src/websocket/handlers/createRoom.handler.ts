@@ -39,6 +39,7 @@ export function handleCreateRoom(user: ConnectedUser) {
             hostName: host?.name || "N/D",
             current_users: newRoom.players.size,
             max_users: newRoom.maxPlayers,
+            players: newRoom.getPlayers().map(p => ({ id: p.id, name: p.name })),
         },
     };
     user.ws.send(JSON.stringify(roomInfoPayload));
