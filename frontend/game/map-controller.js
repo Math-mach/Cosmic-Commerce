@@ -1,6 +1,18 @@
 import gameState from './game-state.js';
 import gameData from './game-data.js';
 
+// Coordenadas das casas especiais para adicionar a imagem da seta
+const casasComSeta = [
+  { x: 15, y: 2 },
+  { x: 2, y: 9 },
+  { x: 31, y: 11 },
+  { x: 2, y: 17 },
+  { x: 2, y: 28 },
+  { x: 33, y: 32 },
+  { x: 18, y: 32 },
+  { x: 15, y: 37 },
+];
+
 const mapController = {
   addGridClickListener: function (callback) {
     const gridCells = document.querySelectorAll('#game-view .grid-cell');
@@ -47,45 +59,39 @@ const mapController = {
       );
       if (cell) {
         cell.innerHTML = '';
+        cell.style.backgroundColor = 'transparent';
+
         let imagePath = '';
         let tooltipText = '';
-        let isImageNode = false;
 
         const casaDef = gameDefinitions.casas[node.tipoCasa];
         if (casaDef) {
           tooltipText = casaDef.nome;
-          if (casaDef.efeito?.valor_base) {
-            tooltipText = `${casaDef.nome}: ${
-              casaDef.efeito.tipo === 'ganhar_moedas' ? 'Ganha' : 'Perca'
-            } ${casaDef.efeito.valor_base} moedas.`;
-          } else if (casaDef.efeito?.custo_para_evitar) {
-            tooltipText = `${casaDef.nome}: Pague ${casaDef.efeito.custo_para_evitar} moedas para evitar uma catástrofe.`;
-          }
         }
 
-        // <<< MUDANÇA AQUI: Lógica agora se aplica a TODAS as bifurcações >>>
         if (node.tipo === 'bifurcacao') {
           cell.title = 'Bifurcação';
-
           node.conexoes.forEach((conexaoId, index) => {
             const seta = document.createElement('img');
             seta.src = 'assets/imagens/seta.png';
-            // Cria uma classe única para cada seta de cada bifurcação
             seta.className = `seta-bifurcacao seta-bifurcacao-${node.id}-${index + 1}`;
             cell.appendChild(seta);
           });
-
           const pontoCentral = document.createElement('span');
           pontoCentral.className = 'ponto-central';
           cell.appendChild(pontoCentral);
         } else if (node.id === 0) {
           imagePath = 'assets/imagens/start_map.png';
           tooltipText = 'Ponto de Partida';
-          isImageNode = true;
+          if (imagePath) {
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = tooltipText;
+            cell.appendChild(img);
+          }
         } else {
           const imageNodeTypes = ['azul', 'vermelha', 'verde', 'amarela', 'roxa'];
           if (imageNodeTypes.includes(node.tipoCasa)) {
-            isImageNode = true;
             switch (node.tipoCasa) {
               case 'azul':
                 imagePath = 'assets/imagens/casa_azul.png';
@@ -103,23 +109,27 @@ const mapController = {
                 imagePath = 'assets/imagens/casa_do_azar.png';
                 break;
             }
+            if (imagePath) {
+              const img = document.createElement('img');
+              img.src = imagePath;
+              cell.appendChild(img);
+            }
           }
         }
+      }
+    });
 
-        if (isImageNode) {
-          cell.title = tooltipText;
-          if (imagePath) {
-            const img = document.createElement('img');
-            img.src = imagePath;
-            img.alt = tooltipText;
-            cell.appendChild(img);
-          }
-        } else if (node.tipo !== 'bifurcacao') {
-          const pontoCor = pontosParaPintar.find(p => p.x === node.x && p.y === node.y);
-          if (pontoCor) {
-            cell.style.backgroundColor = pontoCor.cor;
-          }
-        }
+    casasComSeta.forEach(coord => {
+      const cell = document.querySelector(
+        `#game-view .grid-cell[data-x='${coord.x}'][data-y='${coord.y}']`
+      );
+      if (cell) {
+        cell.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = 'assets/imagens/direcao.png';
+        // <<< MUDANÇA AQUI: Classe única baseada na coordenada >>>
+        img.className = `casa-especial seta-especial-${coord.x}-${coord.y}`;
+        cell.appendChild(img);
       }
     });
   },
