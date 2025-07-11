@@ -29,6 +29,32 @@ export function initGame(initialState, socketInstance, meuId) {
   uiController.atualizarTudo();
   uiController.updateDiceCount(0);
 
+  // Adicionado: Lógica para restaurar o estado da UI (modais) na reconexão
+  const eMinhaVez = gameState.meuId === gameState.partida.id_jogador_da_vez;
+  if (eMinhaVez) {
+    switch (gameState.partida.fase_do_turno) {
+      case 'em_loja':
+        const jogadorAtual = gameState.jogadores.find(p => p.id === gameState.meuId);
+        const lojaAtual = gameState.lojas.find(l => l.nodeId === jogadorAtual.posicao_mapa_id);
+        if (lojaAtual) {
+          uiController.openShopModal(lojaAtual.items);
+        }
+        break;
+      case 'escolha_catastrofe':
+        const custoParaEvitar = gameData.gameDefinitions.casas.roxa.efeito.custo_para_evitar;
+        uiController.openCatastropheModal(custoParaEvitar);
+        break;
+      case 'decisao_fragmento':
+        uiController.openStarFragmentModal();
+        break;
+      case 'escolha_bifurcacao':
+        if (gameState.partida.opcoesBifurcacao) {
+          mapController.destacarOpcoesBifurcacao(gameState.partida.opcoesBifurcacao);
+        }
+        break;
+    }
+  }
+
   addGameListeners();
 }
 

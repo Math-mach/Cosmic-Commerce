@@ -148,6 +148,12 @@ export class Room {
         moedas: 10,
         fragmentos: 0,
         itens: [
+          'dado_adicional',
+          'dado_adicional',
+          'dado_adicional',
+          'energetico_cosmico',
+          'energetico_cosmico',
+          'energetico_cosmico',
         ],
         efeitos_ativos: [],
         casas_andadas: 0,
