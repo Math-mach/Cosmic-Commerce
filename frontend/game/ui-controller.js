@@ -401,6 +401,34 @@ const uiController = {
     if (modal) modal.style.display = 'none';
   },
 
+  showConfirmationModal: function (title, text) {
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirm-modal');
+      const titleEl = document.getElementById('confirm-modal-title');
+      const textEl = document.getElementById('confirm-modal-text');
+      const confirmBtn = document.getElementById('confirm-modal-confirm-btn');
+      const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
+
+      if (!modal || !titleEl || !textEl || !confirmBtn || !cancelBtn) {
+        resolve(false);
+        return;
+      }
+
+      titleEl.textContent = title;
+      textEl.textContent = text;
+
+      const close = (result) => {
+        modal.style.display = 'none';
+        resolve(result);
+      };
+
+      confirmBtn.addEventListener('click', () => close(true), { once: true });
+      cancelBtn.addEventListener('click', () => close(false), { once: true });
+
+      modal.style.display = 'flex';
+    });
+  },
+
   atualizarTudo: function () {
     this.atualizarPainelJogadores();
     this.updateTurnStatusPanel();

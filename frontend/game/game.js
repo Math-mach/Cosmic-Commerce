@@ -252,7 +252,7 @@ function addGameListeners() {
     leaveGameButtonListener = async () => {
       const confirmed = await uiController.showConfirmationModal(
         'Abandonar Partida',
-        'Você tem certeza que deseja abandonar a partida? Esta ação não pode ser desfeita.'
+        'Você tem certeza que deseja abandonar a partida? Esta ação não pode ser desfeita e você não poderá retornar.'
       );
       if (confirmed) {
         sendActionToServer('leave_game');
