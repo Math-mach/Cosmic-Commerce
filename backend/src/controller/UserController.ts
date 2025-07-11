@@ -42,6 +42,7 @@ const login = async (req: Request, res: Response) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 24 * 60 * 60 * 1000,
+      path: '/', // Garante que o cookie seja válido para todo o site
     });
 
     return res.status(200).json({ user });
@@ -60,8 +61,8 @@ const logout = (req: Request, res: Response) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    expires: new Date(0), // Define a expiração para o passado
-    path: '/', // Especifica o caminho, geralmente '/'
+    expires: new Date(0),
+    path: '/',
   });
   return res.status(200).json({ message: 'Logout realizado com sucesso.' });
 };

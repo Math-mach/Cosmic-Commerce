@@ -51,47 +51,48 @@ export const gameDefinitions = {
     dado_adicional: {
       id: 'dado_adicional',
       nome: 'Dado Adicional',
-      preco: 10,
+      preco: 7, // Reduzido de 10
       efeito_detalhado:
         'Quando usado, o jogador rola 2 dados de 6 lados (2D6) em vez de 1D6 em sua Fase de Rolagem.',
     },
     cogumelo_venenoso: {
       id: 'cogumelo_venenoso',
       nome: 'Cogumelo Venenoso',
-      preco: 10,
+      preco: 7, // Reduzido de 10
       efeito_detalhado: 'Limita a próxima rolagem de um oponente a um valor entre 1 e 3.',
     },
     ladrao_de_moedas: {
       id: 'ladrao_de_moedas',
       nome: 'Ladrão de Moedas',
-      preco: 8,
+      preco: 5, // Reduzido de 8
       efeito_detalhado: 'Rouba 10 moedas de um jogador alvo. O dinheiro não é transferido.',
     },
     item_de_teleporte: {
       id: 'item_de_teleporte',
       nome: 'Item de Teleporte',
-      preco: 15,
+      preco: 10, // Reduzido de 15
       efeito_detalhado: 'Troca de lugar com um jogador aleatório no tabuleiro.',
     },
     bota_a_jato: {
       id: 'bota_a_jato',
       nome: 'Bota a Jato',
-      preco: 7,
+      preco: 5, // Reduzido de 7
       efeito_detalhado: 'Garante que sua próxima rolagem de dado seja no mínimo 4.',
     },
     energetico_cosmico: {
       id: 'energetico_cosmico',
       nome: 'Energético Cósmico',
-      preco: 12,
+      preco: 8, // Reduzido de 12
       efeito_detalhado: 'Dobra o resultado da sua próxima rolagem de dado.',
     },
     teia_cosmica: {
       id: 'teia_cosmica',
       nome: 'Teia Cósmica',
-      preco: 15,
+      preco: 10, // Reduzido de 15
       efeito_detalhado: 'Jogue em um oponente para que ele perca a próxima vez de jogar.',
     },
   },
+
   catastrofes: [
     {
       id: 'perder_metade_moedas',
