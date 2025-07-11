@@ -106,6 +106,9 @@ export class Room {
       'cogumelo_venenoso',
       'item_de_teleporte',
       'ladrao_de_moedas',
+      'bota_a_jato',
+      'energetico_cosmico',
+      'teia_cosmica',
     ];
 
     return shopNodes.map(shopNode => ({
@@ -144,7 +147,15 @@ export class Room {
         posicao_mapa_id: 0,
         moedas: 20,
         fragmentos: 0,
-        itens: ['dado_adicional', 'cogumelo_venenoso', 'ladrao_de_moedas', 'item_de_teleporte'],
+        itens: [
+          'dado_adicional',
+          'cogumelo_venenoso',
+          'ladrao_de_moedas',
+          'item_de_teleporte',
+          'bota_a_jato',
+          'energetico_cosmico',
+          'teia_cosmica',
+        ],
         efeitos_ativos: [],
         casas_andadas: 0,
         eventos_ativados: 0,

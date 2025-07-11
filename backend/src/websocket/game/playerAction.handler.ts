@@ -1,3 +1,5 @@
+// backend/src/websocket/game/playerAction.handler.ts
+
 import { ConnectedUser } from '..';
 import { roomManager } from '../managers/roomManager';
 import { Room } from '../managers/Room';
@@ -9,15 +11,15 @@ import { findNodeById, gameDefinitions } from './gameData';
 
 interface PlayerActionPayload {
   action:
-  | 'main_button_click'
-  | 'choose_path'
-  | 'buy_item'
-  | 'close_shop'
-  | 'pay_to_avoid_catastrophe'
-  | 'face_the_catastrophe'
-  | 'use_item'
-  | 'buy_star_fragment'
-  | 'ignore_star_fragment';
+    | 'main_button_click'
+    | 'choose_path'
+    | 'buy_item'
+    | 'close_shop'
+    | 'pay_to_avoid_catastrophe'
+    | 'face_the_catastrophe'
+    | 'use_item'
+    | 'buy_star_fragment'
+    | 'ignore_star_fragment';
   nodeId?: number;
   itemId?: string;
   targetPlayerId?: string;
@@ -46,6 +48,12 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     'buy_star_fragment',
     'ignore_star_fragment',
   ];
+
+  // Apenas o jogador da vez pode usar itens de pré-rolagem
+  if (payload.action === 'use_item' && room.gameState.turnInfo.id_jogador_da_vez !== userId) {
+    ws.send(JSON.stringify({ event: 'error', message: 'Você só pode usar itens no seu turno.' }));
+    return;
+  }
 
   if (
     !nonTurnActions.includes(payload.action) &&
@@ -108,41 +116,51 @@ export function passTurn(room: Room) {
   }
 
   const players = room.gameState.players;
-  const { turnInfo } = room.gameState;
-  const currentPlayerIndex = players.findIndex(p => p.id === turnInfo.id_jogador_da_vez);
+  const { turnInfo } = room.gameState!;
+  const currentPlayerId = turnInfo.id_jogador_da_vez;
+  const currentPlayerIndex = players.findIndex(p => p.id === currentPlayerId);
 
-  if (turnInfo.turno_atual >= room.MAX_TURNS && currentPlayerIndex === players.length - 1) {
-    console.log(`[Sala ${room.id}] Turno final ${room.MAX_TURNS} concluído. Encerrando o jogo.`);
-    const finalPayload = room.calculateAwards();
-    if (finalPayload) {
-      roomManager.broadcastToRoom(room.id, JSON.stringify(finalPayload));
-    }
-    setTimeout(() => {
-      room.endGame();
-      const host = room.players.get(room.hostId!);
-      const roomInfoPayload = {
-        event: 'room_info',
-        room: {
-          id: room.id,
-          name: room.name,
-          hostName: host?.name || 'N/D',
-          current_users: room.getPlayers().length,
-          max_users: room.maxPlayers,
-        },
-      };
-      roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));
-    }, 10000);
-    return;
-  }
-
-  const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-
-  if (nextPlayerIndex === 0) {
-    turnInfo.turno_atual++;
-    console.log(`[Sala ${room.id}] Iniciando turno ${turnInfo.turno_atual}.`);
-  }
-
+  // Determina o próximo jogador
+  const nextPlayerIndex = currentPlayerIndex === -1 ? 0 : (currentPlayerIndex + 1) % players.length;
   const nextPlayer = players[nextPlayerIndex];
+
+  // =======================================================================
+  // =====> LÓGICA CORRIGIDA DA TEIA CÓSMICA (PULAR TURNO) <=====
+  // =======================================================================
+  const teiaEffect = nextPlayer.efeitos_ativos.find(e => e.id === 'preso_na_teia');
+  if (teiaEffect) {
+    // 1. Remove o efeito do jogador que seria o próximo
+    nextPlayer.efeitos_ativos = nextPlayer.efeitos_ativos.filter(e => e.id !== 'preso_na_teia');
+
+    // 2. Notifica a todos que o jogador perdeu a vez
+    roomManager.broadcastToRoom(
+      room.id,
+      JSON.stringify({
+        event: 'game_event',
+        payload: {
+          type: 'show_notification',
+          payload: {
+            title: 'Preso na Teia!',
+            message: `${nextPlayer.nome} está preso e perdeu a vez!`,
+            duration: 4000,
+            isEvent: true,
+          },
+        },
+      })
+    );
+
+    // 3. Oficializa que o turno agora seria do jogador preso...
+    turnInfo.id_jogador_da_vez = nextPlayer.id;
+
+    // 4. ... e imediatamente chama a função de novo para pular para o próximo!
+    // A função vai recomeçar, mas agora o `id_jogador_da_vez` é o jogador preso,
+    // então o próximo na fila será o jogador seguinte a ele.
+    setTimeout(() => passTurn(room), 1500); // Delay para a notificação ser lida
+    return; // Para a execução aqui para não dar o turno ao jogador errado.
+  }
+  // =======================================================================
+
+  // Se não houver efeito de teia, o fluxo normal continua
   turnInfo.id_jogador_da_vez = nextPlayer.id;
   turnInfo.fase_do_turno = 'uso_item_pre_rolagem';
   turnInfo.itemUsedThisTurn = false;
@@ -150,6 +168,10 @@ export function passTurn(room: Room) {
   turnInfo.passosRestantes = 0;
   turnInfo.opcoesBifurcacao = [];
   turnInfo.passosRestantesAposLoja = 0;
+
+  if (nextPlayerIndex === 0 && currentPlayerIndex !== -1) {
+    turnInfo.turno_atual++;
+  }
 
   console.log(`[Sala ${room.id}] Turno passado para ${nextPlayer.nome}.`);
 
@@ -194,11 +216,24 @@ function handleMainButtonClick(room: Room) {
     );
   }
 
-  const diceRoll = dadoComum + dadoExtra;
-  currentPlayer.casas_andadas += diceRoll;
-  console.log(
-    `[Sala ${room.id}] ${currentPlayer.nome} andou ${diceRoll} casas. Total: ${currentPlayer.casas_andadas}`
-  );
+  let diceRoll = dadoComum + dadoExtra;
+
+  const botaJatoEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'bota_a_jato');
+  if (botaJatoEffect) {
+    if (diceRoll < 4) {
+      diceRoll = 4;
+    }
+    currentPlayer.efeitos_ativos = currentPlayer.efeitos_ativos.filter(e => e.id !== 'bota_a_jato');
+  }
+
+  const energeticoEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'energetico_cosmico');
+  if (energeticoEffect) {
+    diceRoll = diceRoll * 2;
+    currentPlayer.efeitos_ativos = currentPlayer.efeitos_ativos.filter(
+      e => e.id !== 'energetico_cosmico'
+    );
+  }
+
   continueMovement(room, diceRoll, diceRoll);
 }
 
@@ -300,12 +335,6 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
 
   if (finalNode?.tipoCasa) {
     const { tipoCasa } = finalNode;
-    if (tipoCasa === 'verde' || tipoCasa === 'roxa') {
-      currentPlayerState.eventos_ativados += 1;
-      console.log(
-        `[Sala ${room.id}] ${currentPlayerState.nome} caiu em casa de evento/desastre. Total: ${currentPlayerState.eventos_ativados}`
-      );
-    }
     if (tipoCasa === 'azul' || tipoCasa === 'vermelha') {
       const { efeito } = gameDefinitions.casas[tipoCasa];
       if (efeito.tipo === 'ganhar_moedas') {
@@ -325,7 +354,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     } else if (tipoCasa === 'verde') {
       const evento =
         gameDefinitions.eventos_casa_interrogacao[
-        Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
+          Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
         ];
       notificationPayload = { title: evento.nome, message: evento.efeito_detalhado, isEvent: true };
       switch (evento.id) {
@@ -418,9 +447,19 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
       playerState.efeitos_ativos.push({ id: 'dado_adicional', turnos_restantes: 1 });
       notificationMessage = `${playerState.nome} se preparou para rolar um dado extra!`;
       break;
+    case 'bota_a_jato':
+      playerState.efeitos_ativos.push({ id: 'bota_a_jato', turnos_restantes: 1 });
+      notificationMessage = `${playerState.nome} equipou as Botas a Jato!`;
+      break;
+    case 'energetico_cosmico':
+      playerState.efeitos_ativos.push({ id: 'energetico_cosmico', turnos_restantes: 1 });
+      notificationMessage = `${playerState.nome} tomou um Energético Cósmico! Que dobra o resultado da sua próxima rolagem de dado`;
+      break;
+
     case 'cogumelo_venenoso':
     case 'ladrao_de_moedas':
     case 'item_de_teleporte':
+    case 'teia_cosmica':
       const targetPlayer = gameState.players.find(p => p.id === targetPlayerId);
       if (!targetPlayer || targetPlayer.id === user.id) {
         user.ws.send(JSON.stringify({ event: 'error', message: 'Alvo inválido.' }));
@@ -439,6 +478,9 @@ function handleUseItem(room: Room, user: ConnectedUser, itemId: string, targetPl
         playerState.posicao_mapa_id = pos2;
         targetPlayer.posicao_mapa_id = pos1;
         notificationMessage = `${playerState.nome} usou um Teleporte e trocou de lugar com ${targetPlayer.nome}!`;
+      } else if (itemId === 'teia_cosmica') {
+        targetPlayer.efeitos_ativos.push({ id: 'preso_na_teia', turnos_restantes: 1 });
+        notificationMessage = `${playerState.nome} prendeu ${targetPlayer.nome} em uma Teia Cósmica!`;
       }
       break;
   }

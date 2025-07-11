@@ -49,6 +49,24 @@ const gameDefinitions = {
       preco: 15,
       efeito_detalhado: 'Troca de lugar com um jogador aleatório no tabuleiro.',
     },
+    bota_a_jato: {
+      id: 'bota_a_jato',
+      nome: 'Bota a Jato',
+      preco: 7,
+      efeito_detalhado: 'Garante que sua próxima rolagem de dado seja no mínimo 4.',
+    },
+    energetico_cosmico: {
+      id: 'energetico_cosmico',
+      nome: 'Energético Cósmico',
+      preco: 12,
+      efeito_detalhado: 'Dobra o resultado da sua próxima rolagem de dado.',
+    },
+    teia_cosmica: {
+      id: 'teia_cosmica',
+      nome: 'Teia Cósmica',
+      preco: 15,
+      efeito_detalhado: 'Jogue em um oponente para que ele perca a próxima vez de jogar.',
+    },
   },
 };
 

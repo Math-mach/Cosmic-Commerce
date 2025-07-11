@@ -11,7 +11,8 @@ const uiController = {
   inicializarUI: function () {
     this.atualizarPainelJogadores();
     document.getElementById('close-shop-btn')?.addEventListener('click', () => {
-      if (this._sendActionCallback) this._sendActionCallback('player_action', { action: 'close_shop' });
+      if (this._sendActionCallback)
+        this._sendActionCallback('player_action', { action: 'close_shop' });
     });
     document.getElementById('pay-to-avoid-btn')?.addEventListener('click', () => {
       if (this._sendActionCallback)
@@ -70,8 +71,9 @@ const uiController = {
         player.efeitos_ativos.forEach(effect => {
           const effectDef = gameData.gameDefinitions.itens[effect.id];
           const effectName = effectDef ? effectDef.nome : 'Efeito Desconhecido';
-          const turnsText = `(${effect.turnos_restantes} turno${effect.turnos_restantes > 1 ? 's' : ''
-            })`;
+          const turnsText = `(${effect.turnos_restantes} turno${
+            effect.turnos_restantes > 1 ? 's' : ''
+          })`;
           effectsHtml += `<li>${effectName} ${turnsText}</li>`;
         });
       } else {
@@ -141,7 +143,12 @@ const uiController = {
   },
 
   handleItemUseClick: function (itemId) {
-    const targetedItems = ['cogumelo_venenoso', 'ladrao_de_moedas', 'item_de_teleporte'];
+    const targetedItems = [
+      'cogumelo_venenoso',
+      'ladrao_de_moedas',
+      'item_de_teleporte',
+      'teia_cosmica',
+    ];
     if (targetedItems.includes(itemId)) {
       this.openTargetSelectionModal(itemId);
     } else {
@@ -344,18 +351,21 @@ const uiController = {
     awardsList.innerHTML = `
         <div class="award-item">
             <span class="title">💰 Milionário (+1 ⭐):</span>
-            <span class="winners">${awards.mostCoins.winners.join(', ')} (${awards.mostCoins.value
-      })</span>
+            <span class="winners">${awards.mostCoins.winners.join(', ')} (${
+      awards.mostCoins.value
+    })</span>
         </div>
         <div class="award-item">
             <span class="title">🏃 Explorador (+1 ⭐):</span>
-            <span class="winners">${awards.mostMoved.winners.join(', ')} (${awards.mostMoved.value
-      })</span>
+            <span class="winners">${awards.mostMoved.winners.join(', ')} (${
+      awards.mostMoved.value
+    })</span>
         </div>
         <div class="award-item">
             <span class="title">🎲 Aventureiro (+1 ⭐):</span>
-            <span class="winners">${awards.mostEvents.winners.join(', ')} (${awards.mostEvents.value
-      })</span>
+            <span class="winners">${awards.mostEvents.winners.join(', ')} (${
+      awards.mostEvents.value
+    })</span>
         </div>
     `;
 
