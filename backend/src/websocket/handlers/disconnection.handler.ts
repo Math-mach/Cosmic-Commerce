@@ -25,12 +25,20 @@ export function handleDisconnection(user: ConnectedUser) {
 
     const wasHost = room.hostId === user.id;
 
-    // --- LÓGICA PARA DESCONEXÃO NO LOBBY (SALA EM ESPERA) ---
     if (room.state === "waiting") {
         console.log(
             `Usuário ${user.name} desconectado do lobby da sala ${user.roomId}.`
         );
         room.removePlayer(user.id);
+
+        const disconnectMessage = {
+            event: 'chat_message',
+            from: 'Sistema',
+            message: `${user.name} saiu da sala.`,
+            isSystemMessage: true
+        };
+        roomManager.broadcastToRoom(room.id, JSON.stringify(disconnectMessage));
+
         const remainingPlayers = room.getPlayers();
         if (remainingPlayers.length > 0) {
             if (wasHost) {
@@ -59,7 +67,6 @@ export function handleDisconnection(user: ConnectedUser) {
         return;
     }
 
-    // --- LÓGICA PARA DESCONEXÃO DURANTE O JOGO ---
     if (room.state === "in_progress" && room.gameState) {
         console.log(
             `Jogador ${user.name} desconectou-se durante o jogo na sala ${room.id}.`
@@ -73,6 +80,14 @@ export function handleDisconnection(user: ConnectedUser) {
         );
 
         room.removePlayer(user.id);
+
+        const disconnectGameMessage = {
+            event: 'chat_message',
+            from: 'Sistema',
+            message: `${user.name} perdeu a conexão.`,
+            isSystemMessage: true
+        };
+        roomManager.broadcastToRoom(room.id, JSON.stringify(disconnectGameMessage));
 
         if (wasHost && room.getPlayers().length > 0) {
             room.promoteNextHost();

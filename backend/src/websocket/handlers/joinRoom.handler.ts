@@ -54,6 +54,14 @@ export function handleJoinRoom(
         `Usuário ${user.name} entrou na sala ${room.name} (${room.id})`
     );
 
+    const joinMessagePayload = {
+        event: 'chat_message',
+        from: 'Sistema',
+        message: `${user.name} entrou na sala.`,
+        isSystemMessage: true
+    };
+    roomManager.broadcastToRoom(room.id, JSON.stringify(joinMessagePayload));
+
     const host = room.players.get(room.hostId!);
 
     const roomInfoPayload = {

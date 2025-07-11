@@ -6,7 +6,7 @@ import {
 } from "../managers/roomManager";
 
 export function handleLeaveRoom(user: ConnectedUser) {
-    const { roomId, id: userId } = user;
+    const { roomId, id: userId, name } = user; // MODIFICAÇÃO: Adicionado 'name'
 
     if (!roomId) {
         return;
@@ -26,6 +26,14 @@ export function handleLeaveRoom(user: ConnectedUser) {
     room.removePlayer(user.id);
 
     console.log(`Usuário ${user.id} saiu da sala ${room.name} (${room.id})`);
+
+    const leaveMessagePayload = {
+        event: 'chat_message',
+        from: 'Sistema',
+        message: `${name} saiu da sala.`,
+        isSystemMessage: true
+    };
+    roomManager.broadcastToRoom(room.id, JSON.stringify(leaveMessagePayload));
 
     const remainingPlayers = room.getPlayers();
 
