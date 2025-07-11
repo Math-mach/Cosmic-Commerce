@@ -32,6 +32,15 @@ export function initGame(initialState, socketInstance, meuId) {
 
   // Adicionado: Lógica para restaurar o estado da UI (modais) na reconexão
   const eMinhaVez = gameState.meuId === gameState.partida.id_jogador_da_vez;
+
+  if (eMinhaVez && initialState.actionTimerRemaining > 0) {
+    console.log(`Retomando timer visual com ${initialState.actionTimerRemaining}ms restantes.`);
+    // AQUI ELA COMEÇA: com o tempo restante vindo do servidor
+    uiController.startActionTimer(initialState.actionTimerRemaining);
+  } else {
+    uiController.atualizarTudo(); // Esta chamada pode indiretamente iniciar o timer, como veremos abaixo.
+  }
+
   if (eMinhaVez) {
     switch (gameState.partida.fase_do_turno) {
       case 'em_loja':
@@ -164,6 +173,10 @@ export function handleServerUpdate(updateData) {
       break;
 
     case 'player_disconnected_ingame':
+      if (payload.playerId === gameState.partida.id_jogador_da_vez) {
+        // AQUI ELA PAUSA: a animação é congelada
+        uiController.stopActionTimer(true); // O 'true' significa pausar
+      }
       uiController.showDisconnectionModal(payload);
       break;
 
@@ -178,6 +191,10 @@ export function handleServerUpdate(updateData) {
 
     case 'player_removed_ingame':
     case 'player_removed_by_vote':
+      if (payload.playerId === gameState.partida.id_jogador_da_vez) {
+        // AQUI ELA PARA: a animação é parada e a barra escondida
+        uiController.stopActionTimer(false); // O 'false' significa parar
+      }
       uiController.hideDisconnectionModal();
       mapController.removerPeao(payload.playerId);
       gameState.jogadores = gameState.jogadores.filter(p => p.id !== payload.playerId);

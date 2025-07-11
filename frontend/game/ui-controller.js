@@ -307,6 +307,36 @@ const uiController = {
     if (modal) modal.style.display = 'none';
   },
 
+  startActionTimer: function (durationMs = 15000) {
+    // ...
+    const container = document.getElementById('action-timer-container');
+    const timerBar = document.getElementById('action-timer-bar');
+    // ...
+
+    container.style.display = 'block'; // <--- AQUI! Ela muda o estilo de 'none' para 'block', tornando a barra visível.
+    // ...
+    this.actionTimerTimeout = setTimeout(() => {
+      // ...
+      timerBar.style.width = '0%'; // <--- AQUI! Ela define o alvo da animação (ir para 0% de largura).
+    }, 50);
+  },
+
+  stopActionTimer: function (pause = false) {
+    // ...
+    const container = document.getElementById('action-timer-container');
+    const timerBar = document.getElementById('action-timer-bar');
+    // ...
+
+    if (pause) {
+      // ...lógica para pausar a animação...
+    } else {
+      // Se não estiver pausando, esconde o container
+      container.style.display = 'none'; // <--- AQUI! Ela esconde a barra novamente.
+      timerBar.style.width = '100%';    // E reseta a largura para a próxima vez.
+      this.isActionTimerPaused = false;
+    }
+  },
+
   showDisconnectionModal: function ({ playerName, playerId }) {
     const modal = document.getElementById('disconnection-modal');
     const message = document.getElementById('disconnection-message');
@@ -419,31 +449,31 @@ const uiController = {
       const confirmBtn = document.getElementById('confirm-modal-confirm-btn');
       const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
 
-      if (!modal!titleEl!textEl!confirmBtn!cancelBtn) {
-      resolve(false);
-      return;
-    }
+      if (!modal || !titleEl || !textEl || !confirmBtn || !cancelBtn) {
+        resolve(false);
+        return;
+      }
 
-    titleEl.textContent = title;
-    textEl.textContent = text;
+      titleEl.textContent = title;
+      textEl.textContent = text;
 
-    const close = (result) => {
-      modal.style.display = 'none';
-      resolve(result);
-    };
+      const close = (result) => {
+        modal.style.display = 'none';
+        resolve(result);
+      };
 
-    confirmBtn.addEventListener('click', () => close(true), { once: true });
-    cancelBtn.addEventListener('click', () => close(false), { once: true });
+      confirmBtn.addEventListener('click', () => close(true), { once: true });
+      cancelBtn.addEventListener('click', () => close(false), { once: true });
 
-    modal.style.display = 'flex';
-  });
+      modal.style.display = 'flex';
+    });
   },
 
-atualizarTudo: function () {
-  this.atualizarPainelJogadores();
-  this.updateTurnStatusPanel();
-  this.atualizarFaseUI();
-},
+  atualizarTudo: function () {
+    this.atualizarPainelJogadores();
+    this.updateTurnStatusPanel();
+    this.atualizarFaseUI();
+  },
 };
 
 export default uiController;

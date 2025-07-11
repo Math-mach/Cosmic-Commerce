@@ -81,7 +81,19 @@ export function resumeActionTimer(room: Room) {
         handleChoosePath(room, currentPlayer.id, defaultPath);
       };
       break;
-    // ... (Adicione outros casos se necessário, como loja, catástrofe, etc.)
+
+    // =======================================================
+    // ===== CASOS FALTANTES ADICIONADOS AQUI ABAIXO =====
+    // =======================================================
+    case 'em_loja':
+      onTimeoutCallback = () => handleCloseShop(room, currentPlayer);
+      break;
+    case 'escolha_catastrofe':
+      onTimeoutCallback = () => handlePayToAvoidCatastrophe(room, currentPlayer);
+      break;
+    case 'decisao_fragmento':
+      onTimeoutCallback = () => handleIgnoreStarFragment(room, currentPlayer);
+      break;
     default:
       console.log(`[Sala ${room.id}] Não é possível resumir o timer na fase ${turnInfo.fase_do_turno}`);
       return;
