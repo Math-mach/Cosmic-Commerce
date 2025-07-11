@@ -812,7 +812,14 @@ function handleBuyStarFragment(room: Room, user: ConnectedUser) {
     })
   );
 
-  room.realocateStarFragment();
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
+
   continueAfterFragmentDecision(room);
 }
 
