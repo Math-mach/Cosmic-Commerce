@@ -1,6 +1,8 @@
 import gameState from './game-state.js';
 import gameData from './game-data.js';
 
+let disconnectionCountdownInterval = null;
+
 const uiController = {
   _sendActionCallback: null,
 
