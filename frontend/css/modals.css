@@ -5,7 +5,8 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
-  display: none; /* Controlado por JS */
+  display: none;
+  /* Controlado por JS */
   justify-content: center;
   align-items: center;
   z-index: 2000;
@@ -52,6 +53,7 @@
   font-size: 1rem;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
 .modal-content button:hover {
   background-color: var(--accent-hover);
   transform: translateY(-2px);
@@ -68,13 +70,16 @@
   margin-bottom: 25px;
   max-height: 40vh;
   overflow-y: auto;
-  padding: 5px; /* Adiciona um respiro */
+  padding: 5px;
+  /* Adiciona um respiro */
 }
 
 .shop-item {
   display: flex;
-  flex-direction: column; /* MUDANÇA: Organiza os filhos em coluna */
-  align-items: stretch; /* MUDANÇA: Faz os filhos esticarem na largura */
+  flex-direction: column;
+  /* MUDANÇA: Organiza os filhos em coluna */
+  align-items: stretch;
+  /* MUDANÇA: Faz os filhos esticarem na largura */
   padding: 15px;
   border-radius: 6px;
   text-align: left;
@@ -82,23 +87,28 @@
 }
 
 .shop-item-info {
-  margin-bottom: 15px; /* ADICIONADO: Espaço entre a descrição e o botão */
+  margin-bottom: 15px;
+  /* ADICIONADO: Espaço entre a descrição e o botão */
 }
 
 .shop-item-info strong {
   font-size: 1.1em;
   color: var(--text-color);
 }
+
 .shop-item-info p {
   font-size: 0.9em;
   margin: 4px 0 0 0;
-  word-wrap: break-word; /* Garante que a descrição quebre a linha */
+  word-wrap: break-word;
+  /* Garante que a descrição quebre a linha */
 }
 
 .buy-item-btn {
-  width: 100%; /* MUDANÇA: Ocupa a largura total */
+  width: 100%;
+  /* MUDANÇA: Ocupa a largura total */
   padding: 10px 15px;
-  margin-left: 0; /* REMOVIDO: Não é mais necessário */
+  margin-left: 0;
+  /* REMOVIDO: Não é mais necessário */
   flex-shrink: 0;
 }
 
@@ -106,33 +116,41 @@
   background-color: var(--input-bg);
   margin-top: 10px;
 }
+
 #close-shop-btn:hover {
   background-color: #3a387a;
 }
+
 .modal-actions {
   display: flex;
   gap: 15px;
   justify-content: center;
   margin-top: 25px;
 }
+
 #face-catastrophe-btn {
   background-color: var(--danger-color);
 }
+
 #face-catastrophe-btn:hover {
   background-color: var(--danger-hover);
 }
+
 #cancel-target-btn,
 #ignore-star-btn {
   background-color: var(--input-bg);
 }
+
 #cancel-target-btn:hover,
 #ignore-star-btn:hover {
   background-color: #3a387a;
 }
+
 #buy-star-btn {
   background-color: #ffc107;
   color: #212529;
 }
+
 #buy-star-btn:hover {
   background-color: #e0a800;
 }
@@ -143,9 +161,11 @@
   gap: 10px;
   margin-bottom: 20px;
 }
+
 #target-players-container button {
   background-color: var(--input-bg);
 }
+
 #target-players-container button:hover {
   background-color: var(--accent-color);
 }
@@ -156,25 +176,129 @@
   color: var(--text-color);
   margin: 15px 0;
 }
+
 #disconnection-modal .vote-status {
   font-size: 0.9em;
   color: var(--subtitle-color);
   margin-bottom: 20px;
 }
+
 #disconnection-modal h2 {
   color: #f0ad4e;
   border-bottom-color: #f0ad4e;
 }
+
 #disconnection-modal #vote-to-expel-btn {
   background-color: #f0ad4e;
   color: white;
 }
+
 #disconnection-modal #vote-to-expel-btn:hover {
   background-color: #ec971f;
 }
+
 #disconnection-modal #vote-to-expel-btn:disabled {
   background-color: var(--input-bg);
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+}
+
+/* --- ESTILOS PARA O MODAL DE FIM DE JOGO --- */
+#game-over-modal .modal-content {
+  max-width: 600px;
+}
+
+#game-over-modal h2 {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+.scoreboard,
+.awards {
+  margin-bottom: 25px;
+  text-align: left;
+  background-color: var(--primary-bg);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.scoreboard h3,
+.awards h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--input-bg);
+  padding-bottom: 10px;
+}
+
+#final-scores-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#final-scores-list li {
+  display: flex;
+  align-items: center;
+  background-color: var(--input-bg);
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 1.1em;
+}
+
+#final-scores-list li .rank {
+  font-weight: bold;
+  font-size: 1.2em;
+  min-width: 30px;
+}
+
+#final-scores-list li .name {
+  flex-grow: 1;
+}
+
+#final-scores-list li .score {
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+/* Estilos de Pódio */
+#final-scores-list li:nth-child(1) .rank {
+  color: #ffd700;
+}
+
+/* Ouro */
+#final-scores-list li:nth-child(2) .rank {
+  color: #c0c0c0;
+}
+
+/* Prata */
+#final-scores-list li:nth-child(3) .rank {
+  color: #cd7f32;
+}
+
+/* Bronze */
+
+#awards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.award-item {
+  font-size: 1em;
+}
+
+.award-item .title {
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.award-item .winners {
+  color: var(--subtitle-color);
+  margin-left: 8px;
 }

@@ -1,27 +1,6 @@
 import gameState from './game-state.js';
 import gameData from './game-data.js';
 
-const FASES_UI = {
-  inicio_turno: { titulo: 'Início do Turno', acoes: ['Aguarde... Efeitos automáticos.'] },
-  uso_item_pre_rolagem: { titulo: 'Fase de Ação', acoes: ['Usar Item', 'Rolar o Dado'] },
-  rolagem_dado: { titulo: 'Fase de Rolagem', acoes: ['Rolando o dado...'] },
-  movimento: { titulo: 'Fase de Movimento', acoes: ['Movendo peão...'] },
-  aterrissagem: { titulo: 'Fase de Aterrissagem', acoes: ['Resolvendo efeito da casa...'] },
-  fim_turno: { titulo: 'Fim do Turno', acoes: ['Passando a vez...'] },
-  escolha_bifurcacao: { titulo: 'Bifurcação!', acoes: ['Clique no caminho que deseja seguir.'] },
-  em_loja: { titulo: 'Loja Cósmica', acoes: ['Compre um item ou clique em sair para continuar.'] },
-  escolha_catastrofe: {
-    titulo: 'Decisão Perigosa',
-    acoes: ['Pagar para evitar ou encarar o destino?'],
-  },
-  decisao_fragmento: {
-    titulo: 'Fragmento à Vista!',
-    acoes: ['Decida se quer comprar o fragmento.'],
-  },
-};
-
-let disconnectionCountdownInterval = null;
-
 const uiController = {
   _sendActionCallback: null,
 
@@ -32,8 +11,7 @@ const uiController = {
   inicializarUI: function () {
     this.atualizarPainelJogadores();
     document.getElementById('close-shop-btn')?.addEventListener('click', () => {
-      if (this._sendActionCallback)
-        this._sendActionCallback('player_action', { action: 'close_shop' });
+      if (this._sendActionCallback) this._sendActionCallback('player_action', { action: 'close_shop' });
     });
     document.getElementById('pay-to-avoid-btn')?.addEventListener('click', () => {
       if (this._sendActionCallback)
@@ -71,7 +49,6 @@ const uiController = {
         card.classList.add('active-player');
       }
 
-      // Lógica para gerar a lista de itens
       let itemsHtml = '<ul class="player-item-list">';
       if (player.itens && player.itens.length > 0) {
         player.itens.forEach(itemId => {
@@ -88,22 +65,19 @@ const uiController = {
       }
       itemsHtml += '</ul>';
 
-      // Lógica para exibir os efeitos ativos
       let effectsHtml = '';
       if (player.efeitos_ativos && player.efeitos_ativos.length > 0) {
         player.efeitos_ativos.forEach(effect => {
           const effectDef = gameData.gameDefinitions.itens[effect.id];
           const effectName = effectDef ? effectDef.nome : 'Efeito Desconhecido';
-          const turnsText = `(${effect.turnos_restantes} turno${
-            effect.turnos_restantes > 1 ? 's' : ''
-          })`;
+          const turnsText = `(${effect.turnos_restantes} turno${effect.turnos_restantes > 1 ? 's' : ''
+            })`;
           effectsHtml += `<li>${effectName} ${turnsText}</li>`;
         });
       } else {
         effectsHtml = `<li class="no-effects">Nenhum efeito ativo.</li>`;
       }
 
-      // Monta o HTML final do card do jogador
       card.innerHTML = `
         <h3>${player.nome}</h3>
         <div class="player-stats">
@@ -125,7 +99,6 @@ const uiController = {
       playersPanel.appendChild(card);
     });
 
-    // Adiciona os event listeners aos botões "Usar"
     document.querySelectorAll('.use-item-btn').forEach(button => {
       button.addEventListener('click', e => {
         const itemId = e.target.dataset.itemId;
@@ -145,8 +118,9 @@ const uiController = {
     if (!partida || !jogadores) return;
 
     const jogadorAtual = jogadores.find(p => p.id === partida.id_jogador_da_vez);
+    const maxTurns = 10;
 
-    turnCounter.textContent = partida.turno_atual || '1';
+    turnCounter.textContent = `${partida.turno_atual || '1'} / ${maxTurns}`;
     currentPlayerTurn.textContent = `Vez de: ${jogadorAtual ? jogadorAtual.nome : '...'}`;
 
     const itemUsadoId = partida.itemUsedId;
@@ -344,6 +318,57 @@ const uiController = {
     const connectedPlayersCount = gameState.jogadores.filter(p => p.id !== playerId).length;
     const majority = Math.floor(connectedPlayersCount / 2) + 1;
     if (voteStatus) voteStatus.textContent = `Votos para expulsar: ${votes} / ${majority}`;
+  },
+
+  showGameOverModal: function (payload) {
+    const { finalScores, awards } = payload;
+    const modal = document.getElementById('game-over-modal');
+    const scoresList = document.getElementById('final-scores-list');
+    const awardsList = document.getElementById('awards-list');
+    const returnBtn = document.getElementById('return-to-lobby-btn');
+
+    if (!modal || !scoresList || !awardsList || !returnBtn) return;
+
+    scoresList.innerHTML = '';
+    finalScores.forEach((player, index) => {
+      const rank = index + 1;
+      const li = document.createElement('li');
+      li.innerHTML = `
+            <span class="rank">${rank}º</span>
+            <span class="name">${player.nome}</span>
+            <span class="score">${player.finalScore} ⭐</span>
+        `;
+      scoresList.appendChild(li);
+    });
+
+    awardsList.innerHTML = `
+        <div class="award-item">
+            <span class="title">💰 Milionário (+1 ⭐):</span>
+            <span class="winners">${awards.mostCoins.winners.join(', ')} (${awards.mostCoins.value
+      })</span>
+        </div>
+        <div class="award-item">
+            <span class="title">🏃 Explorador (+1 ⭐):</span>
+            <span class="winners">${awards.mostMoved.winners.join(', ')} (${awards.mostMoved.value
+      })</span>
+        </div>
+        <div class="award-item">
+            <span class="title">🎲 Aventureiro (+1 ⭐):</span>
+            <span class="winners">${awards.mostEvents.winners.join(', ')} (${awards.mostEvents.value
+      })</span>
+        </div>
+    `;
+
+    returnBtn.onclick = () => {
+      this.hideGameOverModal();
+    };
+
+    modal.style.display = 'flex';
+  },
+
+  hideGameOverModal: function () {
+    const modal = document.getElementById('game-over-modal');
+    if (modal) modal.style.display = 'none';
   },
 
   atualizarTudo: function () {
