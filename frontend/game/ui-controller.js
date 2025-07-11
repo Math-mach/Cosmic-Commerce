@@ -419,61 +419,31 @@ const uiController = {
       const confirmBtn = document.getElementById('confirm-modal-confirm-btn');
       const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
 
-      if (!modal || !titleEl || !textEl || !confirmBtn || !cancelBtn) {
-        resolve(false);
-        return;
-      }
-
-      titleEl.textContent = title;
-      textEl.textContent = text;
-
-      const close = (result) => {
-        modal.style.display = 'none';
-        resolve(result);
-      };
-
-      confirmBtn.addEventListener('click', () => close(true), { once: true });
-      cancelBtn.addEventListener('click', () => close(false), { once: true });
-
-      modal.style.display = 'flex';
-    });
-  },
-
-  startActionTimer: function () {
-    this.stopActionTimer();
-    const container = document.getElementById('action-timer-container');
-    const timerBar = document.getElementById('action-timer-bar');
-    if (!container || !timerBar) return;
-
-    container.style.display = 'block';
-    timerBar.style.transition = 'none'; // Reseta a transição
-    timerBar.style.width = '100%'; // Garante que a barra comece cheia
-
-    // Força o navegador a aplicar o reset antes de iniciar a nova animação
-    this.actionTimerTimeout = setTimeout(() => {
-      timerBar.style.transition = 'width 15s linear';
-      timerBar.style.width = '0%';
-    }, 50);
-  },
-
-  stopActionTimer: function () {
-    if (this.actionTimerTimeout) {
-      clearTimeout(this.actionTimerTimeout);
-      this.actionTimerTimeout = null;
+      if (!modal!titleEl!textEl!confirmBtn!cancelBtn) {
+      resolve(false);
+      return;
     }
-    const container = document.getElementById('action-timer-container');
-    const timerBar = document.getElementById('action-timer-bar');
-    if (container) {
-      container.style.display = 'none';
-      timerBar.style.width = '100%';
-    }
+
+    titleEl.textContent = title;
+    textEl.textContent = text;
+
+    const close = (result) => {
+      modal.style.display = 'none';
+      resolve(result);
+    };
+
+    confirmBtn.addEventListener('click', () => close(true), { once: true });
+    cancelBtn.addEventListener('click', () => close(false), { once: true });
+
+    modal.style.display = 'flex';
+  });
   },
 
-  atualizarTudo: function () {
-    this.atualizarPainelJogadores();
-    this.updateTurnStatusPanel();
-    this.atualizarFaseUI();
-  },
+atualizarTudo: function () {
+  this.atualizarPainelJogadores();
+  this.updateTurnStatusPanel();
+  this.atualizarFaseUI();
+},
 };
 
 export default uiController;

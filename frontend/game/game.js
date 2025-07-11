@@ -249,7 +249,6 @@ function addGameListeners() {
 
   const leaveGameButton = document.getElementById('leave-game-btn');
   if (leaveGameButton && !leaveGameButtonListener) {
-    // >>>>>>>>>>>> MUDANÇA AQUI <<<<<<<<<<<<
     leaveGameButtonListener = async () => {
       // Usa o novo modal de confirmação
       const confirmed = await uiController.showConfirmationModal(
@@ -260,11 +259,9 @@ function addGameListeners() {
         sendActionToServer('leave_game');
       }
     };
-    // >>>>>>>>>>>> FIM DA MUDANÇA <<<<<<<<<<<<
     leaveGameButton.addEventListener('click', leaveGameButtonListener);
   }
 
-  // Garante que o listener do grid (mapa) seja adicionado apenas uma vez
   if (!gridClickListener) {
     gridClickListener = (x, y) => {
       if (gameState.partida?.fase_do_turno === 'escolha_bifurcacao') {

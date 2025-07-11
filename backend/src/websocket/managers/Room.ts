@@ -59,7 +59,7 @@ export class Room {
   public actionTimerStartTime: number | null = null;
   public actionTimerRemaining: number | null = null;
   public disconnectedPlayers: Map<string, DisconnectedPlayerInfo> = new Map();
-  public readonly MAX_TURNS = 10;
+  public readonly MAX_TURNS = 5;
 
   constructor(id: string, name: string, isPublic: boolean = true, maxPlayers: number = 4) {
     this.id = id;
@@ -148,9 +148,10 @@ export class Room {
         id: p.id,
         nome: p.name,
         posicao_mapa_id: 0,
-        moedas: 10000000,
+        moedas: 10,
         fragmentos: 0,
-        itens: [],
+        itens: [
+        ],
         efeitos_ativos: [],
         casas_andadas: 0,
         eventos_ativados: 0,

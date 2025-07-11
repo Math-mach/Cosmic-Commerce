@@ -24,18 +24,8 @@
             <h1 class="auth-title">Cosmic Commerce</h1>
             <h2 class="auth-subtitle">Login</h2>
             <form id="login-form">
-              <input
-                type="email"
-                id="login-email"
-                placeholder="Email"
-                required
-              />
-              <input
-                type="password"
-                id="login-password"
-                placeholder="Senha"
-                required
-              />
+              <input type="email" id="login-email" placeholder="Email" required />
+              <input type="password" id="login-password" placeholder="Senha" required />
               <button type="submit">Entrar</button>
             </form>
             <p class="auth-link">
@@ -54,24 +44,9 @@
             <h1 class="auth-title">Cosmic Commerce</h1>
             <h2 class="auth-subtitle">Registro</h2>
             <form id="register-form">
-              <input
-                type="text"
-                id="register-name"
-                placeholder="Nome"
-                required
-              />
-              <input
-                type="email"
-                id="register-email"
-                placeholder="Email"
-                required
-              />
-              <input
-                type="password"
-                id="register-password"
-                placeholder="Senha"
-                required
-              />
+              <input type="text" id="register-name" placeholder="Nome" required />
+              <input type="email" id="register-email" placeholder="Email" required />
+              <input type="password" id="register-password" placeholder="Senha" required />
               <button type="submit">Registrar</button>
             </form>
             <p class="auth-link">
@@ -104,11 +79,7 @@
             <div class="lobby-panel">
               <h4>Sala Privada</h4>
               <p>Tem um código? Digite abaixo para entrar.</p>
-              <input
-                type="text"
-                id="private-room-code"
-                placeholder="Insira o código da sala"
-              />
+              <input type="text" id="private-room-code" placeholder="Insira o código da sala" />
               <button id="join-private-room-btn">Entrar com Código</button>
             </div>
           </div>
@@ -122,21 +93,12 @@
             <h2 id="room-name-display">Nome da Sala</h2>
             <div id="room-info-header">
               <span>ID da Sala: <strong id="room-id-display"></strong></span>
-              <span
-                >Jogadores: <strong id="room-players-display"></strong
-              ></span>
-              <span
-                >Dono:
-                <strong id="room-host-display">Aguardando...</strong></span
-              >
+              <span>Jogadores: <strong id="room-players-display"></strong></span>
+              <span>Dono: <strong id="room-host-display">Aguardando...</strong></span>
             </div>
             <div id="messages"></div>
             <div class="chat-controls">
-              <input
-                type="text"
-                id="ws-input"
-                placeholder="Digite sua mensagem..."
-              />
+              <input type="text" id="ws-input" placeholder="Digite sua mensagem..." />
               <button id="send-chat">Enviar</button>
             </div>
             <div class="room-actions">
@@ -182,7 +144,12 @@
                 <span id="current-player-turn">Vez de: ...</span>
               </div>
               <div class="turn-dice-display">
-                <span id="dice-icon">🎲</span>
+                <span id="dice-icon"
+                  ><img
+                    src="assets/imagens/dado.png"
+                    alt="Dado"
+                    style="width: 1.5rem; height: 1.5rem; vertical-align: middle"
+                /></span>
                 <span id="dice-count">0</span>
               </div>
               <div id="ui-actions-panel">
@@ -230,11 +197,7 @@
       </div>
     </div>
 
-    <div
-      id="target-selection-modal"
-      class="modal-overlay"
-      style="display: none"
-    >
+    <div id="target-selection-modal" class="modal-overlay" style="display: none">
       <div class="modal-content">
         <h3 id="target-modal-title">Selecione um Alvo</h3>
         <div id="target-players-container"></div>
@@ -245,10 +208,7 @@
     <div id="star-fragment-modal" class="modal-overlay" style="display: none">
       <div class="modal-content">
         <h3>Fragmento de Estrela!</h3>
-        <p>
-          Você encontrou um Fragmento de Estrela! Deseja comprá-lo por 20
-          moedas?
-        </p>
+        <p>Você encontrou um Fragmento de Estrela! Deseja comprá-lo por 20 moedas?</p>
         <div class="modal-actions">
           <button id="buy-star-btn">Comprar Fragmento (20 🪙)</button>
           <button id="ignore-star-btn">Ignorar</button>
@@ -261,9 +221,7 @@
         <h2>Jogador Desconectado</h2>
         <p id="disconnection-message">Aguardando o jogador retornar...</p>
         <div class="timer" id="disconnection-timer">--:--</div>
-        <p class="vote-status" id="disconnection-vote-status">
-          Votos para expulsar: 0 / 0
-        </p>
+        <p class="vote-status" id="disconnection-vote-status">Votos para expulsar: 0 / 0</p>
         <button id="vote-to-expel-btn">Votar para Expulsar</button>
       </div>
     </div>

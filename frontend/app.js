@@ -1,7 +1,6 @@
 import * as gameModule from './game/game.js';
 import uiController from './game/ui-controller.js';
 
-
 const API_BASE = '/api/user';
 let socket = null;
 let currentUser = null;
@@ -95,6 +94,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
 
 document.getElementById('register-form').addEventListener('submit', async e => {
   e.preventDefault();
+  registerMessage.textContent = '';
   authMessage.textContent = '';
   const name = document.getElementById('register-name').value;
   const email = document.getElementById('register-email').value;
@@ -114,7 +114,8 @@ document.getElementById('register-form').addEventListener('submit', async e => {
     authMessage.textContent = 'Registrado com sucesso! Faça login.';
     showView('login');
   } catch (err) {
-    authMessage.style.color = 'red';
+
+    registerMessage.style.color = 'red';
     registerMessage.textContent = err.message || 'Erro inesperado no registro';
   }
 });
@@ -279,6 +280,8 @@ function connectWebSocket() {
 
         case 'room_info':
           const gameOverModal = document.getElementById('game-over-modal');
+
+          // Cenário 1: Jogo acabou, modal está visível.
           if (gameOverModal && gameOverModal.style.display !== 'none') {
             // O Jogo acabou, vamos voltar para a sala de espera.
             gameModule.hideGameOver(); // 1. Esconde o modal.
@@ -287,14 +290,17 @@ function connectWebSocket() {
 
             messagesDiv.innerHTML = ''; // 4. Limpa o chat explicitamente.
             appendMessage('A partida terminou. Bem-vindo de volta à sala!');
-          } else if (lobbyView.style.display === 'block') {
+          }
+          // Cenário 2: Entrando em uma sala a partir do lobby.
+          else if (lobbyView.style.display === 'block') {
             messagesDiv.innerHTML = ''; // Limpa o chat antes de entrar.
             showView('chat');
             appendMessage(`Bem-vindo à sala!`);
           }
+
+          // Por fim, atualiza os dados da sala em qualquer cenário.
           updateRoomView(data.room);
           updatePlayerListInLobby(data.room.players, data.room.hostName);
-
           break;
 
         // EVENTOS DO CHAT
@@ -325,20 +331,11 @@ function connectWebSocket() {
           }
           break;
 
-        case 'game_ended_by_disconnection':
-          gameModule.cleanupGame();
-          showView('chat');
-          messagesDiv.innerHTML = '';
-          appendMessage(
-            'O jogo foi encerrado por falta de pessoas e a sala voltou para o modo de espera.'
-          );
-          break;
         case 'left_game_success':
           gameModule.cleanupGame(); // Limpa os recursos do jogo
           showView('lobby'); // Mostra a tela de lobby
           socket.send(JSON.stringify({ type: 'get_rooms' })); // Pede a lista de salas atualizada
           break;
-        // >>>>>>>>>>>> FIM DO NOVO CASE <<<<<<<<<<<<
 
         case 'game_ended_by_leave':
         case 'game_ended_by_disconnection':

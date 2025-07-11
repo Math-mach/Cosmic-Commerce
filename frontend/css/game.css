@@ -127,6 +127,30 @@
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: text-bottom;
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('../assets/imagens/moeda.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: text-bottom;
+  margin-left: 8px;
+}
+
+#game-view .player-stats span:nth-child(4)::after {
+  content: '';
+  /* Remove o emoji */
+  display: inline-block;
+  width: 16px;
+  /* Largura da imagem */
+  height: 16px;
+  /* Altura da imagem */
+  background-image: url('../assets/imagens/estrela.png');
+  /* Caminho para a imagem */
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: text-bottom;
   /* Alinha a imagem com o texto */
   margin-left: 8px;
 }
@@ -244,6 +268,9 @@
   justify-content: center;
   gap: 5px;
   /* Espaço menor */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   background-color: var(--secondary-bg);
   padding: 10px 20px;
   border-radius: 6px;
@@ -607,6 +634,14 @@ img.seta-especial-18-32 {
 
 #game-view .ponto-bifurcacao-opcao {
   cursor: pointer !important;
+}
+
+
+
+#game-view #ui-actions-panel {
+  text-align: center;
+  margin-top: 0;
+  /* Remove a margem antiga */
 }
 
 #game-view #action-button {
