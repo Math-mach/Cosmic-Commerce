@@ -11,15 +11,15 @@ import { findNodeById, gameDefinitions } from './gameData';
 
 interface PlayerActionPayload {
   action:
-    | 'main_button_click'
-    | 'choose_path'
-    | 'buy_item'
-    | 'close_shop'
-    | 'pay_to_avoid_catastrophe'
-    | 'face_the_catastrophe'
-    | 'use_item'
-    | 'buy_star_fragment'
-    | 'ignore_star_fragment';
+  | 'main_button_click'
+  | 'choose_path'
+  | 'buy_item'
+  | 'close_shop'
+  | 'pay_to_avoid_catastrophe'
+  | 'face_the_catastrophe'
+  | 'use_item'
+  | 'buy_star_fragment'
+  | 'ignore_star_fragment';
   nodeId?: number;
   itemId?: string;
   targetPlayerId?: string;
@@ -119,6 +119,30 @@ export function passTurn(room: Room) {
   const { turnInfo } = room.gameState!;
   const currentPlayerId = turnInfo.id_jogador_da_vez;
   const currentPlayerIndex = players.findIndex(p => p.id === currentPlayerId);
+
+  if (turnInfo.turno_atual >= room.MAX_TURNS && currentPlayerIndex === players.length - 1) {
+    console.log(`[Sala ${room.id}] Turno final ${room.MAX_TURNS} concluído. Encerrando o jogo.`);
+    const finalPayload = room.calculateAwards();
+    if (finalPayload) {
+      roomManager.broadcastToRoom(room.id, JSON.stringify(finalPayload));
+    }
+    setTimeout(() => {
+      room.endGame();
+      const host = room.players.get(room.hostId!);
+      const roomInfoPayload = {
+        event: 'room_info',
+        room: {
+          id: room.id,
+          name: room.name,
+          hostName: host?.name || 'N/D',
+          current_users: room.getPlayers().length,
+          max_users: room.maxPlayers,
+        },
+      };
+      roomManager.broadcastToRoom(room.id, JSON.stringify(roomInfoPayload));
+    }, 10000);
+    return;
+  }
 
   // Determina o próximo jogador
   const nextPlayerIndex = currentPlayerIndex === -1 ? 0 : (currentPlayerIndex + 1) % players.length;
@@ -354,7 +378,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     } else if (tipoCasa === 'verde') {
       const evento =
         gameDefinitions.eventos_casa_interrogacao[
-          Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
+        Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
         ];
       notificationPayload = { title: evento.nome, message: evento.efeito_detalhado, isEvent: true };
       switch (evento.id) {
