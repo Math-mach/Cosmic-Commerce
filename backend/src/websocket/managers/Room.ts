@@ -143,7 +143,7 @@ export class Room {
         posicao_mapa_id: 0,
         moedas: 20,
         fragmentos: 0,
-        itens: [],
+        itens: ['dado_adicional', 'cogumelo_venenoso', 'ladrao_de_moedas', 'item_de_teleporte'],
         efeitos_ativos: [],
       })),
       turnInfo: {
