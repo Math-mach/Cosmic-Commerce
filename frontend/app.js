@@ -1,4 +1,6 @@
 import * as gameModule from './game/game.js';
+import uiController from './game/ui-controller.js';
+
 
 const API_BASE = '/api/user';
 let socket = null;
@@ -194,16 +196,23 @@ createRoomBtn.addEventListener('click', () => {
     socket.send(JSON.stringify({ type: 'create_room' }));
 });
 
-leaveRoomBtn.addEventListener('click', () => {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-        alert('Erro: WebSocket não está conectado.');
-        return;
-    }
-    socket.send(JSON.stringify({ type: 'leave_room' }));
-    showView('lobby');
-    messagesDiv.innerHTML = '';
+leaveRoomBtn.addEventListener('click', async () => {
+    const confirmed = await uiController.showConfirmationModal(
+        'Sair da Sala',
+        'Você tem certeza que deseja sair da sala e voltar para o lobby?'
+    );
 
-    socket.send(JSON.stringify({ type: 'get_rooms' }));
+    if (confirmed) {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            alert('Erro: WebSocket não está conectado.'); // Manter alert aqui é ok para erros inesperados
+            return;
+        }
+        socket.send(JSON.stringify({ type: 'leave_room' }));
+        showView('lobby');
+        messagesDiv.innerHTML = '';
+
+        socket.send(JSON.stringify({ type: 'get_rooms' }));
+    }
 });
 
 function updateRoomView(roomData) {

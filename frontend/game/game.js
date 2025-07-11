@@ -210,12 +210,18 @@ function addGameListeners() {
 
   const leaveGameButton = document.getElementById('leave-game-btn');
   if (leaveGameButton && !leaveGameButtonListener) {
-    leaveGameButtonListener = () => {
-      // Adiciona uma confirmação para evitar cliques acidentais
-      if (confirm('Você tem certeza que deseja abandonar a partida? Esta ação não pode ser desfeita.')) {
+    // >>>>>>>>>>>> MUDANÇA AQUI <<<<<<<<<<<<
+    leaveGameButtonListener = async () => {
+      // Usa o novo modal de confirmação
+      const confirmed = await uiController.showConfirmationModal(
+        'Abandonar Partida',
+        'Você tem certeza que deseja abandonar a partida? Esta ação não pode ser desfeita e você não poderá retornar.'
+      );
+      if (confirmed) {
         sendActionToServer('leave_game');
       }
     };
+    // >>>>>>>>>>>> FIM DA MUDANÇA <<<<<<<<<<<<
     leaveGameButton.addEventListener('click', leaveGameButtonListener);
   }
 

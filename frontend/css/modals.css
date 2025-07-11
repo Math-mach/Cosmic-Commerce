@@ -302,3 +302,19 @@
   color: var(--subtitle-color);
   margin-left: 8px;
 }
+
+#confirm-modal-confirm-btn {
+  background-color: var(--danger-color);
+}
+
+#confirm-modal-confirm-btn:hover {
+  background-color: var(--danger-hover);
+}
+
+#confirm-modal-cancel-btn {
+  background-color: var(--input-bg);
+}
+
+#confirm-modal-cancel-btn:hover {
+  background-color: #3a387a;
+}
