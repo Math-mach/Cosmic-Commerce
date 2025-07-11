@@ -1,7 +1,5 @@
-// C:/Users/Matt/Desktop/Projeto Relampago 4/backend/src/websocket/handlers/leaveGame.handler.ts
-
 import { ConnectedUser, activeConnections } from "..";
-import { passTurn } from "../game/playerAction.handler";
+import { passTurn, clearActionTimer } from "../game/playerAction.handler";
 import { roomManager, broadcastRoomListUpdateToLobby, sendGameNotification } from "../managers/roomManager";
 
 export function handleLeaveGame(user: ConnectedUser) {
@@ -16,6 +14,8 @@ export function handleLeaveGame(user: ConnectedUser) {
     if (!room || room.state !== 'in_progress' || !room.gameState) {
         return;
     }
+
+    clearActionTimer(room);
 
     console.log(`[Sala ${room.id}] Jogador ${name} está saindo voluntariamente da partida.`);
 

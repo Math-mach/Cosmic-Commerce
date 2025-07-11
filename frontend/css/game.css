@@ -549,24 +549,64 @@ img.seta-especial-18-32 {
 
 #game-view .peao-nome {
   position: absolute;
-  bottom: -20px; /* Distância do nome abaixo do peão */
+  bottom: -20px;
+  /* Distância do nome abaixo do peão */
   left: 50%;
   transform: translateX(-50%);
-  color: #ffffff; /* Cor do texto */
-  background-color: rgba(0, 0, 0, 0.6); /* Fundo para legibilidade */
-  padding: 2px 8px; /* Espaçamento interno */
-  border-radius: 4px; /* Bordas arredondadas */
-  font-size: 13px; /* Tamanho da fonte */
-  font-weight: bold; /* Peso da fonte */
-  white-space: nowrap; /* Impede que o nome quebre em duas linhas */
-  text-shadow: 1px 1px 2px black; /* Sombra para destacar */
-  pointer-events: none; /* Garante que o texto não interfira em cliques */
+  color: #ffffff;
+  /* Cor do texto */
+  background-color: rgba(0, 0, 0, 0.6);
+  /* Fundo para legibilidade */
+  padding: 2px 8px;
+  /* Espaçamento interno */
+  border-radius: 4px;
+  /* Bordas arredondadas */
+  font-size: 13px;
+  /* Tamanho da fonte */
+  font-weight: bold;
+  /* Peso da fonte */
+  white-space: nowrap;
+  /* Impede que o nome quebre em duas linhas */
+  text-shadow: 1px 1px 2px black;
+  /* Sombra para destacar */
+  pointer-events: none;
+  /* Garante que o texto não interfira em cliques */
 }
 
 #game-view #ui-actions-panel {
-  text-align: center;
-  margin-top: 0;
-  /* Remove a margem antiga */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#game-view #action-button.disabled_button {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* BLOCO DE ESTILOS ADICIONADO ABAIXO */
+#action-timer-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--input-bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#action-timer-bar {
+  height: 100%;
+  width: 100%;
+  /* Começa cheia */
+  background-color: var(--accent-color);
+  border-radius: 4px;
+  transition: width 0.1s linear;
+  /* Animação suave */
+}
+
+#game-view .ponto-bifurcacao-opcao {
+  cursor: pointer !important;
 }
 
 #game-view #action-button {

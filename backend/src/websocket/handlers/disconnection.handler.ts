@@ -1,5 +1,5 @@
 import { ConnectedUser, activeConnections } from "..";
-import { passTurn } from "../game/playerAction.handler";
+import { passTurn, clearActionTimer, handlePlayerAction } from "../game/playerAction.handler";
 import {
     roomManager,
     broadcastRoomListUpdateToLobby,
@@ -25,6 +25,11 @@ export function handleDisconnection(user: ConnectedUser) {
 
     const wasHost = room.hostId === user.id;
     const oldHostName = user.name;
+    const wasTheirTurn = room.state === 'in_progress' && room.gameState?.turnInfo.id_jogador_da_vez === user.id;
+
+    if (wasTheirTurn) {
+        clearActionTimer(room);
+    }
 
     if (room.state === "waiting") {
         console.log(

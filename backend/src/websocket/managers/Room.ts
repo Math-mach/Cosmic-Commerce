@@ -55,6 +55,7 @@ export class Room {
   public hostId: string | null = null;
   public state: 'waiting' | 'in_progress' | 'finished' = 'waiting';
   public gameState: GameState | null = null;
+  public actionTimer: NodeJS.Timeout | null = null;
   public disconnectedPlayers: Map<string, DisconnectedPlayerInfo> = new Map();
   public readonly MAX_TURNS = 10;
 
