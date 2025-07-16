@@ -307,33 +307,33 @@ const uiController = {
     if (modal) modal.style.display = 'none';
   },
 
-  startActionTimer: function (durationMs = 15000) {
-    // ...
+  startActionTimer: function () {
+    this.stopActionTimer();
     const container = document.getElementById('action-timer-container');
     const timerBar = document.getElementById('action-timer-bar');
-    // ...
+    if (!container || !timerBar) return;
 
-    container.style.display = 'block'; // <--- AQUI! Ela muda o estilo de 'none' para 'block', tornando a barra visível.
-    // ...
+    container.style.display = 'block';
+    timerBar.style.transition = 'none'; // Reseta a transição
+    timerBar.style.width = '100%'; // Garante que a barra comece cheia
+
+    // Força o navegador a aplicar o reset antes de iniciar a nova animação
     this.actionTimerTimeout = setTimeout(() => {
-      // ...
-      timerBar.style.width = '0%'; // <--- AQUI! Ela define o alvo da animação (ir para 0% de largura).
+      timerBar.style.transition = 'width 15s linear';
+      timerBar.style.width = '0%';
     }, 50);
   },
 
-  stopActionTimer: function (pause = false) {
-    // ...
+  stopActionTimer: function () {
+    if (this.actionTimerTimeout) {
+      clearTimeout(this.actionTimerTimeout);
+      this.actionTimerTimeout = null;
+    }
     const container = document.getElementById('action-timer-container');
     const timerBar = document.getElementById('action-timer-bar');
-    // ...
-
-    if (pause) {
-      // ...lógica para pausar a animação...
-    } else {
-      // Se não estiver pausando, esconde o container
-      container.style.display = 'none'; // <--- AQUI! Ela esconde a barra novamente.
-      timerBar.style.width = '100%';    // E reseta a largura para a próxima vez.
-      this.isActionTimerPaused = false;
+    if (container) {
+      container.style.display = 'none';
+      timerBar.style.width = '100%';
     }
   },
 
