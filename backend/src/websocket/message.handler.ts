@@ -11,7 +11,7 @@ import {
 
 import { roomManager } from "./managers/roomManager";
 
-import { handlePlayerAction } from "./game";
+import { handlePlayerAction, startActionTimer, handleMainButtonClick } from "./game/playerAction.handler";
 
 export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
     try {
@@ -75,6 +75,14 @@ export function handleClientMessage(user: ConnectedUser, rawMessage: string) {
                             payload: room.gameState,
                         })
                     );
+
+                    const firstPlayer = room.players.get(room.gameState!.turnInfo.id_jogador_da_vez)!;
+                    console.log(`[Sala ${room.id}] Jogo iniciado. Timer para o 1º jogador: ${firstPlayer.name}`);
+                    startActionTimer(room, () => {
+                        console.log(`[Timer Sala ${room.id}] Primeiro jogador não agiu. Rolando dado automaticamente.`);
+                        handleMainButtonClick(room);
+                    });
+
                 } catch (error: any) {
                     user.ws.send(
                         JSON.stringify({

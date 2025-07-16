@@ -9,19 +9,79 @@ import { findNodeById, gameDefinitions, MapNode } from './gameData';
 
 interface PlayerActionPayload {
   action:
-    | 'main_button_click'
-    | 'choose_path'
-    | 'buy_item'
-    | 'close_shop'
-    | 'pay_to_avoid_catastrophe'
-    | 'face_the_catastrophe'
-    | 'use_item'
-    | 'buy_star_fragment'
-    | 'ignore_star_fragment';
+  | 'main_button_click'
+  | 'choose_path'
+  | 'buy_item'
+  | 'close_shop'
+  | 'pay_to_avoid_catastrophe'
+  | 'face_the_catastrophe'
+  | 'use_item'
+  | 'buy_star_fragment'
+  | 'ignore_star_fragment';
   nodeId?: number;
   itemId?: string;
   targetPlayerId?: string;
   [key: string]: any;
+}
+
+// ===================================================================================
+//  GERENCIAMENTO DO TIMER DE AÇÃO
+// ===================================================================================
+
+const ACTION_TIMEOUT = 15000; // 15 segundos
+
+export function clearActionTimer(room: Room) {
+  if (room.actionTimer) {
+    clearTimeout(room.actionTimer);
+    room.actionTimer = null;
+  }
+}
+
+export function startActionTimer(room: Room, onTimeout: () => void, duration: number = ACTION_TIMEOUT) {
+  clearActionTimer(room);
+
+  room.actionTimerStartTime = Date.now();
+  room.actionTimerRemaining = duration;
+
+  room.actionTimer = setTimeout(() => {
+    console.log(`[Sala ${room.id}] Tempo de ação esgotado. Executando ação padrão.`);
+    onTimeout();
+  }, duration);
+}
+
+export function restartActionTimerForReconnection(room: Room) {
+  const { turnInfo } = room.gameState!;
+  const currentPlayer = room.players.get(turnInfo.id_jogador_da_vez)!;
+
+  switch (turnInfo.fase_do_turno) {
+    case 'uso_item_pre_rolagem':
+      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} rolar o dado.`);
+      startActionTimer(room, () => handleMainButtonClick(room));
+      break;
+
+    case 'escolha_bifurcacao':
+      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} escolher o caminho.`);
+      startActionTimer(room, () => {
+        const defaultPathNodeId = turnInfo.opcoesBifurcacao![0];
+        handleChoosePath(room, currentPlayer.id, defaultPathNodeId);
+      });
+      break;
+
+    case 'em_loja':
+      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} na loja.`);
+      startActionTimer(room, () => handleCloseShop(room, currentPlayer));
+      break;
+
+    case 'escolha_catastrofe':
+      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} na catástrofe.`);
+      startActionTimer(room, () => handlePayToAvoidCatastrophe(room, currentPlayer));
+      break;
+
+    case 'decisao_fragmento':
+      console.log(`[Reconexão Sala ${room.id}] Reiniciando timer para ${currentPlayer.name} no fragmento.`);
+      startActionTimer(room, () => handleIgnoreStarFragment(room, currentPlayer));
+      break;
+  }
 }
 
 // ===================================================================================
@@ -59,6 +119,8 @@ export function handlePlayerAction(user: ConnectedUser, payload: PlayerActionPay
     ws.send(JSON.stringify({ event: 'error', message: 'Não é a sua vez de jogar.' }));
     return;
   }
+
+  clearActionTimer(room);
 
   switch (payload.action) {
     case 'main_button_click':
@@ -187,19 +249,31 @@ export function passTurn(room: Room) {
     payload: { type: 'gameStateUpdate', payload: room.gameState! },
   };
   roomManager.broadcastToRoom(room.id, JSON.stringify(updatePayload));
+  startActionTimer(room, () => {
+    console.log(`[Timer Sala ${room.id}] Jogador ${nextPlayer.nome} não rolou o dado. Rolando automaticamente.`);
+    handleMainButtonClick(room);
+  });
 }
 
 // ===================================================================================
 //  LÓGICA DE MOVIMENTO
 // ===================================================================================
 
-function handleMainButtonClick(room: Room) {
+export function handleMainButtonClick(room: Room) {
   const { turnInfo, players } = room.gameState!;
   const currentPlayer = players.find(p => p.id === turnInfo.id_jogador_da_vez)!;
 
   if (turnInfo.fase_do_turno !== 'uso_item_pre_rolagem') return;
 
   turnInfo.fase_do_turno = 'rolagem_dado';
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
 
   const dadoAdicionalEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'dado_adicional');
   const cogumeloEffect = currentPlayer.efeitos_ativos.find(e => e.id === 'cogumelo_venenoso');
@@ -242,6 +316,7 @@ function handleMainButtonClick(room: Room) {
 }
 
 function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
+  clearActionTimer(room);
   const { turnInfo, players } = room.gameState!;
   if (turnInfo.fase_do_turno !== 'escolha_bifurcacao') return;
 
@@ -253,6 +328,15 @@ function handleChoosePath(room: Room, userId: string, chosenNodeId: number) {
   turnInfo.opcoesBifurcacao = [];
   turnInfo.fase_do_turno = 'movimento';
   currentPlayerState.posicao_mapa_id = chosenNodeId;
+
+  roomManager.broadcastToRoom(
+    room.id,
+    JSON.stringify({
+      event: 'gameStateUpdate',
+      payload: { type: 'gameStateUpdate', payload: room.gameState! },
+    })
+  );
+
   continueMovement(room, stepsRemainingAfterChoice, stepsRemainingAfterChoice);
 }
 
@@ -346,9 +430,12 @@ function continueMovement(room: Room, stepsToTake: number, initialDiceRoll: numb
           payload: { type: 'gameStateUpdate', payload: room.gameState! },
         })
       );
-    } else {
-      processEndOfMovement(room, finalNodeInPath.id);
-    }
+      startActionTimer(room, () => {
+        const defaultPathNodeId = room.gameState!.turnInfo.opcoesBifurcacao![0];
+        console.log(`[Timer Sala ${room.id}] Jogador não escolheu o caminho. Escolhendo padrão: ${defaultPathNodeId}`);
+        handleChoosePath(room, currentPlayer.id, defaultPathNodeId);
+      });
+    } else processEndOfMovement(room, finalNodeInPath.id);
   }, animationDuration);
 }
 
@@ -382,7 +469,7 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
     } else if (tipoCasa === 'verde') {
       const evento =
         gameDefinitions.eventos_casa_interrogacao[
-          Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
+        Math.floor(Math.random() * gameDefinitions.eventos_casa_interrogacao.length)
         ];
       notificationPayload = { title: evento.nome, message: evento.efeito_detalhado, isEvent: true };
       switch (evento.id) {
@@ -415,6 +502,12 @@ function processEndOfMovement(room: Room, finalNodeId: number) {
           },
         })
       );
+
+      startActionTimer(room, () => {
+        const user = room.players.get(turnInfo.id_jogador_da_vez)!;
+        console.log(`[Timer Sala ${room.id}] Jogador não decidiu sobre a catástrofe. Acionando padrão.`);
+        handlePayToAvoidCatastrophe(room, user); // Ação padrão é tentar pagar
+      });
       return;
     }
   }
@@ -631,6 +724,11 @@ function triggerShopInteraction(room: Room, shopNodeId: number) {
       },
     })
   );
+  startActionTimer(room, () => {
+    const user = room.players.get(turnInfo.id_jogador_da_vez)!;
+    console.log(`[Timer Sala ${room.id}] Jogador demorou na loja. Fechando automaticamente.`);
+    handleCloseShop(room, user);
+  });
 }
 
 function handleCloseShop(room: Room, user: ConnectedUser) {
@@ -769,6 +867,11 @@ function triggerStarFragmentInteraction(room: Room) {
     room.id,
     JSON.stringify({ event: 'game_event', payload: { type: 'show_star_fragment_modal' } })
   );
+  startActionTimer(room, () => {
+    const user = room.players.get(turnInfo.id_jogador_da_vez)!;
+    console.log(`[Timer Sala ${room.id}] Jogador não decidiu sobre o fragmento. Ignorando.`);
+    handleIgnoreStarFragment(room, user);
+  });
 }
 
 function handleBuyStarFragment(room: Room, user: ConnectedUser) {

@@ -3,7 +3,8 @@ import gameData from './game-data.js';
 
 const uiController = {
   _sendActionCallback: null,
-  disconnectionCountdownInterval: null, // <-- ADICIONADO AQUI como uma propriedade
+  disconnectionCountdownInterval: null,
+  actionTimerInterval: null,
 
   registerSendActionCallback(callback) {
     this._sendActionCallback = callback;
@@ -78,9 +79,8 @@ const uiController = {
         player.efeitos_ativos.forEach(effect => {
           const effectDef = gameData.gameDefinitions.itens[effect.id];
           const effectName = effectDef ? effectDef.nome : 'Efeito Desconhecido';
-          const turnsText = `(${effect.turnos_restantes} turno${
-            effect.turnos_restantes > 1 ? 's' : ''
-          })`;
+          const turnsText = `(${effect.turnos_restantes} turno${effect.turnos_restantes > 1 ? 's' : ''
+            })`;
           effectsHtml += `<li>${effectName} ${turnsText}</li>`;
         });
       } else {
@@ -215,6 +215,21 @@ const uiController = {
       actionButton.disabled = true;
       actionButton.classList.add('disabled_button');
     }
+
+    const interactivePhases = [
+      'uso_item_pre_rolagem',
+      'escolha_bifurcacao',
+      'em_loja',
+      'escolha_catastrofe',
+      'decisao_fragmento',
+    ];
+
+    if (eMinhaVez && interactivePhases.includes(faseAtual)) {
+      this.startActionTimer();
+    } else {
+      this.stopActionTimer();
+    }
+
   },
 
   mostrarNotificacaoEvento: function (titulo, descricao, duracaoMs) {
@@ -290,6 +305,36 @@ const uiController = {
   closeStarFragmentModal: function () {
     const modal = document.getElementById('star-fragment-modal');
     if (modal) modal.style.display = 'none';
+  },
+
+  startActionTimer: function () {
+    this.stopActionTimer();
+    const container = document.getElementById('action-timer-container');
+    const timerBar = document.getElementById('action-timer-bar');
+    if (!container || !timerBar) return;
+
+    container.style.display = 'block';
+    timerBar.style.transition = 'none'; // Reseta a transição
+    timerBar.style.width = '100%'; // Garante que a barra comece cheia
+
+    // Força o navegador a aplicar o reset antes de iniciar a nova animação
+    this.actionTimerTimeout = setTimeout(() => {
+      timerBar.style.transition = 'width 15s linear';
+      timerBar.style.width = '0%';
+    }, 50);
+  },
+
+  stopActionTimer: function () {
+    if (this.actionTimerTimeout) {
+      clearTimeout(this.actionTimerTimeout);
+      this.actionTimerTimeout = null;
+    }
+    const container = document.getElementById('action-timer-container');
+    const timerBar = document.getElementById('action-timer-bar');
+    if (container) {
+      container.style.display = 'none';
+      timerBar.style.width = '100%';
+    }
   },
 
   showDisconnectionModal: function ({ playerName, playerId }) {
@@ -373,25 +418,20 @@ const uiController = {
     awardsList.innerHTML = `
         <div class="award-item">
             <span class="title">💰 Milionário (+1 ⭐):</span>
-            <span class="winners">${awards.mostCoins.winners.join(', ')} (${
-      awards.mostCoins.value
-    })</span>
+            <span class="winners">${awards.mostCoins.winners.join(', ')} (${awards.mostCoins.value
+      })</span>
         </div>
         <div class="award-item">
             <span class="title">🏃 Explorador (+1 ⭐):</span>
-            <span class="winners">${awards.mostMoved.winners.join(', ')} (${
-      awards.mostMoved.value
-    })</span>
+            <span class="winners">${awards.mostMoved.winners.join(', ')} (${awards.mostMoved.value
+      })</span>
         </div>
         <div class="award-item">
             <span class="title">🎲 Aventureiro (+1 ⭐):</span>
-            <span class="winners">${awards.mostEvents.winners.join(', ')} (${
-      awards.mostEvents.value
-    })</span>
+            <span class="winners">${awards.mostEvents.winners.join(', ')} (${awards.mostEvents.value
+      })</span>
         </div>
     `;
-
-
 
     modal.style.display = 'flex';
   },

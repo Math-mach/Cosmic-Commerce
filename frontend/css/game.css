@@ -110,6 +110,23 @@
 }
 
 #game-view .player-stats span:nth-child(2)::after {
+  content: '🪙';
+  margin-left: 8px;
+}
+
+#game-view .player-stats span:nth-child(4)::after {
+  content: '';
+  /* Remove o emoji */
+  display: inline-block;
+  width: 16px;
+  /* Largura da imagem */
+  height: 16px;
+  /* Altura da imagem */
+  background-image: url('../assets/imagens/estrela.png');
+  /* Caminho para a imagem */
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: text-bottom;
   content: '';
   display: inline-block;
   width: 16px;
@@ -245,6 +262,12 @@
 
 .turn-dice-display {
   display: flex;
+  flex-direction: column;
+  /* Ícone em cima, número embaixo */
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  /* Espaço menor */
   align-items: center;
   justify-content: center;
   gap: 10px;
@@ -553,24 +576,77 @@ img.seta-especial-18-32 {
 
 #game-view .peao-nome {
   position: absolute;
-  bottom: -20px; /* Distância do nome abaixo do peão */
+  bottom: -20px;
+  /* Distância do nome abaixo do peão */
   left: 50%;
   transform: translateX(-50%);
-  color: #ffffff; /* Cor do texto */
-  background-color: rgba(0, 0, 0, 0.6); /* Fundo para legibilidade */
-  padding: 2px 8px; /* Espaçamento interno */
-  border-radius: 4px; /* Bordas arredondadas */
-  font-size: 13px; /* Tamanho da fonte */
-  font-weight: bold; /* Peso da fonte */
-  white-space: nowrap; /* Impede que o nome quebre em duas linhas */
-  text-shadow: 1px 1px 2px black; /* Sombra para destacar */
-  pointer-events: none; /* Garante que o texto não interfira em cliques */
+  color: #ffffff;
+  /* Cor do texto */
+  background-color: rgba(0, 0, 0, 0.6);
+  /* Fundo para legibilidade */
+  padding: 2px 8px;
+  /* Espaçamento interno */
+  border-radius: 4px;
+  /* Bordas arredondadas */
+  font-size: 13px;
+  /* Tamanho da fonte */
+  font-weight: bold;
+  /* Peso da fonte */
+  white-space: nowrap;
+  /* Impede que o nome quebre em duas linhas */
+  text-shadow: 1px 1px 2px black;
+  /* Sombra para destacar */
+  pointer-events: none;
+  /* Garante que o texto não interfira em cliques */
 }
 
 #game-view #ui-actions-panel {
-  text-align: center;
-  margin-top: 0;
-  /* Remove a margem antiga */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#game-view #action-button.disabled_button {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#action-timer-container {
+  width: 100%;
+  max-width: 250px;
+  /* Garante que o timer não fique excessivamente largo */
+  height: 8px;
+  background-color: var(--input-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #4c3cff4d;
+  /* Borda sutil */
+}
+
+#action-timer-bar {
+  height: 100%;
+  width: 100%;
+  /* Começa com a barra cheia */
+  background-color: var(--accent-color);
+  border-radius: 4px;
+  /* A transição será controlada pelo JavaScript */
+}
+
+#game-view .ponto-bifurcacao-opcao {
+  cursor: pointer !important;
+}
+
+
+
+#game-view #ui-actions-panel {
+  /* Apague a linha 'text-align: center;' se ela existir */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  /* Espaçamento entre o timer e o botão */
 }
 
 #game-view #action-button {

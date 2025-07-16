@@ -114,6 +114,7 @@ document.getElementById('register-form').addEventListener('submit', async e => {
     authMessage.textContent = 'Registrado com sucesso! Faça login.';
     showView('login');
   } catch (err) {
+
     registerMessage.style.color = 'red';
     registerMessage.textContent = err.message || 'Erro inesperado no registro';
   }
@@ -346,6 +347,15 @@ function connectWebSocket() {
           );
           break;
 
+        case 'game_ended_by_disconnection':
+          gameModule.cleanupGame();
+          showView('chat');
+          messagesDiv.innerHTML = '';
+          appendMessage(
+            'O jogo foi encerrado por falta de pessoas e a sala voltou para o modo de espera.'
+          );
+          break;
+
         // EVENTOS GERAIS
         case 'error':
           appendMessage(`❌ Erro do servidor: ${data.message}`);
@@ -409,7 +419,7 @@ const logout = async () => {
       method: 'POST',
       credentials: 'include',
     });
-  } catch {}
+  } catch { }
   showView('login');
   authMessage.textContent = '';
   authMessage.style.color = 'red';
