@@ -19,12 +19,22 @@ export function handleLeaveGame(user: ConnectedUser) {
 
     console.log(`[Sala ${room.id}] Jogador ${name} está saindo voluntariamente da partida.`);
 
-    // >>>>>>>>>>>> NOVA LINHA ADICIONADA AQUI <<<<<<<<<<<<
-    // Envia uma confirmação imediata para o jogador que clicou no botão.
     user.ws.send(JSON.stringify({ event: 'left_game_success' }));
-    // >>>>>>>>>>>> FIM DA NOVA LINHA <<<<<<<<<<<<
 
-    // Notifica os outros jogadores sobre a saída
+    roomManager.broadcastToRoom(
+        room.id,
+        JSON.stringify({
+            event: "game_event",
+            payload: {
+                type: "player_removed_ingame",
+                payload: {
+                    playerId: userId,
+                    playerName: name,
+                },
+            },
+        })
+    );
+
     sendGameNotification(room.id, "Jogador Saiu", `👋 ${name} abandonou a partida.`, 5000);
     const chatMessage = {
         event: 'chat_message',
@@ -39,8 +49,6 @@ export function handleLeaveGame(user: ConnectedUser) {
     room.removePlayer(userId);
     user.roomId = null;
 
-    // 2. Promove um novo host IMEDIATAMENTE, se necessário.
-    //    Isso garante que, mesmo se o jogo for cancelado, a sala terá um host correto.
     if (wasHost && room.getPlayers().length > 0) {
         room.promoteNextHost();
         const newHost = room.players.get(room.hostId!);
@@ -55,7 +63,6 @@ export function handleLeaveGame(user: ConnectedUser) {
         }
     }
 
-    // Verifica se a partida deve ser cancelada
     if (room.getPlayers().length < 2) {
         console.log(`[Sala ${room.id}] Menos de 2 jogadores restantes. Encerrando o jogo.`);
         sendGameNotification(room.id, "Jogo Encerrado", "Não há jogadores suficientes para continuar.", 6000);
@@ -91,11 +98,9 @@ export function handleLeaveGame(user: ConnectedUser) {
         return;
     }
 
-    // Passa o turno se o jogador que saiu era o da vez
     if (wasTheirTurn) {
         passTurn(room);
     } else {
-        // Caso contrário, apenas envia o estado atualizado do jogo
         roomManager.broadcastToRoom(
             room.id,
             JSON.stringify({
