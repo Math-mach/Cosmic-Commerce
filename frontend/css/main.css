@@ -1,0 +1,31 @@
+@import url("auth.css");
+@import url("lobby.css");
+@import url("room.css");
+@import url("game.css");
+@import url("modals.css");
+
+/* Estilos Globais e Variáveis */
+:root {
+  --primary-bg: #0d0c1d;
+  --secondary-bg: #1a193d;
+  --accent-color: #4c3cff;
+  --accent-hover: #6c5eff;
+  --text-color: #f0f0f0;
+  --subtitle-color: #a0a0d0;
+  --input-bg: #2a285e;
+  --danger-color: #dc3545;
+  --danger-hover: #c82333;
+}
+
+body {
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--primary-bg);
+  color: var(--text-color);
+}
+
+main {
+  max-width: none;
+  margin: 0;
+}

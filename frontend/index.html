@@ -1,13 +1,312 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cosmic Commerce</title>
+    <!-- Fontes do Google para um visual mais moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="shortcut icon" href="assets/icon.svg" type="image/x-icon" />
   </head>
+
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <main>
+      <!-- LOGIN VIEW -->
+      <section id="login-view" style="display: none">
+        <div class="auth-wrapper">
+          <div class="auth-container">
+            <h1 class="auth-title">Cosmic Commerce</h1>
+            <h2 class="auth-subtitle">Login</h2>
+            <form id="login-form">
+              <input
+                type="email"
+                id="login-email"
+                placeholder="Email"
+                required
+              />
+              <input
+                type="password"
+                id="login-password"
+                placeholder="Senha"
+                required
+              />
+              <button type="submit">Entrar</button>
+            </form>
+            <p class="auth-link">
+              Não tem conta?
+              <a href="#" id="go-to-register">Registrar-se</a>
+            </p>
+            <div id="auth-message"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REGISTRO VIEW -->
+      <section id="register-view" style="display: none">
+        <div class="auth-wrapper">
+          <div class="auth-container">
+            <h1 class="auth-title">Cosmic Commerce</h1>
+            <h2 class="auth-subtitle">Registro</h2>
+            <form id="register-form">
+              <input
+                type="text"
+                id="register-name"
+                placeholder="Nome"
+                required
+              />
+              <input
+                type="email"
+                id="register-email"
+                placeholder="Email"
+                required
+              />
+              <input
+                type="password"
+                id="register-password"
+                placeholder="Senha"
+                required
+              />
+              <button type="submit">Registrar</button>
+            </form>
+            <p class="auth-link">
+              Já tem conta?
+              <a href="#" id="go-to-login">Fazer login</a>
+            </p>
+            <div id="register-message"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOBBY VIEW -->
+      <section id="lobby-view" style="display: none">
+        <div class="lobby-container">
+          <div class="lobby-header">
+            <h3>Bem-vindo, <span id="lobby-username"></span></h3>
+            <button id="lobby-logout-btn">Sair</button>
+          </div>
+
+          <div class="lobby-panels">
+            <div class="lobby-panel">
+              <h4>Salas Públicas</h4>
+              <p>Entre em uma partida ou crie a sua.</p>
+              <div id="public-rooms-list">
+                <!-- Gerado por JS -->
+              </div>
+              <button id="create-room-btn">Criar Nova Sala</button>
+            </div>
+
+            <div class="lobby-panel">
+              <h4>Sala Privada</h4>
+              <p>Tem um código? Digite abaixo para entrar.</p>
+              <input
+                type="text"
+                id="private-room-code"
+                placeholder="Insira o código da sala"
+              />
+              <button id="join-private-room-btn">Entrar com Código</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAT/ROOM VIEW -->
+      <section id="ws-section" style="display: none">
+        <div class="room-layout-grid">
+          <div class="room-container">
+            <h2 id="room-name-display">Nome da Sala</h2>
+            <div id="room-info-header">
+              <span>ID da Sala: <strong id="room-id-display"></strong></span>
+              <span
+                >Jogadores: <strong id="room-players-display"></strong
+              ></span>
+              <span
+                >Dono:
+                <strong id="room-host-display">Aguardando...</strong></span
+              >
+            </div>
+            <div id="messages"></div>
+            <div class="chat-controls">
+              <input
+                type="text"
+                id="ws-input"
+                placeholder="Digite sua mensagem..."
+              />
+              <button id="send-chat">Enviar</button>
+            </div>
+            <div class="room-actions">
+              <button id="send-game">Iniciar Jogo</button>
+              <button id="leave-room-btn">Sair da Sala</button>
+            </div>
+          </div>
+
+          <div class="room-container-player">
+            <h3>Jogadores na Sala</h3>
+            <ul id="player-list-lobby">
+              <!-- Populado via JavaScript -->
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAME VIEW -->
+      <section id="game-view" style="display: none">
+        <div class="game-container">
+          <!-- PAINEL ESQUERDO (Jogadores 1 & 2) -->
+          <div class="left-panel">
+            <h1>A Nebulosa Espiral</h1>
+            <div id="ui-players-panel">
+              <!-- Gerado pelo ui-controller.js -->
+            </div>
+            <div class="game-controls">
+              <button id="leave-game-btn">Sair da Partida</button>
+            </div>
+          </div>
+
+          <!-- COLUNA CENTRAL (Tabuleiro e Informações do Turno) -->
+          <div class="center-column">
+            <div class="board-wrapper">
+              <div id="unified-grid-container">
+                <div id="peoes-container"></div>
+              </div>
+            </div>
+
+            <div id="turn-status-panel">
+              <div class="turn-player-info">
+                <span>Turno <span id="turn-counter">1</span></span>
+                <span id="current-player-turn">Vez de: ...</span>
+              </div>
+              <div class="turn-dice-display">
+                <span id="dice-icon"
+                  ><img
+                    src="assets/imagens/dado.png"
+                    alt="Dado"
+                    style="
+                      width: 1.5rem;
+                      height: 1.5rem;
+                      vertical-align: middle;
+                    "
+                /></span>
+                <span id="dice-count">0</span>
+              </div>
+              <div id="ui-actions-panel">
+                <div id="action-timer-container" style="display: none">
+                  <div id="action-timer-bar"></div>
+                </div>
+                <button id="action-button">Rolar o Dado</button>
+              </div>
+              <div class="turn-effects-history">
+                <h4>Efeito usado:</h4>
+                <ul id="turn-effects-list">
+                  <li class="no-effects">Nenhum</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAINEL DIREITO (Jogadores 3 & 4) -->
+          <div class="right-panel">
+            <div id="ui-players-panel-right">
+              <!-- Gerado pelo ui-controller.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAIS DO JOGO -->
+    <div id="shop-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h3 id="shop-title">Loja Cósmica</h3>
+        <div id="shop-items-container"></div>
+        <button id="close-shop-btn">Sair da Loja</button>
+      </div>
+    </div>
+
+    <div id="catastrophe-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h3 id="catastrophe-title">Casa da Catástrofe!</h3>
+        <p>Você parou em uma casa instável. O que você faz?</p>
+        <div class="modal-actions">
+          <button id="pay-to-avoid-btn">Pagar 15 🪙 para evitar</button>
+          <button id="face-catastrophe-btn">Encarar o Destino</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="target-selection-modal"
+      class="modal-overlay"
+      style="display: none"
+    >
+      <div class="modal-content">
+        <h3 id="target-modal-title">Selecione um Alvo</h3>
+        <div id="target-players-container"></div>
+        <button id="cancel-target-btn">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="star-fragment-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h3>Fragmento de Estrela!</h3>
+        <p>
+          Você encontrou um Fragmento de Estrela! Deseja comprá-lo por 20
+          moedas?
+        </p>
+        <div class="modal-actions">
+          <button id="buy-star-btn">Comprar Fragmento (20 🪙)</button>
+          <button id="ignore-star-btn">Ignorar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="disconnection-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h2>Jogador Desconectado</h2>
+        <p id="disconnection-message">Aguardando o jogador retornar...</p>
+        <div class="timer" id="disconnection-timer">--:--</div>
+        <p class="vote-status" id="disconnection-vote-status">
+          Votos para expulsar: 0 / 0
+        </p>
+        <button id="vote-to-expel-btn">Votar para Expulsar</button>
+      </div>
+    </div>
+
+    <!-- NOVO MODAL DE FIM DE JOGO -->
+    <div id="game-over-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h2>Fim de Jogo!</h2>
+        <div id="final-scoreboard" class="scoreboard">
+          <h3>Placar Final</h3>
+          <ol id="final-scores-list">
+            <!-- Scores dos jogadores injetados aqui via JS -->
+          </ol>
+        </div>
+        <div id="bonus-awards" class="awards">
+          <h3>🏆 Prêmios Bônus 🏆</h3>
+          <div id="awards-list">
+            <!-- Prêmios injetados aqui via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h3 id="confirm-modal-title">Confirmar Ação</h3>
+        <p id="confirm-modal-text">Você tem certeza?</p>
+        <div class="modal-actions">
+          <button id="confirm-modal-cancel-btn">Cancelar</button>
+          <button id="confirm-modal-confirm-btn">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
   </body>
 </html>

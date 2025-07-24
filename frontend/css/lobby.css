@@ -1,0 +1,136 @@
+#lobby-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-bg);
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.lobby-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.lobby-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.lobby-header h3 {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin: 0;
+}
+#lobby-username {
+  color: var(--accent-color);
+}
+.lobby-panels {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+.lobby-panel {
+  background-color: var(--secondary-bg);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--input-bg);
+}
+.lobby-panel h4 {
+  font-size: 1.25rem;
+  margin-top: 0;
+  margin-bottom: 5px;
+  color: var(--text-color);
+}
+.lobby-panel p {
+  font-size: 0.9rem;
+  color: var(--subtitle-color);
+  margin: 0 0 20px 0;
+}
+#lobby-view input {
+  width: 100%;
+  padding: 12px 15px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid var(--input-bg);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+#lobby-view button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: bold;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+#lobby-view button:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+}
+#lobby-logout-btn {
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  width: auto;
+  padding: 8px 16px;
+}
+#lobby-logout-btn:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+#create-room-btn {
+  margin-top: 20px;
+}
+#public-rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 5px;
+  min-height: 250px;
+  max-height: 40vh;
+  overflow-y: auto;
+  background-color: var(--primary-bg);
+  border-radius: 6px;
+}
+.room-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px;
+  border-radius: 5px;
+  background-color: var(--input-bg);
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+.room-item:hover {
+  background-color: #3a387a;
+}
+.room-details {
+  margin-bottom: 10px;
+}
+.room-name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--text-color);
+  word-break: break-all;
+}
+.room-players {
+  font-size: 0.85em;
+  color: var(--subtitle-color);
+}
+.join-room-btn {
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
