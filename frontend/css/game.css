@@ -552,10 +552,11 @@ img.seta-especial-18-32 {
   height: 25px;
   filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.7));
   z-index: 10;
-  transition: transform 0.4s ease-in-out;
+  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in; 
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  opacity: 1; 
 }
 
 #game-view .peao-p1 {

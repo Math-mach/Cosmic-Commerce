@@ -153,7 +153,14 @@ const mapController = {
   removerPeao: function (playerId) {
     const peao = document.getElementById(`peao-${playerId}`);
     if (peao) {
-      peao.remove();
+      const currentTransform = peao.style.transform;
+
+      peao.style.transform = `${currentTransform} translateY(-80px)`;
+      peao.style.opacity = '0';
+
+      setTimeout(() => {
+        peao.remove();
+      }, 1000);
     }
   },
 
