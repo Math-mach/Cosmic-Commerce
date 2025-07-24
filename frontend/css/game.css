@@ -110,23 +110,6 @@
 }
 
 #game-view .player-stats span:nth-child(2)::after {
-  content: '🪙';
-  margin-left: 8px;
-}
-
-#game-view .player-stats span:nth-child(4)::after {
-  content: '';
-  /* Remove o emoji */
-  display: inline-block;
-  width: 16px;
-  /* Largura da imagem */
-  height: 16px;
-  /* Altura da imagem */
-  background-image: url('../assets/imagens/estrela.png');
-  /* Caminho para a imagem */
-  background-size: contain;
-  background-repeat: no-repeat;
-  vertical-align: text-bottom;
   content: '';
   display: inline-block;
   width: 16px;
@@ -262,12 +245,6 @@
 
 .turn-dice-display {
   display: flex;
-  flex-direction: column;
-  /* Ícone em cima, número embaixo */
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  /* Espaço menor */
   align-items: center;
   justify-content: center;
   gap: 10px;
@@ -552,11 +529,11 @@ img.seta-especial-18-32 {
   height: 25px;
   filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.7));
   z-index: 10;
-  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in; 
+  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  opacity: 1; 
+  opacity: 1;
 }
 
 #game-view .peao-p1 {
@@ -602,52 +579,9 @@ img.seta-especial-18-32 {
 }
 
 #game-view #ui-actions-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-#game-view #action-button.disabled_button {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-#action-timer-container {
-  width: 100%;
-  max-width: 250px;
-  /* Garante que o timer não fique excessivamente largo */
-  height: 8px;
-  background-color: var(--input-bg);
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid #4c3cff4d;
-  /* Borda sutil */
-}
-
-#action-timer-bar {
-  height: 100%;
-  width: 100%;
-  /* Começa com a barra cheia */
-  background-color: var(--accent-color);
-  border-radius: 4px;
-  /* A transição será controlada pelo JavaScript */
-}
-
-#game-view .ponto-bifurcacao-opcao {
-  cursor: pointer !important;
-}
-
-
-
-#game-view #ui-actions-panel {
-  /* Apague a linha 'text-align: center;' se ela existir */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  /* Espaçamento entre o timer e o botão */
+  text-align: center;
+  margin-top: 0;
+  /* Remove a margem antiga */
 }
 
 #game-view #action-button {
